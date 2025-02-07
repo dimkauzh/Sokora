@@ -2,7 +2,7 @@ import {
   ChannelType,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
@@ -19,8 +19,8 @@ export const data = new SlashCommandSubcommandBuilder()
         ChannelType.GuildText,
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
-        ChannelType.GuildVoice
-      )
+        ChannelType.GuildVoice,
+      ),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -29,7 +29,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Roles** permission."
+      "You need the **Manage Roles** permission.",
     );
 
   const channelOption = interaction.options.getChannel("channel")!;
@@ -38,7 +38,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "The channel is already locked."
+      "The channel is already locked.",
     );
 
   const embed = new EmbedBuilder()
@@ -46,8 +46,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(
       [
         `**Moderator**: ${interaction.user.displayName}`,
-        `**Channel**: ${channelOption ?? `<#${channel.id}>`}`
-      ].join("\n")
+        `**Channel**: ${channelOption ?? `<#${channel.id}>`}`,
+      ].join("\n"),
     )
     .setColor(genColor(100));
 
@@ -62,7 +62,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         SendMessages: false,
         SendMessagesInThreads: false,
         CreatePublicThreads: false,
-        CreatePrivateThreads: false
+        CreatePrivateThreads: false,
       })
       .catch(error => console.error(error));
 

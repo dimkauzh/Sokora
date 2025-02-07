@@ -2,7 +2,7 @@ import {
   EmbedBuilder,
   PermissionsBitField,
   SlashCommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 
@@ -10,20 +10,20 @@ export const data = new SlashCommandBuilder()
   .setName("embed")
   .setDescription("Create a custom embed message")
   .addStringOption(option =>
-    option.setName("title").setDescription("The title of the embed").setRequired(true)
+    option.setName("title").setDescription("The title of the embed").setRequired(true),
   )
   .addStringOption(option =>
-    option.setName("description").setDescription("The description of the embed").setRequired(true)
+    option.setName("description").setDescription("The description of the embed").setRequired(true),
   )
   .addStringOption(option =>
-    option.setName("color").setDescription("The color of the embed (hex code)")
+    option.setName("color").setDescription("The color of the embed (HEX code)"),
   )
   .addStringOption(option =>
-    option.setName("footer").setDescription("The footer text of the embed")
+    option.setName("footer").setDescription("The footer text of the embed"),
   )
   .addStringOption(option => option.setName("image").setDescription("The URL of an image to add"))
   .addStringOption(option =>
-    option.setName("thumbnail").setDescription("The URL of a thumbnail to add")
+    option.setName("thumbnail").setDescription("The URL of a thumbnail to add"),
   )
   .setDefaultMemberPermissions(PermissionsBitField.Flags.ManageMessages);
 
@@ -53,7 +53,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "Invalid embed parameters",
-      "One or more of your inputs were invalid. Make sure image/thumbnail URLs are valid."
+      "One or more of your inputs were invalid. Make sure image/thumbnail URLs are valid.",
     );
   }
 }

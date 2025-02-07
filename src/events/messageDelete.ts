@@ -14,15 +14,15 @@ export default (async function run(message) {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `•  ${author.displayName}'s message has been deleted.`,
-      iconURL: author.displayAvatarURL()
+      iconURL: author.displayAvatarURL(),
     })
     .setDescription(
-      `[Jump to message](${message.url}) • [See ${author.displayName}'s profile](https://discord.com/users/${author.id})`
+      `[Jump to message](${message.url}) • [See ${author.displayName}'s profile](https://discord.com/users/${author.id})`,
     )
     .setTimestamp(new Date())
     .addFields({
       name: "🗑️ • Deleted message",
-      value: message.content!
+      value: message.content!,
     })
     .setFooter({ text: `User ID: ${author.id}` })
     .setColor(genColor(0));

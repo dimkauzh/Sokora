@@ -46,8 +46,8 @@ async function kickMember(member: GuildMember, reason: string, timestamp: number
       [
         `**Member**: ${member.user.tag}`,
         `**Reason**: ${reason}`,
-        `**Join Date**: <t:${Math.floor(timestamp / 1000)}:F>`
-      ].join("\n")
+        `**Join Date**: <t:${Math.floor(timestamp / 1000)}:F>`,
+      ].join("\n"),
     )
     .setColor(genColor(100));
 

@@ -10,7 +10,7 @@ import {
   type Channel,
   type EmbedBuilder,
   type Guild,
-  type TextChannel
+  type TextChannel,
 } from "discord.js";
 import { getSetting } from "./database/settings";
 

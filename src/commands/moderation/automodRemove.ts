@@ -1,7 +1,7 @@
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { getAutomodRules, removeAutomodRule } from "../../utils/database/automod";
@@ -12,7 +12,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("automodremove")
   .setDescription("Remove an automod rule")
   .addStringOption(option =>
-    option.setName("pattern").setDescription("The regex pattern to remove").setRequired(true)
+    option.setName("pattern").setDescription("The regex pattern to remove").setRequired(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -21,7 +21,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Server** permission."
+      "You need the **Manage Server** permission.",
     );
 
   const pattern = interaction.options.getString("pattern", true);
@@ -29,7 +29,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "Rule not found",
-      "No automod rule found with this pattern."
+      "No automod rule found with this pattern.",
     );
 
   removeAutomodRule(guild.id, pattern);

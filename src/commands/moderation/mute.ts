@@ -7,13 +7,13 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("mute")
   .setDescription("Mutes a user.")
   .addUserOption(user =>
-    user.setName("user").setDescription("The user that you want to mute.").setRequired(true)
+    user.setName("user").setDescription("The user that you want to mute.").setRequired(true),
   )
   .addStringOption(string =>
     string
       .setName("duration")
       .setDescription("The duration of the mute (e.g 30m, 1d, 2h).")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addStringOption(string => string.setName("reason").setDescription("The reason for the mute."));
 
@@ -26,7 +26,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "ModerateMembers",
       { interaction, user, action: "Mute" },
       { allErrors: true, botError: true, ownerError: true },
-      "Moderate Members"
+      "Moderate Members",
     )
   )
     return;
@@ -35,17 +35,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       `You can't mute ${user.displayName}.`,
-      "The duration is invalid or is above the 28 day limit."
+      "The duration is invalid or is above the 28 day limit.",
     );
 
   const time = new Date(
-    Date.parse(new Date().toISOString()) + Date.parse(new Date(ms(duration)).toISOString())
+    Date.parse(new Date().toISOString()) + Date.parse(new Date(ms(duration)).toISOString()),
   ).toISOString();
 
   await modEmbed(
     { interaction, user, action: "Muted", duration, dm: true, dbAction: "MUTE" },
     reason,
-    true
+    true,
   );
 
   await interaction.guild?.members.cache

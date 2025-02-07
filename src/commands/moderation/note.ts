@@ -8,17 +8,17 @@ export const data = new SlashCommandSubcommandBuilder()
     user
       .setName("user")
       .setDescription("The user that you want to add a note on.")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addStringOption(string =>
-    string.setName("note").setDescription("The content of the user note.").setRequired(true)
+    string.setName("note").setDescription("The content of the user note.").setRequired(true),
   )
   .addIntegerOption(bool =>
     bool
       .setName("previous_note_id")
       .setDescription(
-        "If provided, will modify the user note with the given case id instead of adding a new one."
-      )
+        "If provided, will modify the user note with the given case id instead of adding a new one.",
+      ),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -30,13 +30,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "ModerateMembers",
       { interaction, user, action: "Annotate" },
       { allErrors: true, botError: false, ownerError: true, outsideError: true },
-      "Moderate Members"
+      "Moderate Members",
     )
   )
     return;
 
   await modEmbed(
     { interaction, user, action: "Annotated", dm: false, dbAction: "NOTE", previousID: previousID },
-    note
+    note,
   );
 }

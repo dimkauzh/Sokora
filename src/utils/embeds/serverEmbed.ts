@@ -99,7 +99,7 @@ export async function serverEmbed(options: Options) {
         `**${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
       ].join("\n"),
       inline: true,
-    }
+    },
   );
 
   if (options.invite?.show) {
@@ -107,13 +107,13 @@ export async function serverEmbed(options: Options) {
       invite =>
         invite.inviter?.id === "873918300726394960" &&
         invite.maxUses === null &&
-        invite.expiresAt === null
+        invite.expiresAt === null,
     );
 
     if (!options.guild.rulesChannel) return embed;
 
     const possiblyFetchedInviteChannel = await options.guild.channels.fetch(
-      options.invite.channel ?? "hi"
+      options.invite.channel ?? "hi",
     );
 
     const inviteChannel =

@@ -5,15 +5,15 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("warn")
   .setDescription("Warns a user.")
   .addUserOption(user =>
-    user.setName("user").setDescription("The user that you want to warn.").setRequired(true)
+    user.setName("user").setDescription("The user that you want to warn.").setRequired(true),
   )
   .addStringOption(string => string.setName("reason").setDescription("The reason for the warn."))
   .addBooleanOption(bool =>
     bool
       .setName("show_moderator")
       .setDescription(
-        "Inform the warned user of the moderator that took the action. Defaults to false."
-      )
+        "Inform the warned user of the moderator that took the action. Defaults to false.",
+      ),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -25,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "ModerateMembers",
       { interaction, user, action: "Warn" },
       { allErrors: true, botError: false, ownerError: true, outsideError: true },
-      "Moderate Members"
+      "Moderate Members",
     )
   )
     return;
@@ -33,6 +33,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   await modEmbed(
     { interaction, user, action: "Warned", dm: true, dbAction: "WARN" },
     reason,
-    showModerator
+    showModerator,
   );
 }

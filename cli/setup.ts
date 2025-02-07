@@ -7,7 +7,7 @@ const readHiddenInput = async (prompt: string): Promise<string> => {
   return new Promise(resolve => {
     const rl = createInterface({
       input: process.stdin,
-      output: process.stdout
+      output: process.stdout,
     });
 
     const stdin = process.stdin;
@@ -31,7 +31,7 @@ const readHiddenInput = async (prompt: string): Promise<string> => {
 const replaceTokenInEnv = (token: string) => {
   try {
     const envContent = fs.readFileSync(".env", "utf-8");
-    const updatedContent = envContent.replace("YOURTOKEN", token);
+    const updatedContent = envContent.replace("YOUR_TOKEN", token);
     fs.writeFileSync(".env", updatedContent, "utf-8");
     console.log("You're good to go, happy coding!");
   } catch (error) {
@@ -42,7 +42,7 @@ const replaceTokenInEnv = (token: string) => {
 const main = async () => {
   fs.copyFileSync("example.env", ".env");
   const token = await readHiddenInput(
-    "Paste your token below: (you can get one from https://discord.com/developers/applications)"
+    "Paste your token below: (you can get one from https://discord.com/developers/applications)",
   );
   replaceTokenInEnv(token);
 };

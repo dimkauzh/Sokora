@@ -6,7 +6,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("kick")
   .setDescription("Kicks a user.")
   .addUserOption(user =>
-    user.setName("user").setDescription("The user that you want to kick.").setRequired(true)
+    user.setName("user").setDescription("The user that you want to kick.").setRequired(true),
   )
   .addStringOption(string => string.setName("reason").setDescription("The reason for the kick."));
 
@@ -17,7 +17,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "KickMembers",
       { interaction, user, action: "Kick" },
       { allErrors: true, botError: true, ownerError: true, outsideError: true },
-      "Kick Members"
+      "Kick Members",
     )
   )
     return;
@@ -26,7 +26,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       `You can't kick ${user.displayName}.`,
-      "This user is not in the server."
+      "This user is not in the server.",
     );
 
   const reason = interaction.options.getString("reason");

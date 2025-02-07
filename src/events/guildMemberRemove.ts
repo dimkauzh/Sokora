@@ -21,8 +21,8 @@ export default (async function run(member: GuildMember) {
       replace(getSetting(guildID, "welcome", "leave_text") as string, [
         { text: "(name)", replacement: member.user.displayName },
         { text: "(count)", replacement: member.guild.memberCount },
-        { text: "(servername)", replacement: member.guild.name }
-      ])
+        { text: "(servername)", replacement: member.guild.name },
+      ]),
     )
     .setFooter({ text: `User ID: ${member.id}` })
     .setThumbnail(avatar)

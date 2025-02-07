@@ -1,12 +1,11 @@
 import {
   ActionRowBuilder,
   EmbedBuilder,
-  MessageFlags,
   ModalBuilder,
   SlashCommandSubcommandBuilder,
   TextInputBuilder,
   TextInputStyle,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { addNews, listAllQuery } from "../../utils/database/news";
@@ -23,7 +22,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Server** permission."
+      "You need the **Manage Server** permission.",
     );
 
   const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -33,7 +32,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setMaxLength(100)
       .setStyle(TextInputStyle.Short)
       .setLabel("Title")
-      .setRequired(true)
+      .setRequired(true),
   );
 
   const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -43,7 +42,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setMaxLength(4000)
       .setStyle(TextInputStyle.Paragraph)
       .setLabel("Content (supports Markdown)")
-      .setRequired(true)
+      .setRequired(true),
   );
 
   const newsModal = new ModalBuilder()
@@ -63,13 +62,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       i.user.displayName,
       i.user.avatarURL()!,
       null!,
-      id
+      id,
     );
 
     await sendChannelNews(guild, id, interaction).catch(err => console.error(err));
     await i.reply({
       embeds: [new EmbedBuilder().setTitle("News added.").setColor(genColor(100))],
-      flags: MessageFlags.Ephemeral
+      flags: "Ephemeral",
     });
   });
 }

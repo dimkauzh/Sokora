@@ -19,8 +19,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
         "**Designers**: ArtyH, ZakaHaceCosas, Pjanda",
         "**Translator Lead**: ThatBOI",
         "**Translators**: Dimkauzh, flojo, Golem64, GraczNet, Nikkerudon, ZakaHaceCosas, SaFire, TrulyBlue",
-        "**Testers**: Blaze, fishy, Trynera"
-      ].join("\n")
+        "**Testers**: Blaze, fishy, Trynera",
+      ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
     .setThumbnail(avatar)

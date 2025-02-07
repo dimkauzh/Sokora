@@ -13,7 +13,7 @@ export default (async function run(member) {
   const replacement = [
     { text: "(name)", replacement: user.displayName },
     { text: "(count)", replacement: member.guild.memberCount },
-    { text: "(servername)", replacement: member.guild.name }
+    { text: "(servername)", replacement: member.guild.name },
   ];
 
   let embed = new EmbedBuilder()
@@ -28,7 +28,7 @@ export default (async function run(member) {
       ?.fetch()) as TextChannel;
 
     embed.setDescription(
-      replace(getSetting(guildID, "welcome", "join_text") as string, replacement)
+      replace(getSetting(guildID, "welcome", "join_text") as string, replacement),
     );
     await channel.send({ embeds: [embed] });
   }

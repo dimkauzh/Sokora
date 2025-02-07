@@ -3,11 +3,11 @@ import { randomise } from "../../utils/randomise";
 
 export async function run(message: Message) {
   if (message.content.toLowerCase() != "i'm a big fan") return;
-  const gifs = randomise([
+  const GIFs = randomise([
     "https://tenor.com/bC37i.gif",
     "https://tenor.com/view/fan-gif-20757784",
-    "https://tenor.com/view/below-deck-im-your-biggest-fan-biggest-fan-kate-kate-chastain-gif-15861715"
+    "https://tenor.com/view/below-deck-im-your-biggest-fan-biggest-fan-kate-kate-chastain-gif-15861715",
   ]);
 
-  await (message.channel as TextChannel).send(gifs);
+  await (message.channel as TextChannel).send(GIFs);
 }

@@ -6,10 +6,10 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("unmute")
   .setDescription("Unmutes a user.")
   .addUserOption(user =>
-    user.setName("user").setDescription("The user that you want to unmute.").setRequired(true)
+    user.setName("user").setDescription("The user that you want to unmute.").setRequired(true),
   )
   .addStringOption(reason =>
-    reason.setName("reason").setDescription("The reason for unmuting the user.")
+    reason.setName("reason").setDescription("The reason for unmuting the user."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -22,7 +22,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "ModerateMembers",
       { interaction, user, action: "Unmute" },
       { allErrors: false, botError: true },
-      "Moderate Members"
+      "Moderate Members",
     )
   )
     return;
@@ -31,7 +31,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't unmute this user.",
-      "The user was never muted."
+      "The user was never muted.",
     );
 
   await modEmbed({ interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE" }, reason);

@@ -317,23 +317,23 @@ export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof set
 const database = getDatabase(tableDefinition);
 const getQuery = database.query("SELECT * FROM settings WHERE guildID = $1 AND key = $2;");
 const listPublicQuery = database.query(
-  "SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';"
+  "SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';",
 );
 const listPublicWithInvitesEnabledQuery = database.query(
-  "SELECT * FROM settings WHERE EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.server_invite' AND value = '1') AND EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.shown' AND value = '1');"
+  "SELECT * FROM settings WHERE EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.server_invite' AND value = '1') AND EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.shown' AND value = '1');",
 );
 const deleteQuery = database.query("DELETE FROM settings WHERE guildID = $1 AND key = $2;");
 const insertQuery = database.query(
-  "INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);"
+  "INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);",
 );
 
 export function getSetting<
   K extends keyof typeof settingsDefinition,
-  S extends keyof (typeof settingsDefinition)[K]["settings"]
+  S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(
   guildID: string,
   key: K,
-  setting: S
+  setting: S,
 ): SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     console.error(`Setting ${key}.${setting} does not exist in the database. (invalid)`);
@@ -370,7 +370,7 @@ export function setSetting<K extends keyof typeof settingsDefinition>(
   guildID: string,
   key: K,
   setting: string,
-  value: string
+  value: string,
 ) {
   const doInsert = getSetting(guildID, key, setting) == null;
   if (!doInsert) deleteQuery.all(JSON.stringify(guildID), key + "." + setting);
@@ -384,14 +384,14 @@ export function listPublicServers(): {
 }[] {
   const publicGuildSet = new Set(
     (listPublicQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(entry =>
-      JSON.parse(entry.guildID)
-    )
+      JSON.parse(entry.guildID),
+    ),
   );
   // you know that time-complexity thingy? idk much but uh an array has O(n) and a JS Set() has O(1) which should mean using a Set is more performant
   const inviteGuildsSet = new Set(
     (listPublicWithInvitesEnabledQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
-      entry => JSON.parse(entry.guildID)
-    )
+      entry => JSON.parse(entry.guildID),
+    ),
   );
 
   return Array.from(publicGuildSet).map(entry => {

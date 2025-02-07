@@ -1,7 +1,7 @@
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { removeAutokickData, setAutokickData } from "../../utils/database/autokick";
@@ -12,7 +12,10 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("autokick")
   .setDescription("Configure user auto-kick settings")
   .addUserOption(option =>
-    option.setName("user").setDescription("The member to configure auto-kick for").setRequired(true)
+    option
+      .setName("user")
+      .setDescription("The member to configure auto-kick for")
+      .setRequired(true),
   )
   .addIntegerOption(option =>
     option
@@ -20,7 +23,7 @@ export const data = new SlashCommandSubcommandBuilder()
       .setDescription("Days after which to kick (0 to disable)")
       .setRequired(true)
       .setMinValue(0)
-      .setMaxValue(365)
+      .setMaxValue(365),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -29,7 +32,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Server** permission."
+      "You need the **Manage Server** permission.",
     );
   }
 
@@ -42,7 +45,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setAuthor({ name: "Auto-kick Disabled" })
       .setDescription(
-        [`**Member**: ${targetUser.tag}`, "Auto-kick has been disabled for this member."].join("\n")
+        [`**Member**: ${targetUser.tag}`, "Auto-kick has been disabled for this member."].join(
+          "\n",
+        ),
       )
       .setColor(genColor(100));
 
@@ -59,8 +64,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       [
         `**Member**: ${targetUser.tag}`,
         `**Delay**: ${days} days`,
-        `Members with this role will be automatically kicked after ${days} days.`
-      ].join("\n")
+        `Members with this role will be automatically kicked after ${days} days.`,
+      ].join("\n"),
     )
     .setColor(genColor(100));
 

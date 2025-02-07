@@ -2,7 +2,7 @@ import {
   ChannelType,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import ms from "ms";
 import { genColor } from "../../utils/colorGen";
@@ -16,10 +16,10 @@ export const data = new SlashCommandSubcommandBuilder()
     string
       .setName("time")
       .setDescription("Time to slow the channel down to (e.g 30m, 1d, 2h). 0 to remove slowdown.")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addStringOption(string =>
-    string.setName("reason").setDescription("The reason for the slowdown.")
+    string.setName("reason").setDescription("The reason for the slowdown."),
   )
   .addChannelOption(channel =>
     channel
@@ -29,8 +29,8 @@ export const data = new SlashCommandSubcommandBuilder()
         ChannelType.GuildText,
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
-        ChannelType.GuildVoice
-      )
+        ChannelType.GuildVoice,
+      ),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -39,7 +39,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Channels** permission."
+      "You need the **Manage Channels** permission.",
     );
 
   const time = interaction.options.getString("time")!;
@@ -47,7 +47,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const channelOption = interaction.options.getChannel("channel")!;
   const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
   let title = `Set a slowdown of ${channelOption ?? `${channel.name}`} to ${ms(ms(time), {
-    long: true
+    long: true,
   })}.`;
   if (!ms(time)) title = `Removed the slowdown from ${channelOption ?? `${channel.name}`}.`;
 
@@ -57,8 +57,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       [
         `**Moderator**: ${interaction.user.displayName}`,
         reason ? `**Reason**: ${reason}` : "*No reason provided*",
-        `**Channel**: ${channelOption ?? `<#${channel.id}>`}`
-      ].join("\n")
+        `**Channel**: ${channelOption ?? `<#${channel.id}>`}`,
+      ].join("\n"),
     )
     .setColor(genColor(100));
 

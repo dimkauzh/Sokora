@@ -39,7 +39,7 @@ export default (async function run(message) {
         break;
       default:
         await message.reply(
-          "Hello, this is the system interface to control top level Sokora moderation utilities."
+          "Hello, this is the system interface to control top level Sokora moderation utilities.",
         );
     }
   }
@@ -68,7 +68,7 @@ export default (async function run(message) {
               if (message.member?.moderatable)
                 await message.member.timeout(
                   ms(rule.action_duration as string),
-                  "Automod: Regex filter violation"
+                  "Automod: Regex filter violation",
                 );
               break;
 
@@ -81,7 +81,7 @@ export default (async function run(message) {
               if (message.member?.bannable)
                 await message.member.ban({
                   reason: "Automod: Regex filter violation",
-                  deleteMessageSeconds: 604800 // 7d
+                  deleteMessageSeconds: 604800, // 7d
                 });
               break;
           }
@@ -89,7 +89,7 @@ export default (async function run(message) {
           const embed = new EmbedBuilder()
             .setAuthor({
               name: "Automod Action",
-              iconURL: message.author.displayAvatarURL()
+              iconURL: message.author.displayAvatarURL(),
             })
             .setDescription(
               [
@@ -97,8 +97,8 @@ export default (async function run(message) {
                 `**Channel**: <#${message.channel.id}>`,
                 `**Action**: ${rule.action}`,
                 `**Trigger**: \`${rule.pattern}\``,
-                `**Message Content**: ${message.content}`
-              ].join("\n")
+                `**Message Content**: ${message.content}`,
+              ].join("\n"),
             )
             .setColor(genColor(100))
             .setTimestamp();
@@ -151,14 +151,17 @@ export default (async function run(message) {
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `•  ${author.displayName} has levelled up!`,
-      iconURL: author.displayAvatarURL()
+      iconURL: author.displayAvatarURL(),
     })
     .setDescription(
       [
         `**Congratulations, ${author.displayName}**!`,
         `You made it to **level ${newLevelData.level}**.`,
-        `You need ${100 * difficulty * (newLevelData.level + 1) ** 2 - 80 * difficulty * newLevelData.level ** 2} XP to level up again.`
-      ].join("\n")
+        `You need ${
+          100 * difficulty * (newLevelData.level + 1) ** 2 -
+          80 * difficulty * newLevelData.level ** 2
+        } XP to level up again.`,
+      ].join("\n"),
     )
     .setThumbnail(author.displayAvatarURL())
     .setTimestamp()
@@ -167,6 +170,6 @@ export default (async function run(message) {
   if (levelChannelId)
     (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
       embeds: [embed],
-      content: `<@${author.id}>`
+      content: `<@${author.id}>`,
     });
 } as Event<"messageCreate">);

@@ -29,13 +29,13 @@ settingsKeys.forEach(key => {
     .setDescription(settingsDefinition[key].description);
 
   Object.keys(settingsDefinition[key].settings).forEach(sub => {
-    switch (settingsDefinition[key].settings[sub].type as string) {
+    switch (settingsDefinition[key].settings[sub].type) {
       case "BOOL":
         subcommand.addBooleanOption(option =>
           option
             .setName(sub)
             .setDescription(settingsDefinition[key].settings[sub]["desc"])
-            .setRequired(false)
+            .setRequired(false),
         );
         break;
       case "INTEGER":
@@ -43,7 +43,7 @@ settingsKeys.forEach(key => {
           option
             .setName(sub)
             .setDescription(settingsDefinition[key].settings[sub]["desc"])
-            .setRequired(false)
+            .setRequired(false),
         );
         break;
       case "CHANNEL":
@@ -51,7 +51,7 @@ settingsKeys.forEach(key => {
           option
             .setName(sub)
             .setDescription(settingsDefinition[key].settings[sub]["desc"])
-            .setRequired(false)
+            .setRequired(false),
         );
         break;
       case "USER":
@@ -59,7 +59,7 @@ settingsKeys.forEach(key => {
           option
             .setName(sub)
             .setDescription(settingsDefinition[key].settings[sub]["desc"])
-            .setRequired(false)
+            .setRequired(false),
         );
         break;
       case "ROLE":
@@ -67,7 +67,7 @@ settingsKeys.forEach(key => {
           option
             .setName(sub)
             .setDescription(settingsDefinition[key].settings[sub]["desc"])
-            .setRequired(false)
+            .setRequired(false),
         );
         break;
       default: // Also includes "TEXT"
@@ -75,7 +75,7 @@ settingsKeys.forEach(key => {
           option
             .setName(sub)
             .setDescription(settingsDefinition[key].settings[sub]["desc"])
-            .setRequired(false)
+            .setRequired(false),
         );
         break;
     }
@@ -89,7 +89,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Administrator** permission."
+      "You need the **Administrator** permission.",
     );
 
   const key = interaction.options.getSubcommand() as keyof typeof settingsDefinition;
@@ -123,10 +123,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .map(
             setting =>
               `${settingsDef.settings[setting].emoji} **• ${humanizeSettings(
-                capitalize(setting)
-              )}**: ${humanizeSettings(settingText(setting))}`
+                capitalize(setting),
+              )}**: ${humanizeSettings(settingText(setting))}`,
           )
-          .join("\n")
+          .join("\n"),
       )
       .setColor(genColor(100));
 
@@ -151,12 +151,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
       return await errorEmbed(
         interaction,
         "I can't view this channel.",
-        "You can either give the **View Channel** permission for Sokora or use a channel from the dropdown menu."
+        "You can either give the **View Channel** permission for Sokora or use a channel from the dropdown menu.",
       );
 
     setSetting(guild.id, key, option.name, option.value as string);
     description += `**${humanizeSettings(capitalize(option.name))}:** ${humanizeSettings(
-      settingText(option.name.toString())
+      settingText(option.name.toString()),
     )}\n`;
   }
   embed.setDescription(description);
@@ -172,7 +172,7 @@ export async function autocomplete(interaction: AutocompleteInteraction) {
         ["true", "false"].map(choice => ({
           name: choice,
           value: choice,
-        }))
+        })),
       );
       break;
     default:

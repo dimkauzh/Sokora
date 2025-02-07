@@ -33,7 +33,7 @@ export async function errorCheck(
   permission: PermissionResolvable,
   options: Options,
   errorOptions: ErrorOptions,
-  permissionAction: string
+  permissionAction: string,
 ) {
   const { interaction, user, action } = options;
   const { allErrors, botError, ownerError, outsideError, unbanError } = errorOptions;
@@ -47,14 +47,14 @@ export async function errorCheck(
       return await errorEmbed(
         interaction,
         "The bot can't execute this command.",
-        `The bot is missing the **${permissionAction}** permission.`
+        `The bot is missing the **${permissionAction}** permission.`,
       );
 
   if (!member.permissions.has(permission))
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      `You're missing the **${permissionAction}** permission.`
+      `You're missing the **${permissionAction}** permission.`,
     );
 
   if (unbanError)
@@ -62,7 +62,7 @@ export async function errorCheck(
       return await errorEmbed(
         interaction,
         "You can't unban this user.",
-        "The user was never banned."
+        "The user was never banned.",
       );
 
   if (!allErrors) return;
@@ -82,7 +82,7 @@ export async function errorCheck(
     return await errorEmbed(
       interaction,
       `You can't ${action.toLowerCase()} ${name}.`,
-      "The member has a higher (or the same) role position than Sokora."
+      "The member has a higher (or the same) role position than Sokora.",
     );
 
   if (highestModPos <= highestTargetPos)
@@ -91,7 +91,7 @@ export async function errorCheck(
       `You can't ${action.toLowerCase()} ${name}.`,
       `The member has ${
         highestModPos == highestTargetPos ? "the same" : "a higher"
-      } role position ${highestModPos == highestTargetPos ? "as" : "than"} you.`
+      } role position ${highestModPos == highestTargetPos ? "as" : "than"} you.`,
     );
 
   if (ownerError) {
@@ -99,7 +99,7 @@ export async function errorCheck(
       return await errorEmbed(
         interaction,
         `You can't ${action.toLowerCase()} ${name}.`,
-        "The member owns the server."
+        "The member owns the server.",
       );
   }
 
@@ -113,14 +113,14 @@ export async function errorCheck(
       return await errorEmbed(
         interaction,
         `You can't ${action.toLowerCase()} ${name}.`,
-        "This user isn't in this server."
+        "This user isn't in this server.",
       );
 }
 
 export async function modEmbed(
   options: Options,
   reason?: string | null,
-  showModerator: boolean = false
+  showModerator: boolean = false,
 ) {
   const { interaction, user, action, duration, dm, dbAction, expiresAt, previousID } = options;
   const guild = interaction.guild!;
@@ -140,7 +140,7 @@ export async function modEmbed(
       return await errorEmbed(
         interaction,
         `You can't edit this ${dbAction?.toLowerCase()}.`,
-        `The ${dbAction?.toLowerCase()} doesn't exist.`
+        `The ${dbAction?.toLowerCase()} doesn't exist.`,
       );
 
     try {
@@ -158,7 +158,7 @@ export async function modEmbed(
       dbAction,
       guild.members.cache.get(interaction.user.id)?.id!,
       reason ?? undefined,
-      expiresAt ?? undefined
+      expiresAt ?? undefined,
     );
     author = author.concat(`  •  #${id}`);
   } catch (error) {

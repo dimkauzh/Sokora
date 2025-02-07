@@ -5,7 +5,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   SlashCommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getLevel } from "../utils/database/leveling";
@@ -32,7 +32,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let embed = new EmbedBuilder()
     .setAuthor({
       name: `${avatar ? "•  " : ""}${target?.nickname ?? user.displayName}`,
-      iconURL: avatar
+      iconURL: avatar,
     })
     .setFields({
       name: `<:discord:1266797021126459423> • Discord info`,
@@ -41,8 +41,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
         `Display name is ${
           user.displayName == user.username ? "*not there*" : `**${user.displayName}**`
         }`,
-        `Created on **<t:${Math.round(user.createdAt.valueOf() / 1000)}:D>**`
-      ].join("\n")
+        `Created on **<t:${Math.round(user.createdAt.valueOf() / 1000)}:D>**`,
+      ].join("\n"),
     })
     .setFooter({ text: `User ID: ${user.id}` })
     .setThumbnail(avatar)
@@ -64,16 +64,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
     serverInfo.push(
       `**${guildRoles.filter(role => target.roles.cache.has(role.id)).size! - 1}** ${pluralOrNot(
         "role",
-        memberRoles.length
+        memberRoles.length,
       )} • ${memberRoles
         .slice(0, 3)
         .map(role => `<@&${role[1].id}>`)
-        .join(", ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`
+        .join(", ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
     );
 
   embed.addFields({
     name: "📒 • Server info",
-    value: serverInfo.join("\n")
+    value: serverInfo.join("\n"),
   });
 
   const enabled = getSetting(`${guild.id}`, "leveling", "enabled");
@@ -87,19 +87,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setCustomId("level")
       .setLabel("•  Level")
       .setEmoji("⚡")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
   );
   row.components[0].setDisabled(true);
   const reply = await interaction.editReply({
     embeds: [embed],
-    components: !user.bot ? (enabled ? [row] : []) : []
+    components: !user.bot ? (enabled ? [row] : []) : [],
   });
 
   if (!enabled && user.bot) return;
   const difficulty = getSetting(guild.id, "leveling", "difficulty") as number;
   const [level, xp] = getLevel(guild.id, target.id)!;
   const nextLevelXp = Math.floor(
-    100 * difficulty * (level + 1) ** 2 - 80 * difficulty * level ** 2
+    100 * difficulty * (level + 1) ** 2 - 80 * difficulty * level ** 2,
   )?.toLocaleString("en-US");
 
   const collector = reply.createMessageComponentCollector({ time: 30000 });
@@ -107,7 +107,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (i.message.id != (await reply.fetch()).id)
       return await errorEmbed(
         i,
-        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that."
+        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
       );
 
     if (i.user.id != interaction.user.id)
@@ -121,14 +121,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const levelEmbed = new EmbedBuilder()
       .setAuthor({
         name: `•  ${target.nickname ?? user.displayName}`,
-        iconURL: target.displayAvatarURL()
+        iconURL: target.displayAvatarURL(),
       })
       .setFields({
         name: `⚡ • Level ${level}`,
         value: [
           `**${xp.toLocaleString("en-US")}/${nextLevelXp}** XP`,
-          `The next level is **${level + 1}**`
-        ].join("\n")
+          `The next level is **${level + 1}**`,
+        ].join("\n"),
       })
       .setFooter({ text: `User ID: ${target.id}` })
       .setThumbnail(target.displayAvatarURL())

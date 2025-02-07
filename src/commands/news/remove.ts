@@ -1,9 +1,8 @@
 import {
   EmbedBuilder,
-  MessageFlags,
   SlashCommandSubcommandBuilder,
   TextChannel,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { deleteNews, get } from "../../utils/database/news";
@@ -17,7 +16,7 @@ export const data = new SlashCommandSubcommandBuilder()
     string
       .setName("id")
       .setDescription("The ID of the news. (found in the footer)")
-      .setRequired(true)
+      .setRequired(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -26,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Server** permission."
+      "You need the **Manage Server** permission.",
     );
 
   const id = interaction.options.getString("id")!;
@@ -41,6 +40,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   deleteNews(guild.id, id);
   await interaction.reply({
     embeds: [new EmbedBuilder().setTitle("News removed.").setColor(genColor(100))],
-    flags: MessageFlags.Ephemeral
+    flags: "Ephemeral",
   });
 }

@@ -4,7 +4,7 @@ function swap(
   sortItems: number[],
   corresponding: Corresponding,
   leftIndex: number,
-  rightIndex: number
+  rightIndex: number,
 ) {
   let temp = sortItems[leftIndex];
   sortItems[leftIndex] = sortItems[rightIndex];
@@ -34,7 +34,7 @@ export function quickSort(
   sortItems: number[],
   corresponding: Corresponding,
   leftIndex: number,
-  rightIndex: number
+  rightIndex: number,
 ): [number[], Corresponding] {
   let pivot = sortItems[Math.floor((rightIndex + leftIndex) / 2)];
   let leftPointer = leftIndex;

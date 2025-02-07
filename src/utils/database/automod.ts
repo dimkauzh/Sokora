@@ -9,15 +9,15 @@ const tableDefinition = {
     action: "TEXT",
     action_duration: "TEXT",
     whitelist_channels: "TEXT",
-    whitelist_roles: "TEXT"
-  }
+    whitelist_roles: "TEXT",
+  },
 } satisfies TableDefinition;
 
 const database = getDatabase(tableDefinition);
 
 const getQuery = database.query("SELECT * FROM automod_rules WHERE guild = $1;");
 const insertQuery = database.query(
-  "INSERT INTO automod_rules (guild, pattern, action, action_duration, whitelist_channels, whitelist_roles) VALUES (?1, ?2, ?3, ?4, ?5, ?6);"
+  "INSERT INTO automod_rules (guild, pattern, action, action_duration, whitelist_channels, whitelist_roles) VALUES (?1, ?2, ?3, ?4, ?5, ?6);",
 );
 const deleteQuery = database.query("DELETE FROM automod_rules WHERE guild = $1 AND pattern = $2;");
 
@@ -31,7 +31,7 @@ export function addAutomodRule(
   action: string,
   actionDuration: string,
   whitelistChannels: string[],
-  whitelistRoles: string[]
+  whitelistRoles: string[],
 ) {
   insertQuery.run(
     guildID,
@@ -39,7 +39,7 @@ export function addAutomodRule(
     action,
     actionDuration,
     JSON.stringify(whitelistChannels),
-    JSON.stringify(whitelistRoles)
+    JSON.stringify(whitelistRoles),
   );
 }
 

@@ -1,7 +1,7 @@
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { addAutomodRule } from "../../utils/database/automod";
@@ -13,7 +13,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("automod")
   .setDescription("Configure automod settings")
   .addStringOption(option =>
-    option.setName("pattern").setDescription("The regex pattern to match").setRequired(true)
+    option.setName("pattern").setDescription("The regex pattern to match").setRequired(true),
   )
   .addStringOption(option =>
     option
@@ -24,11 +24,11 @@ export const data = new SlashCommandSubcommandBuilder()
         { name: "Delete Message", value: "delete" },
         { name: "Timeout User", value: "timeout" },
         { name: "Kick User", value: "kick" },
-        { name: "Ban User", value: "ban" }
-      )
+        { name: "Ban User", value: "ban" },
+      ),
   )
   .addStringOption(option =>
-    option.setName("duration").setDescription("Duration for timeout/ban (e.g., 1h, 1d)")
+    option.setName("duration").setDescription("Duration for timeout/ban (e.g., 1h, 1d)"),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -37,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Server** permission."
+      "You need the **Manage Server** permission.",
     );
 
   const pattern = interaction.options.getString("pattern", true);
@@ -49,7 +49,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "Invalid regex pattern",
-      "The provided pattern is not a valid regular expression."
+      "The provided pattern is not a valid regular expression.",
     );
   }
 
@@ -60,8 +60,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setAuthor({ name: "Automod Rule Added" })
     .setDescription(
       [`**Pattern**: \`${pattern}\``, `**Action**: ${action}`, `**Duration**: ${duration}`].join(
-        "\n"
-      )
+        "\n",
+      ),
     )
     .setColor(genColor(100));
 

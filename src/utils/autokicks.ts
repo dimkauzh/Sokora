@@ -16,7 +16,7 @@ export async function checkAutokicks(client: Client): Promise<void> {
       } catch (error) {
         console.error(
           `Error processing autokick for user ${autokick.user} in guild ${guild.id}:`,
-          error
+          error,
         );
       }
   }
@@ -31,8 +31,8 @@ async function handleAutokick(guild: Guild, member: GuildMember, days: number): 
         [
           `**Member**: ${member.user.tag}`,
           `**Reason**: Inactive for ${days} days`,
-          `**Last Active**: <t:${Math.floor(Date.now() / 1000)}:F>`
-        ].join("\n")
+          `**Last Active**: <t:${Math.floor(Date.now() / 1000)}:F>`,
+        ].join("\n"),
       )
       .setColor(genColor(100));
 

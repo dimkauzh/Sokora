@@ -1,14 +1,13 @@
 import {
   ActionRowBuilder,
   EmbedBuilder,
-  MessageFlags,
   ModalBuilder,
   SlashCommandSubcommandBuilder,
   TextInputBuilder,
   TextInputStyle,
   type ChatInputCommandInteraction,
   type Role,
-  type TextChannel
+  type TextChannel,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { get, updateNews } from "../../utils/database/news";
@@ -20,7 +19,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("edit")
   .setDescription("Edits the news of your guild.")
   .addStringOption(string =>
-    string.setName("id").setDescription("The ID of the news you want to edit.").setRequired(true)
+    string.setName("id").setDescription("The ID of the news you want to edit.").setRequired(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -29,7 +28,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Server** permission."
+      "You need the **Manage Server** permission.",
     );
 
   const id = interaction.options.getString("id")!;
@@ -43,7 +42,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(TextInputStyle.Short)
       .setLabel("Title")
       .setValue(news.title)
-      .setRequired(true)
+      .setRequired(true),
   );
 
   const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
@@ -53,7 +52,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(TextInputStyle.Paragraph)
       .setLabel("Content (supports Markdown)")
       .setValue(news.body)
-      .setRequired(true)
+      .setRequired(true),
   );
 
   const editModal = new ModalBuilder()
@@ -84,17 +83,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     (
       guild.channels.cache.get(
-        (getSetting(guild.id, "news", "channel_id") as string) ?? interaction.channel?.id
+        (getSetting(guild.id, "news", "channel_id") as string) ?? interaction.channel?.id,
       ) as TextChannel
     )?.messages.edit(news.messageID, {
       embeds: [embed],
-      content: roleToSend ? `<@&${roleToSend.id}>` : undefined
+      content: roleToSend ? `<@&${roleToSend.id}>` : undefined,
     });
 
     updateNews(guild.id, id, title, body);
     await i.reply({
       embeds: [new EmbedBuilder().setTitle("News edited.").setColor(genColor(100))],
-      flags: MessageFlags.Ephemeral
+      flags: "Ephemeral",
     });
   });
 }

@@ -8,7 +8,7 @@ export const data = new SlashCommandSubcommandBuilder()
     string
       .setName("id")
       .setDescription("The ID of the user that you want to unban.")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addStringOption(string => string.setName("reason").setDescription("The reason for the unban."));
 
@@ -23,7 +23,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "BanMembers",
       { interaction, user: target, action: "Unban" },
       { allErrors: false, botError: true, ownerError: true, unbanError: true },
-      "Ban Members"
+      "Ban Members",
     )
   )
     return;

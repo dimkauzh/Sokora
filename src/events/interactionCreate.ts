@@ -7,7 +7,7 @@ export default (async function run(interaction) {
   if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
   let command;
   const subCommand = subCommands.filter(
-    subCommand => subCommand.data.name == interaction.options.getSubcommand(false)
+    subCommand => subCommand.data.name == interaction.options.getSubcommand(false),
   )[0];
 
   if (!subCommand)
@@ -20,7 +20,7 @@ export default (async function run(interaction) {
       return await errorEmbed(
         interaction,
         "The bot has experienced an internal error.",
-        "Please try again later."
+        "Please try again later.",
       );
 
     command.run(interaction);

@@ -3,7 +3,7 @@ import {
   AttachmentBuilder,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import * as math from "mathjs";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
@@ -16,7 +16,7 @@ export const data = new SlashCommandSubcommandBuilder()
     option
       .setName("function")
       .setDescription("The function to graph (e.g., 'x^2' or 'sin(x)')")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addNumberOption(option => option.setName("xmin").setDescription("Minimum x value"))
   .addNumberOption(option => option.setName("xmax").setDescription("Maximum x value"))
@@ -99,7 +99,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "Invalid function",
-      "Please provide a valid mathematical function. Examples: 'x^2', 'sin(x)', '2*x + 1'."
+      "Please provide a valid mathematical function. Examples: 'x^2', 'sin(x)', '2*x + 1'.",
     );
   }
 }

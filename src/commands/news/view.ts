@@ -5,7 +5,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { listAllNews } from "../../utils/database/news";
@@ -15,7 +15,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("view")
   .setDescription("View the news of this server.")
   .addNumberOption(number =>
-    number.setName("page").setDescription("The page of the news that you want to see.")
+    number.setName("page").setDescription("The page of the news that you want to see."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -27,7 +27,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "No news found.",
-      "Admins can add news with the **/news add** command."
+      "Admins can add news with the **/news add** command.",
     );
 
   if (page > sortedNews.length) page = sortedNews.length;
@@ -53,12 +53,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     new ButtonBuilder()
       .setCustomId("right")
       .setEmoji("1298708281493160029")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
   );
 
   const reply = await interaction.reply({
     embeds: [getEmbed()],
-    components: page >= 1 ? [row] : []
+    components: page >= 1 ? [row] : [],
   });
 
   if (page < 1) return;
@@ -67,7 +67,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (i.message.id != (await reply.fetch()).id)
       return await errorEmbed(
         i,
-        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that."
+        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
       );
 
     if (i.user.id != interaction.user.id)

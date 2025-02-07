@@ -2,7 +2,7 @@
  * Sends news to a channel.
  * @param guild Guild where the channel is in.
  * @param id ID of the news.
- * @param interaction Command nteraction.
+ * @param interaction Command interaction.
  * @param title Title of the news.
  * @param body Content of the news.
  * @returns News message in a channel.
@@ -13,7 +13,7 @@ import {
   type ChatInputCommandInteraction,
   type Guild,
   type Role,
-  type TextChannel
+  type TextChannel,
 } from "discord.js";
 import { genColor } from "./colorGen";
 import { get, updateNews } from "./database/news";
@@ -24,7 +24,7 @@ export async function sendChannelNews(
   id: string,
   interaction: ChatInputCommandInteraction,
   title?: string,
-  body?: string
+  body?: string,
 ) {
   const news = get(guild.id, id)!;
   const role = getSetting(guild.id, "news", "role_id") as string;
@@ -40,7 +40,7 @@ export async function sendChannelNews(
     .setColor(genColor(200));
 
   const channel = guild.channels.cache.get(
-    (getSetting(guild.id, "news", "channel_id") as string) ?? interaction.channel?.id
+    (getSetting(guild.id, "news", "channel_id") as string) ?? interaction.channel?.id,
   ) as TextChannel;
   if (!channel) return;
   if (!channel.permissionsFor(guild.client.user)?.has("ViewChannel")) return;
@@ -48,7 +48,7 @@ export async function sendChannelNews(
   return await channel
     .send({
       embeds: [embed],
-      content: roleToSend ? `<@&${roleToSend.id}>` : undefined
+      content: roleToSend ? `<@&${roleToSend.id}>` : undefined,
     })
     .then(message => updateNews(guild.id, id, undefined, undefined, message.id));
 }

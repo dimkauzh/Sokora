@@ -8,7 +8,7 @@ export function scheduleUnban(
   guildID: string,
   userID: string,
   modID: string,
-  delay: number
+  delay: number,
 ) {
   const scheduledUnbans = new Map<string, Timer>();
   const key = `${guildID}-${userID}`;
@@ -22,7 +22,7 @@ export function scheduleUnban(
       const embed = new EmbedBuilder()
         .setAuthor({ name: `•  Unbanned ${user.displayName}.`, iconURL: user.displayAvatarURL() })
         .setDescription(
-          [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n")
+          [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
         )
         .setFooter({ text: `User ID: ${user.id}` })
         .setColor(genColor(100));

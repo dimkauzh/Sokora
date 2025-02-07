@@ -11,29 +11,29 @@ const definition = {
     reason: "TEXT",
     id: "TEXT",
     timestamp: "TIMESTAMP",
-    expiresAt: "TIMESTAMP"
-  }
+    expiresAt: "TIMESTAMP",
+  },
 } satisfies TableDefinition;
 
-export type modType = "MUTE"  | "UNMUTE" | "WARN" | "KICK" | "BAN" | "NOTE";
+export type modType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "NOTE";
 const database = getDatabase(definition);
 const addQuery = database.query(
-  "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);"
+  "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
 );
 const listGuildQuery = database.query("SELECT * FROM moderation WHERE guild = $1");
 const listUserQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND user = $2;");
 const listUserTypeQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND user = $2 AND type = $3;"
+  "SELECT * FROM moderation WHERE guild = $1 AND user = $2 AND type = $3;",
 );
 const listModQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND moderator = $2;"
+  "SELECT * FROM moderation WHERE guild = $1 AND moderator = $2;",
 );
 const getIdQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND id = $2;");
 const getLastIdQuery = database.query(
-  "SELECT CAST(id AS int) AS id FROM moderation ORDER BY id DESC LIMIT 1;"
+  "SELECT CAST(id AS int) AS id FROM moderation ORDER BY id DESC LIMIT 1;",
 );
 const editQuery = database.query(
-  "UPDATE moderation SET reason = ?3, expiresAt = ?4 WHERE guild = ?1 AND id = ?2;"
+  "UPDATE moderation SET reason = ?3, expiresAt = ?4 WHERE guild = ?1 AND id = ?2;",
 );
 const removeQuery = database.query("DELETE FROM moderation WHERE guild = $1 AND id = $2");
 
@@ -43,7 +43,7 @@ export function addModeration(
   type: modType,
   moderator: string,
   reason = "",
-  expiresAt?: number | null
+  expiresAt?: number | null,
 ) {
   let id: any = getLastIdQuery.all(guildID);
   id = parseInt(id.length ? id[0].id : 0) + 1;
@@ -54,7 +54,7 @@ export function addModeration(
 export function listUserModeration(
   guildID: number | string,
   userID: number | string,
-  type?: modType
+  type?: modType,
 ) {
   if (type)
     return listUserTypeQuery.all(guildID, userID, type) as TypeOfDefinition<typeof definition>[];
@@ -76,7 +76,7 @@ export function editModeration(
   guildID: number | string,
   id: string,
   reason: string,
-  expiresAt?: number | null
+  expiresAt?: number | null,
 ) {
   editQuery.run(guildID, id, reason, expiresAt ?? null);
 }
@@ -86,7 +86,7 @@ export function removeModeration(guildID: string | number, id: string) {
 }
 
 const getExpiredBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= $1;"
+  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= $1;",
 );
 
 export function getExpiredBans(currentTime: number) {
@@ -94,7 +94,7 @@ export function getExpiredBans(currentTime: number) {
 }
 
 const getPendingBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt > $1;"
+  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt > $1;",
 );
 
 export function getPendingBans(currentTime: number) {

@@ -5,7 +5,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   SlashCommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getGuildLeaderboard } from "../utils/database/leveling";
@@ -25,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return errorEmbed(
       interaction,
       "No data found.",
-      "There is no leveling data for this server yet."
+      "There is no leveling data for this server yet.",
     );
 
   leaderboardData.sort((a, b) => {
@@ -51,7 +51,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       const user = await interaction.client.users.fetch(userData.user);
       embed.addFields({
         name: `#${start + i + 1} • ${user.tag}`,
-        value: `Level **${Math.floor(userData.level)}** • **${Math.floor(userData.xp)}** XP`
+        value: `Level **${Math.floor(userData.level)}** • **${Math.floor(userData.xp)}** XP`,
       });
     }
 
@@ -66,25 +66,25 @@ export async function run(interaction: ChatInputCommandInteraction) {
     new ButtonBuilder()
       .setCustomId("right")
       .setEmoji("1298708281493160029")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
   );
 
   const reply = await interaction.reply({
     embeds: [await generateEmbed()],
     components: totalPages > 1 ? [row] : [],
-    fetchReply: true
+    fetchReply: true,
   });
 
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({
-    time: 30000
+    time: 30000,
   });
 
   collector.on("collect", async (i: ButtonInteraction) => {
     if (i.message.id != (await reply.fetch()).id)
       return await errorEmbed(
         i,
-        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that."
+        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
       );
 
     if (i.user.id != interaction.user.id)
@@ -96,7 +96,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     await i.update({
       embeds: [await generateEmbed()],
-      components: [row]
+      components: [row],
     });
   });
 

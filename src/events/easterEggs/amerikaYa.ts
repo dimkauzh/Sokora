@@ -5,7 +5,7 @@ export async function run(message: Message) {
   if (message.content.toLowerCase() != "amerika ya") return;
   const response = randomise([
     "HALLO :D HALLO :D HALLO :D HALLO :D",
-    "https://tenor.com/view/america-ya-gif-15374592095658975433"
+    "https://tenor.com/view/america-ya-gif-15374592095658975433",
   ]);
 
   await (message.channel as TextChannel).send(response);

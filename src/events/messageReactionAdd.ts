@@ -3,7 +3,7 @@ import {
   type MessageReaction,
   type PartialMessageReaction,
   type PartialUser,
-  type User
+  type User,
 } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
@@ -12,7 +12,7 @@ import { Event } from "../utils/types";
 
 export default (async function run(
   reaction: MessageReaction | PartialMessageReaction,
-  user: User | PartialUser
+  user: User | PartialUser,
 ) {
   console.log("🌟 Reaction Add Event Triggered");
   console.log(`Reaction emoji: ${reaction.emoji.name}`);
@@ -54,12 +54,12 @@ export default (async function run(
   const embed = new EmbedBuilder()
     .setAuthor({
       name: message.author.tag,
-      iconURL: message.author.displayAvatarURL()
+      iconURL: message.author.displayAvatarURL(),
     })
     .setDescription(message.content || "")
     .addFields({
       name: "Source",
-      value: `[Jump to message](${message.url})`
+      value: `[Jump to message](${message.url})`,
     })
     .setTimestamp(message.createdAt)
     .setFooter({ text: `ID: ${message.id}` })
@@ -82,7 +82,7 @@ export default (async function run(
         starMessage.id,
         starCount,
         message.content || "",
-        message.createdTimestamp.toString()
+        message.createdTimestamp.toString(),
       );
       return console.log("Successfully created new starred message");
     }
@@ -100,7 +100,7 @@ export default (async function run(
       starMessageId,
       starCount,
       message.content || "",
-      message.createdTimestamp.toString()
+      message.createdTimestamp.toString(),
     );
     console.log("Successfully updated starred message");
   } catch (error) {

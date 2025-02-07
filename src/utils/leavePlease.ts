@@ -8,7 +8,7 @@ export async function leavePlease(guild: Guild, owner: GuildMember, embedText?: 
     const dmChannel = (await owner.createDM().catch(() => null)) as DMChannel | undefined;
     if (dmChannel)
       await dmChannel.send({
-        embeds: [new EmbedBuilder().setTitle(embedText).setColor(genColor(0))]
+        embeds: [new EmbedBuilder().setTitle(embedText).setColor(genColor(0))],
       });
   }
 

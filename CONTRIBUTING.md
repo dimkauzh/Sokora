@@ -28,9 +28,17 @@
 
 Be sure to open a pull request when you're ready to push your changes. Be descriptive of the changes you've made.
 
-## Code style guidelines
+## Contribution guide
 
-A few, simple guidelines onto how code contributed to Sokora should look like.
+A few, simple guidelines onto how to contribute to Sokora.
+
+### Reminders
+
+- Remember to commit changes to `bun.lock` file.
+
+### Code styling guidelines
+
+A few guides onto how code contributed to Sokora should look like.
 
 - Keep a consistent indentation of two spaces. Don't use tabs.
 - Use `K&R` style for bracket placement (`function() {}` instead of `function() \n {}`).

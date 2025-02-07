@@ -2,7 +2,7 @@ import {
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
-  type Client
+  type Client,
 } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
@@ -32,7 +32,7 @@ async function createSubCommand(name: string, client: Client) {
     .setDescription("This command has no description.");
 
   for (const subCommandFile of readdirSync(join(commandsPath, name), {
-    withFileTypes: true
+    withFileTypes: true,
   })) {
     if (subCommandFile.isFile()) {
       const subCommand = await import(
@@ -49,12 +49,12 @@ async function createSubCommand(name: string, client: Client) {
       .setDescription("This subcommand group has no description.");
 
     for (const subCommandGroupFile of readdirSync(join(commandsPath, name, subCommandFile.name), {
-      withFileTypes: true
+      withFileTypes: true,
     })) {
       if (!subCommandGroupFile.isFile()) continue;
       const subCommand = await import(
         pathToFileURL(
-          join(commandsPath, name, subCommandFile.name, subCommandGroupFile.name)
+          join(commandsPath, name, subCommandFile.name, subCommandGroupFile.name),
         ).toString()
       );
 

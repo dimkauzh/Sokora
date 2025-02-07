@@ -33,7 +33,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           // TODO - remove the server ID from the list too
           return null;
         }
-      })
+      }),
     )
   )
     .filter(entry => entry !== null)
@@ -44,7 +44,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "No public server found.",
-      "By some magical miracle, all the servers using Sokora turned off their visibility. Use /settings serverboard `shown: True` to make your server publicly visible."
+      "By some magical miracle, all the servers using Sokora turned off their visibility. Use /settings serverboard `shown: True` to make your server publicly visible.",
     );
 
   const argPage = interaction.options.getNumber("page") as number;
@@ -71,7 +71,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     new ButtonBuilder()
       .setCustomId("right")
       .setEmoji("1298708281493160029")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
   );
 
   const reply = await interaction.reply({
@@ -85,7 +85,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (i.message.id != (await reply.fetch()).id)
       return await errorEmbed(
         i,
-        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that."
+        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
       );
 
     if (i.user.id != interaction.user.id)

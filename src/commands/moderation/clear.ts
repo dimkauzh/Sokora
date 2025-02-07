@@ -2,7 +2,7 @@ import {
   ChannelType,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
@@ -16,7 +16,7 @@ export const data = new SlashCommandSubcommandBuilder()
     number
       .setName("amount")
       .setDescription("The amount of messages that you want to clear (maximum is 100).")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addChannelOption(channel =>
     channel
@@ -26,11 +26,11 @@ export const data = new SlashCommandSubcommandBuilder()
         ChannelType.GuildText,
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
-        ChannelType.GuildVoice
-      )
+        ChannelType.GuildVoice,
+      ),
   )
   .addUserOption(user =>
-    user.setName("user").setDescription("Only clear messages from this specific user")
+    user.setName("user").setDescription("Only clear messages from this specific user"),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -39,7 +39,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Manage Messages** permission."
+      "You need the **Manage Messages** permission.",
     );
 
   const amount = interaction.options.getNumber("amount")!;
@@ -68,7 +68,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           return await errorEmbed(
             interaction,
             "No messages found",
-            "No messages from this user were found in the recent history."
+            "No messages from this user were found in the recent history.",
           );
 
         await channel.bulkDelete(userMessages, true);
@@ -82,7 +82,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       return await errorEmbed(
         interaction,
         "Error",
-        "An error occurred while trying to delete messages."
+        "An error occurred while trying to delete messages.",
       );
     }
   }
@@ -93,10 +93,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       [
         `**Moderator**: ${interaction.user.displayName}`,
         `**Channel**: ${channelOption ?? `<#${channel.id}>`}`,
-        targetUser ? `**Target User**: ${targetUser.displayName}` : null
+        targetUser ? `**Target User**: ${targetUser.displayName}` : null,
       ]
         .filter(Boolean)
-        .join("\n")
+        .join("\n"),
     )
     .setColor(genColor(100));
 

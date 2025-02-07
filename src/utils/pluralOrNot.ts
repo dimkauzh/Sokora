@@ -6,8 +6,8 @@ export function pluralOrNot(word: string, numToCheck: number) {
       {
         text: word,
         replacement:
-          word.charAt(word.length - 1) == "y" ? `${word.replace("y", "")}ies` : `${word}s`
-      }
+          word.charAt(word.length - 1) == "y" ? `${word.replace("y", "")}ies` : `${word}s`,
+      },
     ]));
 
   return word;

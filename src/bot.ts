@@ -6,7 +6,7 @@ import { rescheduleUnbans } from "./utils/unbanScheduler";
 
 const client = new Client({
   presence: {
-    activities: [{ name: "your feedback!", type: ActivityType.Listening }]
+    activities: [{ name: "your feedback!", type: ActivityType.Listening }],
   },
   intents: [
     "Guilds",
@@ -14,8 +14,8 @@ const client = new Client({
     "GuildMessages",
     "GuildEmojisAndStickers",
     "GuildBans",
-    "MessageContent"
-  ]
+    "MessageContent",
+  ],
 });
 
 client.on("ready", async () => {

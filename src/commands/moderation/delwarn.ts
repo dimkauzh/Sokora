@@ -2,7 +2,7 @@ import {
   DMChannel,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { listUserModeration, removeModeration } from "../../utils/database/moderation";
@@ -17,10 +17,10 @@ export const data = new SlashCommandSubcommandBuilder()
     user
       .setName("user")
       .setDescription("The user that you want to free from the warning.")
-      .setRequired(true)
+      .setRequired(true),
   )
   .addNumberOption(number =>
-    number.setName("id").setDescription("The id of the warn.").setRequired(true)
+    number.setName("id").setDescription("The id of the warn.").setRequired(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -35,7 +35,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "ModerateMembers",
       { interaction, user, action: "Remove a warning" },
       { allErrors: true, botError: false },
-      "Moderate Members"
+      "Moderate Members",
     )
   )
     return;

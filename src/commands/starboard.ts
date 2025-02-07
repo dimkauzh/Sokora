@@ -5,7 +5,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   SlashCommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { getSetting } from "../utils/database/settings";
 import { getGuildStarboard } from "../utils/database/starboard";
@@ -30,7 +30,7 @@ export const data = new SlashCommandBuilder()
   .setName("starboard")
   .setDescription("View starboard statistics and top messages")
   .addNumberOption(option =>
-    option.setName("page").setDescription("The page of starred messages to view").setMinValue(1)
+    option.setName("page").setDescription("The page of starred messages to view").setMinValue(1),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -42,7 +42,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "Starboard is disabled",
-      "Ask an administrator to enable the starboard system"
+      "Ask an administrator to enable the starboard system",
     );
   }
 
@@ -53,7 +53,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "No starred messages",
-      "There are no starred messages in this server yet"
+      "There are no starred messages in this server yet",
     );
   }
 
@@ -75,9 +75,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 entry.channel
               }>\n${
                 entry.content.length > 100 ? entry.content.slice(0, 97) + "..." : entry.content
-              }`
+              }`,
           )
-          .join("\n\n")
+          .join("\n\n"),
       )
       .setFooter({ text: `Page ${page + 1}/${pages}` });
   }
@@ -90,12 +90,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     new ButtonBuilder()
       .setCustomId("right")
       .setEmoji("1298708281493160029")
-      .setStyle(ButtonStyle.Primary)
+      .setStyle(ButtonStyle.Primary),
   );
 
   const reply = await interaction.reply({
     embeds: [getEmbed()],
-    components: pages != 1 ? [row] : []
+    components: pages != 1 ? [row] : [],
   });
   if (pages == 1) return;
 
@@ -104,7 +104,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (i.message.id != (await reply.fetch()).id)
       return await errorEmbed(
         i,
-        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that."
+        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
       );
 
     if (i.user.id != interaction.user.id)
@@ -123,7 +123,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     }
 
     await i.update({
-      embeds: [getEmbed()]
+      embeds: [getEmbed()],
     });
   });
 }

@@ -4,9 +4,8 @@ import {
   ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
-  MessageFlags,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
 
@@ -15,14 +14,14 @@ const rpsChoices: RPSChoice[] = ["rock", "paper", "scissors"];
 const rpsEmojis: Record<RPSChoice, string> = {
   rock: "🪨",
   paper: "📄",
-  scissors: "✂️"
+  scissors: "✂️",
 };
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("rps")
   .setDescription("Play Rock Paper Scissors")
   .addUserOption(option =>
-    option.setName("opponent").setDescription("The user to play against (optional)")
+    option.setName("opponent").setDescription("The user to play against (optional)"),
   );
 
 function getWinner(choice1: RPSChoice, choice2: RPSChoice): number {
@@ -50,32 +49,32 @@ export async function run(interaction: ChatInputCommandInteraction) {
         new ButtonBuilder()
           .setCustomId(`rps_${choice}`)
           .setEmoji(rpsEmojis[choice])
-          .setStyle(ButtonStyle.Primary)
-      )
+          .setStyle(ButtonStyle.Primary),
+      ),
     );
 
     const embed = new EmbedBuilder()
       .setTitle("Rock Paper Scissors")
       .setDescription(
         `${interaction.user} has challenged ${opponent} to a game!\n` +
-          `Both players, make your choice!`
+          `Both players, make your choice!`,
       )
       .setColor("#00ff00");
 
     const reply = await interaction.reply({
       embeds: [embed],
-      components: [row]
+      components: [row],
     });
 
     const playerChoices = new Map<string, RPSChoice>();
     const collector = reply.createMessageComponentCollector({
       filter: i => [interaction.user.id, opponent.id].includes(i.user.id),
-      time: 30000
+      time: 30000,
     });
 
     collector.on("collect", async (i: ButtonInteraction) => {
       playerChoices.set(i.user.id, i.customId.split("_")[1] as RPSChoice);
-      await i.reply({ content: "Choice recorded!", flags: MessageFlags.Ephemeral });
+      await i.reply({ content: "Choice recorded!", flags: "Ephemeral" });
       if (playerChoices.size == 2) collector.stop("game-complete");
     });
 
@@ -86,9 +85,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
             new EmbedBuilder()
               .setTitle("Game Timed Out")
               .setDescription("The game has been cancelled due to inactivity.")
-              .setColor("#ff0000")
+              .setColor("#ff0000"),
           ],
-          components: []
+          components: [],
         });
 
       if (reason === "game-complete") {
@@ -101,13 +100,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .setDescription(
             `${interaction.user}: ${rpsEmojis[p1Choice]}\n` +
               `${opponent}: ${rpsEmojis[p2Choice]}\n\n` +
-              `Winner: ${winner === 0 ? "It's a tie!" : winner === 1 ? interaction.user : opponent}`
+              `Winner: ${
+                winner === 0 ? "It's a tie!" : winner === 1 ? interaction.user : opponent
+              }`,
           )
           .setColor(winner === 0 ? "#ffff00" : "#00ff00");
 
         await interaction.editReply({
           embeds: [resultEmbed],
-          components: []
+          components: [],
         });
       }
     });
@@ -119,8 +120,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       new ButtonBuilder()
         .setCustomId(`rps_${choice}`)
         .setEmoji(rpsEmojis[choice])
-        .setStyle(ButtonStyle.Primary)
-    )
+        .setStyle(ButtonStyle.Primary),
+    ),
   );
 
   const embed = new EmbedBuilder()
@@ -130,12 +131,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const reply = await interaction.reply({
     embeds: [embed],
-    components: [row]
+    components: [row],
   });
 
   const collector = reply.createMessageComponentCollector({
     filter: i => i.user.id === interaction.user.id,
-    time: 30000
+    time: 30000,
   });
 
   collector.on("collect", async (i: ButtonInteraction) => {
@@ -148,13 +149,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(
         `You: ${rpsEmojis[playerChoice]}\n` +
           `Bot: ${rpsEmojis[botChoice]}\n\n` +
-          `Result: ${winner === 0 ? "It's a tie!" : winner === 1 ? "You win!" : "Bot wins!"}`
+          `Result: ${winner === 0 ? "It's a tie!" : winner === 1 ? "You win!" : "Bot wins!"}`,
       )
       .setColor(winner === 0 ? "#ffff00" : winner === 1 ? "#00ff00" : "#ff0000");
 
     await i.update({
       embeds: [resultEmbed],
-      components: []
+      components: [],
     });
     collector.stop();
   });
@@ -166,9 +167,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
         new EmbedBuilder()
           .setTitle("Game Timed Out")
           .setDescription("The game has been cancelled due to inactivity.")
-          .setColor("#ff0000")
+          .setColor("#ff0000"),
       ],
-      components: []
+      components: [],
     });
   });
 }

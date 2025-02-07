@@ -1,7 +1,7 @@
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen";
 import { getModeration, listUserModeration } from "../../utils/database/moderation";
@@ -12,10 +12,10 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
   .setDescription("Moderation cases in a server.")
   .addUserOption(user =>
-    user.setName("user").setDescription("The user that you want to see.").setRequired(true)
+    user.setName("user").setDescription("The user that you want to see.").setRequired(true),
   )
   .addStringOption(string =>
-    string.setName("id").setDescription("The ID of a specific moderation case you want to see.")
+    string.setName("id").setDescription("The ID of a specific moderation case you want to see."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -24,14 +24,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
     MUTE: "🔇",
     KICK: "📤",
     BAN: "🔨",
-    NOTE: "📝"
+    NOTE: "📝",
   };
 
   const nothingMsg = [
     "Nothing to see here...",
     "Ayay, no cases on this horizon cap'n!",
     "Clean as a whistle!",
-    "0+0=?"
+    "0+0=?",
   ];
 
   const guild = interaction.guild!;
@@ -39,7 +39,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed(
       interaction,
       "You can't execute this command.",
-      "You need the **Moderate Members** permission."
+      "You need the **Moderate Members** permission.",
     );
 
   const user = interaction.options.getUser("user")!;
@@ -61,20 +61,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
             const actionValues = [
               `**Moderator**: <@${action.moderator}>`,
               action.reason ? `**Reason**: ${action.reason}` : "*No reason provided*",
-              `-# **Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`
+              `-# **Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
             ];
 
             return {
               name: `${actionsEmojis[action.type]} • ${action.type} #${action.id}`, // Include durations ? needs to add a db column
-              value: actionValues.join("\n")
+              value: actionValues.join("\n"),
             };
           })
         : [
             {
               name: `💨 • ${randomise(nothingMsg)}`,
-              value: "*No actions have been taken on this user*"
-            }
-          ]
+              value: "*No actions have been taken on this user*",
+            },
+          ],
     )
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(200));
