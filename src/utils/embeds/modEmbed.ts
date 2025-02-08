@@ -193,6 +193,6 @@ export async function modEmbed(
       })
       .catch(() => null);
   } catch (e) {
-    return console.log(e);
+    return console.error(e);
   }
 }
