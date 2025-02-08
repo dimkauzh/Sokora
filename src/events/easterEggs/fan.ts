@@ -2,7 +2,7 @@ import type { Message, TextChannel } from "discord.js";
 import { randomise } from "../../utils/randomise";
 
 export async function run(message: Message) {
-  if (message.content.toLowerCase() != "i'm a big fan") return;
+  if (message.content.trim().toLowerCase() != "i'm a big fan") return;
   const GIFs = randomise([
     "https://tenor.com/bC37i.gif",
     "https://tenor.com/view/fan-gif-20757784",
