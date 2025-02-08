@@ -11,25 +11,13 @@ const tableDefinition = {
   },
 } satisfies TableDefinition;
 
-type SingleSettingDefinition = {
-  type: FieldData;
-  desc: string;
-  val?: any;
-  emoji: string;
-};
-
-type SettingsDefinition = Record<
+export const settingsDefinition: Record<
   string,
   {
     description: string;
-    settings: Record<
-      string,
-      SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
-    >;
+    settings: Record<string, { type: FieldData; desc: string; val?: any; emoji: string }>;
   }
->;
-
-export const settingsDefinition: SettingsDefinition = {
+> = {
   leveling: {
     description: "Customize the behavior of the leveling system.",
     settings: {
