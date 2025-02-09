@@ -3,17 +3,19 @@ import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { imageColor } from "../utils/imageColor";
 import { replace } from "../utils/replace";
-import { Event } from "../utils/types";
+import { Event, Replacements } from "../utils/types";
 
 export default (async function run(member) {
   const guildID = member.guild.id;
   const id = getSetting(guildID, "welcome", "channel") as string;
   const user = member.user;
   const avatar = member.displayAvatarURL();
-  const replacement = [
+  const replacement: Replacements = [
     { text: "(name)", replacement: user.displayName },
     { text: "(count)", replacement: member.guild.memberCount },
     { text: "(servername)", replacement: member.guild.name },
+    { text: "(serverowner)", replacement: (await member.guild.fetchOwner()).displayName },
+    { text: "(currentdate)", replacement: `<t:${Math.floor(Date.now() / 1000)}>` },
   ];
 
   let embed = new EmbedBuilder()

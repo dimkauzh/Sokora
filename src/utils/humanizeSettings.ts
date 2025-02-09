@@ -11,7 +11,9 @@ export function humanizeSettings(string: string) {
     .replaceAll("false", "Disabled")
     .replaceAll("(name)", "`(name)`")
     .replaceAll("(servername)", "`(servername)`")
-    .replaceAll("(count)", "`(count)`");
+    .replaceAll("(count)", "`(count)`")
+    .replaceAll("(serverowner)", "`(serverowner)`")
+    .replaceAll("(currentdate)", "`(currentdate)`");
 
   return humanized;
 }

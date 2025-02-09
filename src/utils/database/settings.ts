@@ -222,13 +222,13 @@ export const settingsDefinition: Record<
     settings: {
       join_text: {
         type: "TEXT",
-        desc: "Text sent when a user joins. (name) - username, (count) - member count, (servername) - server name.",
+        desc: "Text sent when a user joins. You can use (codes) to add dynamic info, run /help codes for info.",
         val: "Welcome to (servername), (name)! Interestingly, you just helped us reach (count) members. Have a nice day!",
         emoji: "🍍",
       },
       leave_text: {
         type: "TEXT",
-        desc: "Text sent when a user leaves. (name) - username, (count) - member count, (servername) - server name.",
+        desc: "Text sent when a user leaves. You can use (codes) to add dynamic info, run /help codes for info.",
         val: "(name) has left the server! 😥",
         emoji: "🍍",
       },
