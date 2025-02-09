@@ -20,7 +20,6 @@ const database = getDatabase(definition);
 const addQuery = database.query(
   "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
 );
-const listGuildQuery = database.query("SELECT * FROM moderation WHERE guild = $1");
 const listUserQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND user = $2;");
 const listUserTypeQuery = database.query(
   "SELECT * FROM moderation WHERE guild = $1 AND user = $2 AND type = $3;",
