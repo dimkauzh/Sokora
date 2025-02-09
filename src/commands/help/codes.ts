@@ -16,7 +16,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   try {
-    // i know asserting types like this! is not a good practice but uhh yeah i have homework
+    // i know asserting types like this! is not a good practice but uhh yeah i have homework now, 'll validate this later
     const replacement: Replacements = [
       { text: "(name)", replacement: interaction.member!.user.username },
       { text: "(count)", replacement: interaction.guild!.memberCount },
@@ -25,14 +25,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
       { text: "(currentdate)", replacement: `<t:${Math.floor(Date.now() / 1000)}>` },
     ];
 
-    const example = `Hi **(name)**! Thanks for joining *(servername)* at (currentdate), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
+    const example = `Welcome to (servername), **(name)**!`;
+    const exampleTwo = `Hi **(name)**! Thanks for joining *(servername)* at (currentdate), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
 
     const embed = new EmbedBuilder()
       .setTitle("Dynamic (codes)")
       .setDescription(
         "You can write the following codes in join and leave messages to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the join / leave message.",
       )
-      .setColor(genColor(150))
+      .setColor(genColor(200))
       .setFields([
         {
           name: "All codes",
@@ -49,12 +50,25 @@ export async function run(interaction: ChatInputCommandInteraction) {
           ].join("\n"),
         },
         {
-          name: "Example",
-          value: [`\`${example}\` will result in:`, "", `> ${replace(example, replacement)}`].join(
-            "\n",
-          ),
+          name: "Simple example",
+          value: [
+            `A simple example: \`${example}\` will result in:`,
+            "",
+            `> ${replace(example, replacement)}`,
+          ].join("\n"),
         },
-      ]);
+        {
+          name: "Full example",
+          value: [
+            `Adding everything, like: \`${exampleTwo}\` will result in:`,
+            "",
+            `> ${replace(exampleTwo, replacement)}`,
+          ].join("\n"),
+        },
+      ])
+      .setFooter({
+        text: "Sokora /help codes",
+      });
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
