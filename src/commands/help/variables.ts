@@ -5,11 +5,11 @@ import {
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { genColor } from "../../utils/colorGen";
-import { replaceCodes } from "../../utils/replace";
+import { replaceVariables } from "../../utils/replace";
 
 export const data = new SlashCommandSubcommandBuilder()
-  .setName("codes")
-  .setDescription("Show a list of (codes) used to dynamically show data on certain messages");
+  .setName("variables")
+  .setDescription("Show a list of (variables) used to dynamically show data on certain messages");
 
 export async function run(interaction: ChatInputCommandInteraction) {
   try {
@@ -17,9 +17,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const exampleTwo = `Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
 
     const embed = new EmbedBuilder()
-      .setTitle("Dynamic (codes)")
+      .setTitle("Dynamic (variables)")
       .setDescription(
-        "You can write the following codes in some places to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the specific message. Dynamic codes are currently supported for **join messages, leave messages, join DMs, and news.**",
+        "You can write the following variables in some places to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the specific message. Dynamic variables are currently supported for **join messages, leave messages, join DMs, and news.**",
       )
       .setColor(genColor(200))
       .setFields([
@@ -28,7 +28,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           value: [
             `A simple example: \`${example}\` will result in:`,
             "",
-            `> ${await replaceCodes(example, interaction.guild!, interaction.user)}`,
+            `> ${await replaceVariables(example, interaction.guild!, interaction.user)}`,
           ].join("\n"),
         },
         {
@@ -36,11 +36,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
           value: [
             `Adding more stuff: \`${exampleTwo}\` will result in:`,
             "",
-            `> ${await replaceCodes(exampleTwo, interaction.guild!, interaction.user)}`,
+            `> ${await replaceVariables(exampleTwo, interaction.guild!, interaction.user)}`,
           ].join("\n"),
         },
         {
-          name: "All codes",
+          name: "All variables",
           value: [
             `\`(name)\` - display name of the user who joined`,
             `\`(username)\` - username of the user who joined`,
@@ -58,7 +58,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         },
       ])
       .setFooter({
-        text: "Sokora /help codes",
+        text: "Sokora /help variables",
       });
 
     await interaction.reply({ embeds: [embed] });

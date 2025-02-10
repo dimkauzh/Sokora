@@ -11,7 +11,7 @@ import { genColor } from "../../utils/colorGen";
 import { addNews, listAllQuery } from "../../utils/database/news";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { sendChannelNews } from "../../utils/sendChannelNews";
-import { replaceCodes } from "../../utils/replace";
+import { replaceVariables } from "../../utils/replace";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("add")
@@ -55,13 +55,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
 
-    const title = await replaceCodes(
+    const title = await replaceVariables(
       i.fields.getTextInputValue("title"),
       interaction.guild!,
       interaction.user,
     );
 
-    const body = await replaceCodes(
+    const body = await replaceVariables(
       i.fields.getTextInputValue("body"),
       interaction.guild!,
       interaction.user,

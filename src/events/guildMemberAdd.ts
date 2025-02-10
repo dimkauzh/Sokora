@@ -2,7 +2,7 @@ import { EmbedBuilder, type TextChannel } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { imageColor } from "../utils/imageColor";
-import { replaceCodes } from "../utils/replace";
+import { replaceVariables } from "../utils/replace";
 import { Event } from "../utils/types";
 
 export default (async function run(member) {
@@ -23,7 +23,7 @@ export default (async function run(member) {
       ?.fetch()) as TextChannel;
 
     embed.setDescription(
-      await replaceCodes(
+      await replaceVariables(
         getSetting(guildID, "welcome", "join_text") as string,
         member.guild,
         member.user,
@@ -38,7 +38,7 @@ export default (async function run(member) {
   if (user.bot) return;
 
   embed.setDescription(
-    await replaceCodes(
+    await replaceVariables(
       getSetting(guildID, "welcome", "dm_text") as string,
       member.guild,
       member.user,

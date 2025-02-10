@@ -2,7 +2,7 @@ import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { imageColor } from "../utils/imageColor";
-import { replaceCodes } from "../utils/replace";
+import { replaceVariables } from "../utils/replace";
 import { Event } from "../utils/types";
 
 export default (async function run(member: GuildMember) {
@@ -19,7 +19,11 @@ export default (async function run(member: GuildMember) {
   const embed = new EmbedBuilder()
     .setAuthor({ name: `•  ${member.user.displayName} has left.`, iconURL: avatar })
     .setDescription(
-      await replaceCodes(getSetting(guildID, "welcome", "join_text") as string, member.guild, user),
+      await replaceVariables(
+        getSetting(guildID, "welcome", "join_text") as string,
+        member.guild,
+        user,
+      ),
     )
     .setFooter({ text: `User ID: ${member.id}` })
     .setThumbnail(avatar)
