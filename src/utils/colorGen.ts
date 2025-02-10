@@ -1,6 +1,6 @@
 /**
- * Randomises a color and outputs HEX.
- * @param hue Color to randomise.
+ * Randomizes a color and outputs HEX.
+ * @param hue Color to randomize.
  * @returns Color in HEX.
  */
 

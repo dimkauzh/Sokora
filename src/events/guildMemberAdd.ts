@@ -2,21 +2,14 @@ import { EmbedBuilder, type TextChannel } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { imageColor } from "../utils/imageColor";
-import { replace } from "../utils/replace";
-import { Event, Replacements } from "../utils/types";
+import { replaceCodes } from "../utils/replace";
+import { Event } from "../utils/types";
 
 export default (async function run(member) {
   const guildID = member.guild.id;
   const id = getSetting(guildID, "welcome", "channel") as string;
   const user = member.user;
   const avatar = member.displayAvatarURL();
-  const replacement: Replacements = [
-    { text: "(name)", replacement: user.displayName },
-    { text: "(count)", replacement: member.guild.memberCount },
-    { text: "(servername)", replacement: member.guild.name },
-    { text: "(serverowner)", replacement: (await member.guild.fetchOwner()).displayName },
-    { text: "(currentdate)", replacement: `<t:${Math.floor(Date.now() / 1000)}>` },
-  ];
 
   let embed = new EmbedBuilder()
     .setAuthor({ name: `•  ${user.displayName} has joined.`, iconURL: avatar })
@@ -30,7 +23,11 @@ export default (async function run(member) {
       ?.fetch()) as TextChannel;
 
     embed.setDescription(
-      replace(getSetting(guildID, "welcome", "join_text") as string, replacement),
+      await replaceCodes(
+        getSetting(guildID, "welcome", "join_text") as string,
+        member.guild,
+        member.user,
+      ),
     );
     await channel.send({ embeds: [embed] });
   }
@@ -40,7 +37,13 @@ export default (async function run(member) {
   if (!dmChannel) return;
   if (user.bot) return;
 
-  embed.setDescription(replace(getSetting(guildID, "welcome", "dm_text") as string, replacement));
+  embed.setDescription(
+    await replaceCodes(
+      getSetting(guildID, "welcome", "dm_text") as string,
+      member.guild,
+      member.user,
+    ),
+  );
   try {
     await dmChannel.send({ embeds: [embed] }).catch(() => null);
   } catch (e) {

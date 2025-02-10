@@ -7,6 +7,8 @@ export type ReplaceableStrings =
   | "(count)"
   | "(servername)"
   | "(serverowner)"
-  | "(currentdate)";
+  | "(currentdate)"
+  | "(currentdate, simple)"
+  | "(currentdate, detailed)";
 
 export type Replacements = { text: ReplaceableStrings; replacement: string | number }[];
