@@ -50,28 +50,20 @@ export async function serverEmbed(options: Options) {
   const TFA = guild.mfaLevel;
   const NSFW = guild.nsfwLevel;
 
-  const securityValues: (string | null)[] = [
+  const safetyValues: (string | null)[] = [
     `Setup: **${
       VL === 0 ? "None" : VL === 1 ? "Low" : VL === 2 ? "Mid" : VL === 3 ? "High" : "Very high"
     }** level`,
     `**${TFA === 1 ? "No" : "Has"}** 2FA`,
+    `NSFW: **${
+      NSFW === 0 ? "Default" : NSFW === 1 ? "Explicit" : NSFW === 2 ? "Safe" : "Age restricted"
+    }**`,
   ];
-
-  const NSFWstring =
-    NSFW === 0
-      ? "**Default**"
-      : NSFW === 1
-      ? "**Explicit**"
-      : NSFW === 2
-      ? "**Safe**"
-      : "**Age restricted**";
-
-  if (NSFWstring !== null) securityValues.push(`NSFW: ${NSFWstring}`);
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pages ? `#${page}  •  ` : icon ? "•  " : ""}${guild.name} ${
-        guild.verified ? "✅" : ""
+      name: `${pages ? `#${page}  •  ` : icon ? "•  " : ""}${guild.name}${
+        guild.verified ? " ✅" : ""
       }`,
       iconURL: icon,
     })
@@ -82,8 +74,8 @@ export async function serverEmbed(options: Options) {
         value: generalValues.join("\n"),
       },
       {
-        name: "🛡 • Security",
-        value: securityValues.join(" • "),
+        name: "🛡 • Safety",
+        value: safetyValues.join(" • "),
       },
     )
     .setFooter({ text: `${pages ? `Page ${page}/${pages}\n` : ""}Server ID: ${guild.id}` })
