@@ -9,9 +9,7 @@ import { replaceCodes } from "../../utils/replace";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("codes")
-  .setDescription(
-    "Show a list of (codes) used to dynamically show data on join and leave messages",
-  );
+  .setDescription("Show a list of (codes) used to dynamically show data on certain messages");
 
 export async function run(interaction: ChatInputCommandInteraction) {
   try {
@@ -21,7 +19,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setTitle("Dynamic (codes)")
       .setDescription(
-        "You can write the following codes in join and leave messages to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the join / leave message.",
+        "You can write the following codes in some places to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the specific message. Dynamic codes are currently supported for **join messages, leave messages, join DMs, and news.**",
       )
       .setColor(genColor(200))
       .setFields([
