@@ -28,7 +28,8 @@ export function replace(text: string, replaceText?: { text: string; replacement:
  */
 export async function replaceCodes(text: string, guild: Guild, user: User): Promise<string> {
   const replacementCodes: Replacements = [
-    { text: "(name)", replacement: user.username },
+    { text: "(name)", replacement: user.displayName },
+    { text: "(username)", replacement: user.username },
     { text: "(count)", replacement: guild.memberCount },
     { text: "(servername)", replacement: guild.name },
     { text: "(serverowner)", replacement: (await guild.fetchOwner()).displayName },

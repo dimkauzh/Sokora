@@ -4,6 +4,7 @@ export type Event<K extends keyof ClientEvents> = (...args: ClientEvents[K]) => 
 
 export type ReplaceableStrings =
   | "(name)"
+  | "(username)"
   | "(count)"
   | "(servername)"
   | "(serverowner)"

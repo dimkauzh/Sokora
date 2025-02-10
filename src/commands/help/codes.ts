@@ -16,7 +16,7 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   try {
     const example = `Welcome to (servername), **(name)**!`;
-    const exampleTwo = `Hi **(name)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
+    const exampleTwo = `Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
 
     const embed = new EmbedBuilder()
       .setTitle("Dynamic (codes)")
@@ -34,9 +34,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
           ].join("\n"),
         },
         {
-          name: "Full example",
+          name: "Another example",
           value: [
-            `Adding everything, like: \`${exampleTwo}\` will result in:`,
+            `Adding more stuff: \`${exampleTwo}\` will result in:`,
             "",
             `> ${await replaceCodes(exampleTwo, interaction.guild!, interaction.user)}`,
           ].join("\n"),
@@ -44,7 +44,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
         {
           name: "All codes",
           value: [
-            `\`(name)\` - name of the user who joined`,
+            `\`(name)\` - display name of the user who joined`,
+            `\`(username)\` - username of the user who joined`,
             `\`(count)\` - member count`,
             `\`(servername)\` - name of this server`,
             `\`(serverowner)\` - ${
@@ -52,9 +53,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 ? "your name!"
                 : "name of this server's owner"
             }`,
-            `\`(currentdate)\` - current date in the 'February 10, 2025' format`,
-            `\`(currentdate, simple)\` - current date in the '2/10/25' format`,
-            `\`(currentdate, detailed)\` - current date in the 'February 10, 2025, at 4:36 PM' format`,
+            `\`(currentdate)\` - current date in the 'July 10, 2025' format`,
+            `\`(currentdate, simple)\` - current date in the '7/10/25' format`,
+            `\`(currentdate, detailed)\` - current date in the 'July 10, 2025, at 1:11 PM' format`,
           ].join("\n"),
         },
       ])
