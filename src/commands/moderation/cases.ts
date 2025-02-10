@@ -6,7 +6,7 @@ import {
 import { genColor } from "../../utils/colorGen";
 import { getModeration, listUserModeration } from "../../utils/database/moderation";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { randomise } from "../../utils/randomise";
+import { randomize } from "../../utils/randomize";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
@@ -71,7 +71,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           })
         : [
             {
-              name: `💨 • ${randomise(nothingMsg)}`,
+              name: `💨 • ${randomize(nothingMsg)}`,
               value: "*No actions have been taken on this user*",
             },
           ],

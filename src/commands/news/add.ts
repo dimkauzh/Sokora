@@ -11,6 +11,7 @@ import { genColor } from "../../utils/colorGen";
 import { addNews, listAllQuery } from "../../utils/database/news";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { sendChannelNews } from "../../utils/sendChannelNews";
+import { replaceVariables } from "../../utils/replace";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("add")
@@ -54,16 +55,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
 
-    const id = (listAllQuery.all(guild.id).length + 1).toString();
-    addNews(
-      guild.id,
+    const title = await replaceVariables(
       i.fields.getTextInputValue("title"),
-      i.fields.getTextInputValue("body"),
-      i.user.displayName,
-      i.user.avatarURL()!,
-      null!,
-      id,
+      interaction.guild!,
+      interaction.user,
     );
+
+    const body = await replaceVariables(
+      i.fields.getTextInputValue("body"),
+      interaction.guild!,
+      interaction.user,
+    );
+
+    const id = (listAllQuery.all(guild.id).length + 1).toString();
+    addNews(guild.id, title, body, i.user.displayName, i.user.avatarURL()!, null!, id);
 
     await sendChannelNews(guild, id, interaction).catch(err => console.error(err));
     await i.reply({

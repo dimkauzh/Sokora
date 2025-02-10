@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import * as math from "mathjs";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { genColor, genRGBColor } from "../../utils/colorGen";
+import { genColor } from "../../utils/colorGen";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("graph")

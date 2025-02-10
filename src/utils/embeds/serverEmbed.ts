@@ -1,10 +1,4 @@
-/**
- * Sends an embed containing information about the guild.
- * @param options Options of the embed.
- * @returns Embed that contains the guild info.
- */
-
-import { ChannelType, EmbedBuilder, Invite, type Guild } from "discord.js";
+import { EmbedBuilder, Invite, type Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { imageColor } from "../imageColor";
 import { pluralOrNot } from "../pluralOrNot";
@@ -20,6 +14,11 @@ type Options = {
   pages?: number;
 };
 
+/**
+ * Sends an embed containing information about the guild.
+ * @param options Options of the embed.
+ * @returns Embed that contains the guild info.
+ */
 export async function serverEmbed(options: Options) {
   const { page, pages, guild } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
@@ -47,13 +46,38 @@ export async function serverEmbed(options: Options) {
     `Created on **<t:${Math.round(guild.createdAt.valueOf() / 1000)}:D>**`,
   ];
 
+  const VL = guild.verificationLevel;
+  const TFA = guild.mfaLevel;
+  const NSFW = guild.nsfwLevel;
+
+  const safetyValues: (string | null)[] = [
+    `Setup: **${
+      VL === 0 ? "None" : VL === 1 ? "Low" : VL === 2 ? "Mid" : VL === 3 ? "High" : "Very high"
+    }** level`,
+    `**${TFA === 1 ? "No" : "Has"}** 2FA`,
+    `NSFW: **${
+      NSFW === 0 ? "Default" : NSFW === 1 ? "Explicit" : NSFW === 2 ? "Safe" : "Age restricted"
+    }**`,
+  ];
+
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pages ? `#${page}  •  ` : icon ? "•  " : ""}${guild.name}`,
+      name: `${pages ? `#${page}  •  ` : icon ? "•  " : ""}${guild.name}${
+        guild.verified ? " ✅" : ""
+      }`,
       iconURL: icon,
     })
-    .setDescription(guild.description ? guild.description : null)
-    .setFields({ name: "📃 • General", value: generalValues.join("\n") })
+    .setDescription(guild.description ? `> ${guild.description}` : null)
+    .setFields(
+      {
+        name: "📃 • General",
+        value: generalValues.join("\n"),
+      },
+      {
+        name: "🛡 • Safety",
+        value: safetyValues.join(" • "),
+      },
+    )
     .setFooter({ text: `${pages ? `Page ${page}/${pages}\n` : ""}Server ID: ${guild.id}` })
     .setThumbnail(icon)
     .setColor((await imageColor(icon)) ?? genColor(200));
