@@ -13,6 +13,7 @@ export async function errorEmbed(
   interaction: ChatInputCommandInteraction | ButtonInteraction,
   title: string,
   reason?: string,
+  errorLog?: string,
 ) {
   const content = [`**${title}**`];
   if (reason != undefined) content.push(reason);
@@ -21,6 +22,7 @@ export async function errorEmbed(
     .setDescription(content.join("\n"))
     .setColor(genColor(0));
 
+  if (errorLog) embed.addFields({ name: "Error log", value: errorLog });
   if (interaction.replied)
     return await interaction.followUp({ embeds: [embed], flags: "Ephemeral" });
   return await interaction.reply({ embeds: [embed], flags: "Ephemeral" });

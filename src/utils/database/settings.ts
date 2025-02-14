@@ -11,21 +11,61 @@ const tableDefinition = {
   },
 } satisfies TableDefinition;
 
+type SingleSettingDefinition = {
+  type: FieldData;
+  desc: string;
+  emoji?: string;
+  val?: any;
+};
+
 export const settingsDefinition: Record<
   string,
   {
     description: string;
-    settings: Record<string, { type: FieldData; desc: string; val?: any; emoji: string }>;
+    settings: Record<
+      string,
+      {
+        type: FieldData;
+        desc: string;
+        emoji?: string;
+        settings?: Record<
+          string,
+          SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
+        >;
+        val?: any;
+      }
+    >;
   }
 > = {
+  test: {
+    description: "this is a test",
+    settings: {
+      testy: {
+        type: "LIST",
+        desc: "this is a big huge test",
+        settings: {
+          tester: {
+            type: "ROLE",
+            desc: "this is an even bigger test",
+            val: true,
+          },
+        },
+      },
+      testuhh: {
+        type: "BOOL",
+        desc: "oml",
+        val: true,
+      },
+    },
+  },
   leveling: {
     description: "Customize the behavior of the leveling system.",
     settings: {
       enabled: {
         type: "BOOL",
         desc: "Enable/disable the leveling system.",
-        val: true,
         emoji: "🍍",
+        val: true,
       },
       channel: {
         type: "CHANNEL",
@@ -40,20 +80,20 @@ export const settingsDefinition: Record<
       xp_gain: {
         type: "INTEGER",
         desc: "Set the amount of XP a user gains per message.",
-        val: 2,
         emoji: "🍍",
+        val: 2,
       },
       cooldown: {
         type: "INTEGER",
         desc: "Set the cooldown between messages that add XP (in seconds).",
-        val: 2,
         emoji: "🍍",
+        val: 2,
       },
       difficulty: {
         type: "INTEGER",
         desc: "Set the difficulty (ex: 2 will make it 2x harder to level up).",
-        val: 1,
         emoji: "🍍",
+        val: 2,
       },
       rewards: {
         type: "TEXT",
@@ -68,8 +108,8 @@ export const settingsDefinition: Record<
       xp_per_chars: {
         type: "TEXT",
         desc: "XP per character count (format: xp:chars)",
-        val: "1:50",
         emoji: "🍍",
+        val: "1:50",
       },
     },
   },
@@ -84,14 +124,14 @@ export const settingsDefinition: Record<
       log_messages: {
         type: "BOOL",
         desc: "Whether or not edited/deleted messages should be logged.",
-        val: true,
         emoji: "🍍",
+        val: true,
       },
       anti_log_delete: {
         type: "BOOL",
         desc: "Whether or not the bot should resend a deleted log message.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       mute_role: {
         type: "ROLE",
@@ -101,8 +141,8 @@ export const settingsDefinition: Record<
       automod_enabled: {
         type: "BOOL",
         desc: "Enable/disable the automod system.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       role_autokick: {
         type: "TEXT",
@@ -112,8 +152,8 @@ export const settingsDefinition: Record<
       auto_slowdown: {
         type: "BOOL",
         desc: "Enable automatic channel slowdown during high activity.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       regex_filters: {
         type: "TEXT",
@@ -123,14 +163,14 @@ export const settingsDefinition: Record<
       autokick_delay: {
         type: "TEXT",
         desc: "Role autokick delay settings",
-        val: "0", //disabled yes
         emoji: "🍍",
+        val: "0",
       },
       autokick_enabled: {
         type: "BOOL",
         desc: "Delay before autokicking is triggered",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
     },
   },
@@ -150,20 +190,19 @@ export const settingsDefinition: Record<
       edit_original_message: {
         type: "BOOL",
         desc: "Whether or not the original message should be edited when a news message is updated.",
-        val: true,
         emoji: "🍍",
+        val: true,
       },
       categories: {
         type: "TEXT",
         desc: "News categories and their roles (format: name:roleID)",
-        val: "",
         emoji: "🍍",
       },
       dm_enabled: {
         type: "BOOL",
         desc: "Allow users to receive news in DMs.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
     },
   },
@@ -173,8 +212,8 @@ export const settingsDefinition: Record<
       enabled: {
         type: "BOOL",
         desc: "Enable/disable the starboard.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       channel: {
         type: "CHANNEL",
@@ -184,14 +223,14 @@ export const settingsDefinition: Record<
       emoji: {
         type: "TEXT",
         desc: "Emoji used for starring messages.",
-        val: "⭐",
         emoji: "🍍",
+        val: "⭐",
       },
       threshold: {
         type: "INTEGER",
         desc: "Reactions needed for a message to be starred.",
-        val: 3,
         emoji: "🍍",
+        val: 3,
       },
     },
   },
@@ -201,14 +240,14 @@ export const settingsDefinition: Record<
       shown: {
         type: "BOOL",
         desc: "Whether or not the server should be shown on the serverboard.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       server_invite: {
         type: "BOOL",
         desc: "Whether to show server invite on the serverboard.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       invite_channel: {
         type: "CHANNEL",
@@ -223,37 +262,42 @@ export const settingsDefinition: Record<
       join_text: {
         type: "TEXT",
         desc: "Text sent when a user joins. Use (variables) to add dynamic info, run /help variables for info.",
-        val: "Welcome to (servername), (name)! Interestingly, you just helped us reach (count) members. Have a nice day!",
         emoji: "🍍",
+        val: "Welcome to (servername), (name)! Interestingly, you just helped us reach (count) members. Have a nice day!",
       },
       leave_text: {
         type: "TEXT",
         desc: "Text sent when a user leaves. Use (variables) to add dynamic info, run /help variables for info.",
-        val: "(name) has left the server! 😥",
         emoji: "🍍",
+        val: "(name) has left the server! 😥",
       },
-      channel: {
+      join_channel: {
         type: "CHANNEL",
         desc: "ID of the channel where welcome messages are sent.",
+        emoji: "🍍",
+      },
+      leave_channel: {
+        type: "CHANNEL",
+        desc: "ID of the channel where leave messages are sent.",
         emoji: "🍍",
       },
       join_dm: {
         type: "BOOL",
         desc: "Whether or not the bot should send a custom DM message to the user upon joining.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       dm_text: {
         type: "TEXT",
         desc: "Text sent in the user's DM when they join the server. Same syntax as join_text.",
-        val: "Welcome to (servername), (name)! Interestingly, you just helped us reach (count) members. Have a nice day!",
         emoji: "🍍",
+        val: "Welcome to (servername), (name)! Interestingly, you just helped us reach (count) members. Have a nice day!",
       },
       role_retain: {
         type: "BOOL",
         desc: "Keep user roles when they rejoin.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       role_retain_except: {
         type: "TEXT",
@@ -268,45 +312,12 @@ export const settingsDefinition: Record<
       enabled: {
         type: "BOOL",
         desc: "Whether or not the bot should reply to certain messages with 'easter egg' messages.",
-        val: false,
         emoji: "🍍",
+        val: false,
       },
       allowed_channels: {
         type: "TEXT",
         desc: "Channel IDs where easter eggs are allowed (comma-separated).",
-        emoji: "🍍",
-      },
-    },
-  },
-  commands: {
-    description: "Configure command availability.",
-    settings: {
-      disabled: {
-        type: "TEXT",
-        desc: "Disabled commands (comma-separated names).",
-        emoji: "🍍",
-      },
-    },
-  },
-  currency: {
-    description: "Configure the multi-currency system.",
-    settings: {
-      enabled: {
-        type: "BOOL",
-        desc: "Enable the currency system.",
-        val: true,
-        emoji: "🍍",
-      },
-      primary_name: {
-        type: "TEXT",
-        desc: "Name of the primary currency.",
-        val: "coins",
-        emoji: "🍍",
-      },
-      secondary_name: {
-        type: "TEXT",
-        desc: "Name of the secondary currency.",
-        val: "gems",
         emoji: "🍍",
       },
     },
@@ -339,6 +350,7 @@ export function getSetting<
     console.error(`Setting ${key}.${setting} does not exist in the database. (invalid)`);
     return null;
   }
+
   let res = getQuery.all(JSON.stringify(guildID), key + "." + setting) as TypeOfDefinition<
     typeof tableDefinition
   >[];

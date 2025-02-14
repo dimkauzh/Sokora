@@ -6,8 +6,8 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import * as math from "mathjs";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { genColor } from "../../utils/colorGen";
+import { errorEmbed } from "../../utils/embeds/errorEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("graph")
@@ -72,15 +72,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
         const y = compiled.evaluate({ x });
         if (typeof y != "number" || !isFinite(y)) continue;
 
-        const canvasX = ((x - xmin) * width) / (xmax - xmin);
-        const canvasY = height - ((y - ymin) * height) / (ymax - ymin);
-
-        if (first) {
-          ctx.moveTo(canvasX, canvasY);
-          first = false;
-        } else {
-          ctx.lineTo(canvasX, canvasY);
-        }
+        ctx.moveTo(
+          ((x - xmin) * width) / (xmax - xmin),
+          height - ((y - ymin) * height) / (ymax - ymin),
+        );
+        if (first) first = false;
       } catch {
         continue;
       }

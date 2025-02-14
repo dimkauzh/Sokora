@@ -7,7 +7,9 @@ export type FieldData =
   | "USER"
   | "ROLE"
   | "COMMAND"
-  | "LIST";
+  | "LIST"
+  | "SETTING"
+  | "SETTING_CATEGORY";
 
 export type TableDefinition = {
   name: string;
@@ -24,6 +26,8 @@ export type SqlType<T extends FieldData> = {
   ROLE: string;
   COMMAND: string;
   LIST: any[];
+  SETTING: any[];
+  SETTING_CATEGORY: any[];
 }[T];
 
 export type TypeOfDefinition<T extends TableDefinition> = {

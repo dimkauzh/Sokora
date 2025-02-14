@@ -40,6 +40,7 @@ export async function serverEmbed(options: Options) {
     voice: channels.filter(channel => channel.type == 2 || channel.type == 13).size,
     categories: channels.filter(channel => channel.type == 4).size,
   };
+  const channelCount = channelSizes.text + channelSizes.voice;
 
   const generalValues = [
     `Owned by **${(await guild.fetchOwner()).user.displayName}**`,
@@ -82,9 +83,7 @@ export async function serverEmbed(options: Options) {
     .setThumbnail(icon)
     .setColor((await imageColor(icon)) ?? genColor(200));
 
-  const channelCount = channelSizes.text + channelSizes.voice;
-
-  if (options.roles) {
+  if (options.roles)
     embed.addFields({
       name: `🎭 • ${roles.size - 1} ${pluralOrNot("role", roles.size - 1)}`,
       value:
@@ -93,9 +92,8 @@ export async function serverEmbed(options: Options) {
           : `${sortedRoles
               .slice(0, 5)
               .map(role => `<@&${role[0]}>`)
-              .join(", ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`,
+              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`,
     });
-  }
 
   embed.addFields(
     {
@@ -129,9 +127,9 @@ export async function serverEmbed(options: Options) {
   if (options.invite?.show) {
     const previousInvite: Invite | undefined = (await options.guild.invites.fetch()).find(
       invite =>
-        invite.inviter?.id === "873918300726394960" &&
-        invite.maxUses === null &&
-        invite.expiresAt === null,
+        invite.inviter?.id == "873918300726394960" &&
+        invite.maxUses == null &&
+        invite.expiresAt == null,
     );
 
     if (!options.guild.rulesChannel) return embed;
