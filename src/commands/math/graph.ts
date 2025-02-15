@@ -72,11 +72,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
         const y = compiled.evaluate({ x });
         if (typeof y != "number" || !isFinite(y)) continue;
 
-        ctx.moveTo(
-          ((x - xmin) * width) / (xmax - xmin),
-          height - ((y - ymin) * height) / (ymax - ymin),
-        );
-        if (first) first = false;
+        const canvasX = ((x - xmin) * width) / (xmax - xmin);
+        const canvasY = height - ((y - ymin) * height) / (ymax - ymin);
+
+        if (first) {
+          ctx.moveTo(canvasX, canvasY);
+          first = false;
+        } else {
+          ctx.lineTo(canvasX, canvasY);
+        }
       } catch {
         continue;
       }
