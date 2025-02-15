@@ -35,6 +35,3 @@ client.on("ready", async () => {
 });
 
 client.login(process.env.TOKEN);
-
-/** UserID of Sokora */
-export const SOKORA_ID = "873918300726394960"

@@ -2,7 +2,6 @@ import { EmbedBuilder, Invite, type Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { imageColor } from "../imageColor";
 import { pluralOrNot } from "../pluralOrNot";
-import { SOKORA_ID } from "../../bot";
 
 type Options = {
   guild: Guild;
@@ -128,7 +127,7 @@ export async function serverEmbed(options: Options) {
   if (options.invite?.show) {
     const previousInvite: Invite | undefined = (await options.guild.invites.fetch()).find(
       invite =>
-        invite.inviter?.id == SOKORA_ID &&
+        invite.inviter?.id == guild.client.user.id &&
         invite.maxUses == null &&
         invite.expiresAt == null,
     );

@@ -11,7 +11,6 @@ import { genColor } from "../utils/colorGen";
 import { imageColor } from "../utils/imageColor";
 import { pluralOrNot } from "../utils/pluralOrNot";
 import { replace } from "../utils/replace";
-import { SOKORA_ID } from "../bot";
 
 export const data = new SlashCommandBuilder()
   .setName("about")
@@ -56,7 +55,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setLabel("• Vote")
-      .setURL(`https://top.gg/bot/${SOKORA_ID}/vote`)
+      .setURL("https://top.gg/bot/873918300726394960/vote")
       .setEmoji("🗳️")
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
