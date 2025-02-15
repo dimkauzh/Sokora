@@ -4,7 +4,6 @@ import {
   ButtonInteraction,
   ButtonStyle,
   Guild,
-  GuildManager,
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
