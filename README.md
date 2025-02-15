@@ -14,4 +14,4 @@ Sokora is a multipurpose Discord bot that lets you manage your servers easily.
 
 # Contributing
 
-While we're developing the bot, you can [help us](CONTRIBUTING.MD) if you find any bugs.
+While we're developing the bot, you can [help us](CONTRIBUTING.md) if you find any bugs.
