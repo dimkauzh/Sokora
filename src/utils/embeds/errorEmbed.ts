@@ -3,12 +3,12 @@ import { genColor } from "../colorGen";
 
 /**
  * Sends the embed containing an error.
- * @param interaction The interaction (slash command).
- * @param title The error.
- * @param reason The reason of the error.
+ * @param {ChatInputCommandInteraction | ButtonInteraction} interaction The interaction (slash command).
+ * @param {string} title The error.
+ * @param {?string} reason The reason of the error.
+ * @param {?string} errorLog The error's log.
  * @returns Embed with the error description.
  */
-
 export async function errorEmbed(
   interaction: ChatInputCommandInteraction | ButtonInteraction,
   title: string,

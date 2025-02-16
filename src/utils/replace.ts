@@ -18,7 +18,7 @@ export function replace(text: string, replaceText?: { text: string; replacement:
 }
 
 /**
- * Takes custom `(variables)` and replaces them with the string they represent.
+ * Takes a string with dynamic `(variables)` and replaces them with the string they represent.
  *
  * @async
  * @param {string} text String to have its variables replaced.

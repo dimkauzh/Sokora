@@ -5,11 +5,10 @@ import { kominator } from "./kominator";
 
 /**
  * Randomizes a color and outputs HEX.
- * @param hue Color to randomize.
+ * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
  * @returns Color in HEX.
  */
-
-export function genColor(hue: number) {
+export function genColor(hue: number): ColorResolvable {
   return Bun.color(
     `hsl(${hue + 15 * Math.random()}, 100%, ${50 + 25 * Math.random()}%)`,
     "hex",
@@ -18,12 +17,14 @@ export function genColor(hue: number) {
 
 /**
  * Outputs the most vibrant color from the image.
- * @param guild Guild image.
- * @param member Member image.
- * @returns The color in HEX.
+ * @param {?string} guildURL Guild image URL.
+ * @param {?string} memberURL Member image URL.
+ * @returns {Promise<ColorResolvable | undefined>} The color in HEX, or undefined if both URLs are missing.
  */
-
-export async function genImageColor(guildURL?: string, memberURL?: string) {
+export async function genImageColor(
+  guildURL?: string,
+  memberURL?: string,
+): Promise<ColorResolvable | undefined> {
   if (!guildURL || !memberURL) return;
 
   const imageBuffer = await (await fetch(guildURL ?? memberURL)).arrayBuffer();

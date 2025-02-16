@@ -1,13 +1,3 @@
-/**
- * Sends news to a channel.
- * @param guild Guild where the channel is in.
- * @param id ID of the news.
- * @param interaction Command interaction.
- * @param title Title of the news.
- * @param body Content of the news.
- * @returns News message in a channel.
- */
-
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
@@ -20,13 +10,22 @@ import { get, updateNews } from "./database/news";
 import { getSetting } from "./database/settings";
 import { mention } from "./mention";
 
+/**
+ * Sends news to a channel.
+ * @param {Guild} guild Guild where the channel is in.
+ * @param {string} id ID of the news.
+ * @param {ChatInputCommandInteraction} interaction Command interaction.
+ * @param {?string} title Title of the news.
+ * @param {?string} body Content of the news.
+ * @returns News message in a channel.
+ */
 export async function sendChannelNews(
   guild: Guild,
   id: string,
   interaction: ChatInputCommandInteraction,
   title?: string,
   body?: string,
-) {
+): Promise<void> {
   const news = get(guild.id, id)!;
   const role = getSetting(guild.id, "news", "role_id") as string;
   let roleToSend: Role | undefined;
