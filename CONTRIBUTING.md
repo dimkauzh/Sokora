@@ -49,4 +49,6 @@ A few guides onto how code contributed to Sokora should look like.
 - Non-nullish assertions are valid when needed.
 - Use the cache instead of a new `fetch()` call where possible, to avoid unnecessary usage (e.g., if possible, prefer `guild.members.cache` over `await guild.members.fetch()`).
 
+---
+
 ![PLEASE SUBMIT A PR, NO DIRECT COMMITS](https://user-images.githubusercontent.com/51555391/176925763-cdfd57ba-ae1e-4bf3-85e9-b3ebd30b1d59.png)
