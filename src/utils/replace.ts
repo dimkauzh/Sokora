@@ -1,6 +1,7 @@
 import { Guild, User } from "discord.js";
 import { randomize } from "./randomize";
 import { Replacements } from "./types";
+import { mention } from "./mention";
 
 let emojis = ["💖", "💝", "💓", "💗", "💘", "💟", "💕", "💞"];
 if (Math.round(Math.random() * 100) <= 5) emojis = ["⌨️", "💻", "🖥️"];
@@ -32,9 +33,9 @@ export async function replaceVariables(text: string, guild: Guild, user: User): 
     { text: "(count)", replacement: guild.memberCount },
     { text: "(servername)", replacement: guild.name },
     { text: "(serverowner)", replacement: (await guild.fetchOwner()).displayName },
-    { text: "(currentdate)", replacement: `<t:${Math.floor(Date.now() / 1000)}:D>` },
-    { text: "(currentdate, simple)", replacement: `<t:${Math.floor(Date.now() / 1000)}:d>` },
-    { text: "(currentdate, detailed)", replacement: `<t:${Math.floor(Date.now() / 1000)}>` },
+    { text: "(currentdate)", replacement: mention(Date.now(), "DEFAULT_TIMESTAMP") },
+    { text: "(currentdate, simple)", replacement: mention(Date.now(), "SIMPLE_TIMESTAMP") },
+    { text: "(currentdate, detailed)", replacement: mention(Date.now(), "DETAILED_TIMESTAMP") },
   ];
 
   return replace(text, replacementVariables);

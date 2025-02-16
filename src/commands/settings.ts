@@ -18,6 +18,7 @@ import {
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { capitalize } from "../utils/capitalize";
 import { humanizeSettings } from "../utils/humanizeSettings";
+import { mention } from "../utils/mention";
 
 export let data = new SlashCommandBuilder()
   .setName("settings")
@@ -159,13 +160,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     let text;
     switch (settingsDef.settings[name].type) {
       case "CHANNEL":
-        text = setting ? `<#${setting}>` : "Not set";
+        text = setting ? mention(setting, "CHANNEL") : "*Not set*";
         break;
       case "USER":
-        text = setting ? `<@${setting}>` : "Not set";
+        text = setting ? mention(setting, "USER") : "*Not set*";
         break;
       case "ROLE":
-        text = setting ? `<@&${setting}>` : "Not set";
+        text = setting ? mention(setting, "ROLE") : "*Not set*";
         break;
       default:
         text = setting || "*Not set*";

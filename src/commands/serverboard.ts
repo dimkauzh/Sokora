@@ -4,11 +4,10 @@ import {
   ButtonInteraction,
   ButtonStyle,
   Guild,
-  GuildManager,
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { listPublicServers } from "../utils/database/settings";
+import { deletePublicServer, listPublicServers } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { serverEmbed } from "../utils/embeds/serverEmbed";
 
@@ -28,9 +27,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             inviteChannelId: entry.inviteChannelId,
           };
         } catch {
-          // skip entry (we'll get into here most likely because of sokora not being inside of a listable server)
-          // most likely a server kicking sokora without disabling serverboard
-          // TODO - remove the server ID from the list too
+          deletePublicServer(entry.guildID);
           return null;
         }
       }),

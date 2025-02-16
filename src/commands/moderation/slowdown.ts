@@ -1,13 +1,12 @@
 import {
   ChannelType,
-  EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import ms from "ms";
-import { genColor } from "../../utils/colorGen";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { logChannel } from "../../utils/logChannel";
+import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
+import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("slowdown")
@@ -51,17 +50,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   })}.`;
   if (!ms(time)) title = `Removed the slowdown from ${channelOption ?? `${channel.name}`}.`;
 
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: title })
-    .setDescription(
-      [
-        `**Moderator**: ${interaction.user.displayName}`,
-        reason ? `**Reason**: ${reason}` : "*No reason provided*",
-        `**Channel**: ${channelOption ?? `<#${channel.id}>`}`,
-      ].join("\n"),
-    )
-    .setColor(genColor(100));
-
   if (
     channel.type == ChannelType.GuildText &&
     ChannelType.PublicThread &&
@@ -72,6 +60,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setRateLimitPerUser(ms(time) / 1000, interaction.options.getString("reason")!)
       .catch(error => console.error(error));
 
-  await logChannel(guild, embed);
-  await interaction.reply({ embeds: [embed] });
+  await modActionEmbed(
+    title,
+    [
+      `**Moderator**: ${interaction.user.displayName}`,
+      reason ? `**Reason**: ${reason}` : "*No reason provided*",
+      `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+    ],
+    guild,
+    interaction,
+  );
 }

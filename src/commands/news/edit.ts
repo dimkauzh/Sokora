@@ -14,6 +14,7 @@ import { get, updateNews } from "../../utils/database/news";
 import { getSetting } from "../../utils/database/settings";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { sendChannelNews } from "../../utils/sendChannelNews";
+import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("edit")
@@ -87,7 +88,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ) as TextChannel
     )?.messages.edit(news.messageID, {
       embeds: [embed],
-      content: roleToSend ? `<@&${roleToSend.id}>` : undefined,
+      content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
     });
 
     updateNews(guild.id, id, title, body);

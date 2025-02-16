@@ -330,6 +330,9 @@ const getQuery = database.query("SELECT * FROM settings WHERE guildID = $1 AND k
 const listPublicQuery = database.query(
   "SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';",
 );
+const deletePublicQuery = database.query(
+  "DELETE FROM settings WHERE guildID = $1 AND key = 'serverboard.shown' AND value = '1'",
+);
 const listPublicWithInvitesEnabledQuery = database.query(
   "SELECT * FROM settings WHERE EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.server_invite' AND value = '1') AND EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.shown' AND value = '1');",
 );
@@ -415,4 +418,12 @@ export function listPublicServers(): {
       inviteChannelId: inviteChannel ? inviteChannel.toString() : null,
     };
   });
+}
+
+export function deletePublicServer(guildId: string) {
+  try {
+    deletePublicQuery.all(JSON.stringify(guildId));
+  } catch (e) {
+    console.error(e);
+  }
 }
