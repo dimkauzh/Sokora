@@ -39,7 +39,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const targetUser = interaction.options.getUser("user", true);
   const days = interaction.options.getInteger("days", true);
 
-  if (days === 0) {
+  if (days == 0) {
     removeAutokickData(guild.id, targetUser.id);
 
     const embed = new EmbedBuilder()

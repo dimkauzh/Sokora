@@ -1,7 +1,6 @@
 import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
-import { genColor } from "../utils/colorGen";
+import { genColor, genImageColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
-import { imageColor } from "../utils/imageColor";
 import { replaceVariables } from "../utils/replace";
 import { Event } from "../utils/types";
 
@@ -27,7 +26,9 @@ export default (async function run(member: GuildMember) {
     )
     .setFooter({ text: `User ID: ${member.id}` })
     .setThumbnail(avatar)
-    .setColor(member.user.hexAccentColor ?? (await imageColor(undefined, avatar)) ?? genColor(200));
+    .setColor(
+      member.user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(200),
+    );
 
   await channel.send({ embeds: [embed] });
 } as Event<"guildMemberRemove">);

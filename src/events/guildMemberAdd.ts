@@ -1,7 +1,6 @@
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import { genColor } from "../utils/colorGen";
+import { genColor, genImageColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
-import { imageColor } from "../utils/imageColor";
 import { replaceVariables } from "../utils/replace";
 import { Event } from "../utils/types";
 
@@ -15,7 +14,9 @@ export default (async function run(member) {
     .setAuthor({ name: `•  ${user.displayName} has joined.`, iconURL: avatar })
     .setFooter({ text: `User ID: ${member.id}` })
     .setThumbnail(avatar)
-    .setColor(member.user.hexAccentColor ?? (await imageColor(undefined, avatar)) ?? genColor(200));
+    .setColor(
+      member.user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(200),
+    );
 
   if (id) {
     const channel = (await member.guild.channels.cache

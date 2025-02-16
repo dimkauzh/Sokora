@@ -7,8 +7,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { version } from "../../package.json";
-import { genColor } from "../utils/colorGen";
-import { imageColor } from "../utils/imageColor";
+import { genColor, genImageColor } from "../utils/colorGen";
 import { pluralOrNot } from "../utils/pluralOrNot";
 import { replace } from "../utils/replace";
 
@@ -50,7 +49,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     )
     .setFooter({ text: replace("(madeWith)") })
     .setThumbnail(avatar)
-    .setColor(user.hexAccentColor ?? (await imageColor(undefined, avatar)) ?? genColor(270));
+    .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()

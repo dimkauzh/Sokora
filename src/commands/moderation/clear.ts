@@ -61,7 +61,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     try {
       if (targetUser) {
         const messages = await channel.messages.fetch({ limit: 100 });
-        const userMessages = messages.filter(m => m.author.id === targetUser.id).first(amount);
+        const userMessages = messages.filter(m => m.author.id == targetUser.id).first(amount);
 
         if (userMessages.length == 0)
           return await errorEmbed(

@@ -1,3 +1,8 @@
+import { ColorResolvable } from "discord.js";
+import Vibrant from "node-vibrant";
+import sharp from "sharp";
+import { kominator } from "./kominator";
+
 /**
  * Randomizes a color and outputs HEX.
  * @param hue Color to randomize.
@@ -5,38 +10,29 @@
  */
 
 export function genColor(hue: number) {
-  const h = hue + 15 * Math.random();
-  let s = 100;
-  let l = 50 + 25 * Math.random();
-
-  s /= 100;
-  l /= 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)));
-    return Math.round(255 * color);
-  };
-
-  return f(0) * 65536 + f(8) * 256 + f(4);
+  return Bun.color(
+    `hsl(${hue + 15 * Math.random()}, 100%, ${50 + 25 * Math.random()}%)`,
+    "hex",
+  ) as ColorResolvable;
 }
 
 /**
- * Takes RGB and outputs HEX.
- * @param r Red.
- * @param g Green.
- * @param b Blue.
- * @returns Color in HEX.
+ * Outputs the most vibrant color from the image.
+ * @param guild Guild image.
+ * @param member Member image.
+ * @returns The color in HEX.
  */
 
-export function genRGBColor(r: any, g: any, b: any) {
-  r = r.toString(16);
-  g = g.toString(16);
-  b = b.toString(16);
+export async function genImageColor(guildURL?: string, memberURL?: string) {
+  if (!guildURL || !memberURL) return;
 
-  if (r.length == 1) r = `0${r}`;
-  if (g.length == 1) g = `0${g}`;
-  if (b.length == 1) b = `0${b}`;
+  const imageBuffer = await (await fetch(guildURL ?? memberURL)).arrayBuffer();
+  const { r, g, b } = (
+    await new Vibrant(await sharp(imageBuffer).toFormat("jpg").toBuffer()).getPalette()
+  ).Vibrant!;
+  const hsl = kominator(Bun.color([r, g, b], "hsl")!);
+  const h = Math.round(parseInt(hsl[0].replace("hsl(", "")) + 15 * Math.random());
+  const l = Math.round(parseFloat(hsl[2].replace(")", "")) * 100 + 15 * Math.random());
 
-  return `#${r}${g}${b}`;
+  return Bun.color(`hsl(${h}, 100%, ${l}%)`, "hex") as ColorResolvable;
 }

@@ -369,7 +369,7 @@ export function getSetting<
     case "TEXT":
       return res[0].value as SqlType<typeof set.type>;
     case "BOOL":
-      return (res[0].value === "1" ? true : false) as SqlType<typeof set.type>;
+      return (res[0].value == "1" ? true : false) as SqlType<typeof set.type>;
     case "INTEGER":
       return parseInt(res[0].value) as SqlType<typeof set.type>;
     case "CHANNEL":
@@ -402,7 +402,7 @@ export function listPublicServers(): {
       JSON.parse(entry.guildID),
     ),
   );
-  // you know that time-complexity thingy? idk much but uh an array has O(n) and a JS Set() has O(1) which should mean using a Set is more performant
+
   const inviteGuildsSet = new Set(
     (listPublicWithInvitesEnabledQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
       entry => JSON.parse(entry.guildID),

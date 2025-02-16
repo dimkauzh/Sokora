@@ -7,11 +7,10 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../utils/colorGen";
+import { genColor, genImageColor } from "../utils/colorGen";
 import { getLevel } from "../utils/database/leveling";
 import { getSetting } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { imageColor } from "../utils/imageColor";
 import { pluralOrNot } from "../utils/pluralOrNot";
 import { mention } from "../utils/mention";
 
@@ -27,7 +26,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const avatar = target?.displayAvatarURL() ?? user.displayAvatarURL();
   const embedColor =
     (await target?.user.fetch())?.hexAccentColor ??
-    (await imageColor(undefined, avatar)) ??
+    (await genImageColor(undefined, avatar)) ??
     genColor(200);
 
   let embed = new EmbedBuilder()

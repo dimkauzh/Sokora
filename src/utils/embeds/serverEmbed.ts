@@ -1,6 +1,5 @@
 import { EmbedBuilder, Invite, type Guild } from "discord.js";
-import { genColor } from "../colorGen";
-import { imageColor } from "../imageColor";
+import { genColor, genImageColor } from "../colorGen";
 import { pluralOrNot } from "../pluralOrNot";
 import { mention } from "../mention";
 
@@ -53,14 +52,14 @@ export async function serverEmbed(options: Options) {
   const NSFW = guild.nsfwLevel;
 
   const safetyValues: (string | null)[] = [
-    `Setup: **${
-      VL === 0 ? "None" : VL === 1 ? "Low" : VL === 2 ? "Mid" : VL === 3 ? "High" : "Very high"
+    `**${
+      VL == 0 ? "Unrestricted" : VL == 1 ? "Low" : VL == 2 ? "Mid" : VL == 3 ? "High" : "Very high"
     }** level`,
-    `**${TFA === 1 ? "No" : "Has"}** 2FA`,
-    `NSFW: **${
-      NSFW === 0 ? "Default" : NSFW === 1 ? "Explicit" : NSFW === 2 ? "Safe" : "Age restricted"
-    }**`,
+    `**${TFA == 1 ? "No" : "Has"}** 2FA`,
   ];
+
+  if (NSFW != 0)
+    safetyValues.push(`**${NSFW == 1 ? "Explicit" : NSFW == 2 ? "Safe" : "Age restricted"}**`);
 
   const embed = new EmbedBuilder()
     .setAuthor({
@@ -76,13 +75,13 @@ export async function serverEmbed(options: Options) {
         value: generalValues.join("\n"),
       },
       {
-        name: "🛡 • Safety",
+        name: "🛡 • Safety setup",
         value: safetyValues.join(" • "),
       },
     )
     .setFooter({ text: `${pages ? `Page ${page}/${pages} • ` : ""}Server ID: ${guild.id}` })
     .setThumbnail(icon)
-    .setColor((await imageColor(icon)) ?? genColor(200));
+    .setColor((await genImageColor(icon)) ?? genColor(200));
 
   if (options.roles)
     embed.addFields({
@@ -160,7 +159,7 @@ export async function serverEmbed(options: Options) {
 
     embed.addFields({
       name: `🚪 • Join in!`,
-      value: `This server allows you to join from here. ${inviteUrl}`,
+      value: `This server allows you to join from here! ${inviteUrl}`,
       inline: true,
     });
   }
