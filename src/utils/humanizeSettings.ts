@@ -2,8 +2,7 @@
  * Outputs the given settings_string with formatting applied.
  * @param {string} string Settings string, either a key or a value.
  */
-export function humanizeSettings(string: string) {
-  if (!string) return;
+export function humanizeSettings(string: string): string {
   const humanized = string
     .trim()
     .replaceAll("_", " ")

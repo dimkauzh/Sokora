@@ -18,7 +18,7 @@ type SingleSettingDefinition = {
   val?: any;
 };
 
-export const settingsDefinition: Record<
+type FullSettingsDefinition = Record<
   string,
   {
     description: string;
@@ -36,7 +36,9 @@ export const settingsDefinition: Record<
       }
     >;
   }
-> = {
+>;
+
+export const settingsDefinition: FullSettingsDefinition = {
   test: {
     description: "this is a test",
     settings: {

@@ -2,31 +2,38 @@ import { ChatInputCommandInteraction, EmbedBuilder, Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { logChannel } from "../logChannel";
 
+type Content = {
+  title: string;
+  iconURL?: string;
+  body: string | string[];
+  footer?: string;
+};
+
 /**
  * Creates an embed for a moderator's action and replies to the given interaction with it.
  *
  * @async
- * @param {string} title Title of the embed (set as `author.name`).
- * @param {(string | string[])} body Description of the embed.
+ * @param {Content} content Content of your embed.
  * @param {Guild} guild Guild to `logChannel()` to.
  * @param {ChatInputCommandInteraction} i Interaction to reply to.
- * @returns {EmbedBuilder} An `EmbedBuilder` you can build on top of.
+ * @returns {Promise<EmbedBuilder>} An `EmbedBuilder` you can build on top of.
  */
 export async function modActionEmbed(
-  title: string,
-  body: string | string[],
+  content: Content,
   guild: Guild,
   i: ChatInputCommandInteraction,
-): Promise<void> {
-  try {
-    const embed = new EmbedBuilder()
-      .setAuthor({ name: title })
-      .setDescription(Array.isArray(body) ? body.join("\n") : body)
-      .setColor(genColor(100));
+): Promise<EmbedBuilder> {
+  const { title, iconURL, body, footer } = content;
 
-    await logChannel(guild, embed);
-    await i.reply({ embeds: [embed] });
-  } catch (e) {
-    console.error(e);
-  }
+  const embed = new EmbedBuilder()
+    .setAuthor({ name: title, iconURL: iconURL })
+    .setDescription(Array.isArray(body) ? body.join("\n") : body)
+    .setColor(genColor(100));
+
+  if (footer) embed.setFooter({ text: footer });
+
+  await logChannel(guild, embed).catch(e => console.error(e));
+  await i.reply({ embeds: [embed] }).catch(e => console.error(e));
+
+  return embed;
 }

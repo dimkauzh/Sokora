@@ -60,11 +60,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .catch(error => console.error(error));
 
   await modActionEmbed(
-    "Locked a channel.",
-    [
-      `**Moderator**: ${interaction.user.displayName}`,
-      `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
-    ],
+    {
+      title: "Locked a channel.",
+      body: [
+        `**Moderator**: ${interaction.user.displayName}`,
+        `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+      ],
+    },
     guild,
     interaction,
   );

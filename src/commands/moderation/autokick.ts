@@ -1,12 +1,7 @@
-import {
-  EmbedBuilder,
-  SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction,
-} from "discord.js";
-import { genColor } from "../../utils/colorGen";
+import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { removeAutokickData, setAutokickData } from "../../utils/database/autokick";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { logChannel } from "../../utils/logChannel";
+import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("autokick")
@@ -42,33 +37,29 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (days == 0) {
     removeAutokickData(guild.id, targetUser.id);
 
-    const embed = new EmbedBuilder()
-      .setAuthor({ name: "Auto-kick Disabled" })
-      .setDescription(
-        [`**Member**: ${targetUser.tag}`, "Auto-kick has been disabled for this member."].join(
-          "\n",
-        ),
-      )
-      .setColor(genColor(100));
-
-    await logChannel(guild, embed);
-    await interaction.reply({ embeds: [embed] });
+    await modActionEmbed(
+      {
+        title: "Auto-kick Disabled",
+        body: [`**Member**: ${targetUser.tag}`, "Auto-kick has been disabled for this member."],
+      },
+      guild,
+      interaction,
+    );
     return;
   }
 
   setAutokickData(guild.id, targetUser.id, days);
 
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: "Auto-kick Configured" })
-    .setDescription(
-      [
+  await modActionEmbed(
+    {
+      title: "Auto-kick Configured",
+      body: [
         `**Member**: ${targetUser.tag}`,
         `**Delay**: ${days} days`,
         `Members with this role will be automatically kicked after ${days} days.`,
-      ].join("\n"),
-    )
-    .setColor(genColor(100));
-
-  await logChannel(guild, embed);
-  await interaction.reply({ embeds: [embed] });
+      ],
+    },
+    guild,
+    interaction,
+  );
 }
