@@ -9,6 +9,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
 import { genColor } from "../../utils/colorGen.ts";
+import { randomize } from "../../utils/randomize.ts";
 
 type RPSChoice = "rock" | "paper" | "scissors";
 const rpsChoices: RPSChoice[] = ["rock", "paper", "scissors"];
@@ -150,7 +151,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   collector.on("collect", async (i: ButtonInteraction) => {
     const playerChoice = i.customId.split("_")[1] as RPSChoice;
-    const botChoice = rpsChoices[Math.floor(Math.random() * rpsChoices.length)];
+    const botChoice = randomize(rpsChoices);
     const winner = getWinner(playerChoice, botChoice);
 
     const resultEmbed = new EmbedBuilder()
