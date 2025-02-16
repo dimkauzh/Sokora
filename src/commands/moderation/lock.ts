@@ -1,12 +1,12 @@
 import {
   ChannelType,
-  EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { logChannel } from "../../utils/logChannel";
+import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
+import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("lock")
@@ -41,15 +41,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "The channel is already locked.",
     );
 
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: `Locked a channel.` })
-    .setDescription(
-      [
-        `**Moderator**: ${interaction.user.displayName}`,
-        `**Channel**: ${channelOption ?? `<#${channel.id}>`}`,
-      ].join("\n"),
-    )
-    .setColor(genColor(100));
+  const embed = modActionEmbed("Locked a channel.", [
+    `**Moderator**: ${interaction.user.displayName}`,
+    `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+  ]);
 
   if (
     channel.type == ChannelType.GuildText &&

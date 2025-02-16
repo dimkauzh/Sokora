@@ -13,6 +13,7 @@ import { getSetting } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { imageColor } from "../utils/imageColor";
 import { pluralOrNot } from "../utils/pluralOrNot";
+import { mention } from "../utils/mention";
 
 export const data = new SlashCommandBuilder()
   .setName("user")
@@ -67,7 +68,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         memberRoles.length,
       )} • ${memberRoles
         .slice(0, 3)
-        .map(role => `<@&${role[1].id}>`)
+        .map(role => mention(role[1].id, "ROLE"))
         .join(", ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
     );
 

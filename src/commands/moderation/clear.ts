@@ -1,13 +1,13 @@
 import {
   ChannelType,
-  EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { logChannel } from "../../utils/logChannel";
 import { pluralOrNot } from "../../utils/pluralOrNot";
+import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
+import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("clear")
@@ -87,18 +87,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
     }
   }
 
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}.` })
-    .setDescription(
-      [
-        `**Moderator**: ${interaction.user.displayName}`,
-        `**Channel**: ${channelOption ?? `<#${channel.id}>`}`,
-        targetUser ? `**Target User**: ${targetUser.displayName}` : null,
-      ]
-        .filter(Boolean)
-        .join("\n"),
-    )
-    .setColor(genColor(100));
+  const embed = modActionEmbed(
+    `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}.`,
+    [
+      `**Moderator**: ${interaction.user.displayName}`,
+      `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+      targetUser ? `**Target User**: ${targetUser.displayName}` : null,
+    ]
+      .filter(Boolean)
+      .join("\n"),
+  );
 
   await logChannel(guild, embed);
   await interaction.reply({ embeds: [embed] });

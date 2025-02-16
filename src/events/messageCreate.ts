@@ -11,6 +11,7 @@ import { kominator } from "../utils/kominator";
 import { leavePlease } from "../utils/leavePlease";
 import { logChannel } from "../utils/logChannel.ts";
 import { Event } from "../utils/types";
+import { mention } from "../utils/mention.ts";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {
@@ -170,6 +171,6 @@ export default (async function run(message) {
   if (levelChannelId)
     (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
       embeds: [embed],
-      content: `<@${author.id}>`,
+      content: mention(author.id, "USER"),
     });
 } as Event<"messageCreate">);

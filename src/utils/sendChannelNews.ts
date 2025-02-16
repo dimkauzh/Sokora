@@ -18,6 +18,7 @@ import {
 import { genColor } from "./colorGen";
 import { get, updateNews } from "./database/news";
 import { getSetting } from "./database/settings";
+import { mention } from "./mention";
 
 export async function sendChannelNews(
   guild: Guild,
@@ -48,7 +49,7 @@ export async function sendChannelNews(
   return await channel
     .send({
       embeds: [embed],
-      content: roleToSend ? `<@&${roleToSend.id}>` : undefined,
+      content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
     })
     .then(message => updateNews(guild.id, id, undefined, undefined, message.id));
 }

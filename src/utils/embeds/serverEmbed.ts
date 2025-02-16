@@ -2,6 +2,7 @@ import { EmbedBuilder, Invite, type Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { imageColor } from "../imageColor";
 import { pluralOrNot } from "../pluralOrNot";
+import { mention } from "../mention";
 
 type Options = {
   guild: Guild;
@@ -79,7 +80,7 @@ export async function serverEmbed(options: Options) {
         value: safetyValues.join(" • "),
       },
     )
-    .setFooter({ text: `${pages ? `Page ${page}/${pages}\n` : ""}Server ID: ${guild.id}` })
+    .setFooter({ text: `${pages ? `Page ${page}/${pages} • ` : ""}Server ID: ${guild.id}` })
     .setThumbnail(icon)
     .setColor((await imageColor(icon)) ?? genColor(200));
 
@@ -91,7 +92,7 @@ export async function serverEmbed(options: Options) {
           ? "*None*"
           : `${sortedRoles
               .slice(0, 5)
-              .map(role => `<@&${role[0]}>`)
+              .map(role => mention(role[0], "ROLE"))
               .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`,
     });
 
