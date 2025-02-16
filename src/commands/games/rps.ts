@@ -23,10 +23,10 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("rps")
   .setDescription("Play Rock Paper Scissors")
   .addUserOption(option =>
-    option.setName("opponent").setDescription("The user to play against (optional)"),
+    option.setName("opponent").setDescription("The user to play against (optional)."),
   );
 
-function getWinner(choice1: RPSChoice, choice2: RPSChoice): number {
+function getWinner(choice1: RPSChoice, choice2: RPSChoice): 0 | 1 | 2 {
   if (choice1 === choice2) return 0;
   if (
     (choice1 === "rock" && choice2 === "scissors") ||
@@ -39,6 +39,24 @@ function getWinner(choice1: RPSChoice, choice2: RPSChoice): number {
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const opponent = interaction.options.getUser("opponent");
+  const optionsRow = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    ...rpsChoices.map((choice: RPSChoice) =>
+      new ButtonBuilder()
+        .setCustomId(`rps_${choice}`)
+        .setEmoji(rpsEmojis[choice])
+        .setStyle(ButtonStyle.Primary),
+    ),
+  );
+  const baseEmbed = new EmbedBuilder()
+    .setTitle("Rock Paper Scissors")
+    .setDescription(
+      opponent
+        ? `${interaction.user} has challenged ${opponent} to a game!\n` +
+            `Both players, make your choice!`
+        : `Choose your weapon!`,
+    )
+    .setColor(genColor(110));
+
   if (opponent) {
     if (opponent.bot)
       return await errorEmbed(
@@ -54,26 +72,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (opponent.id == interaction.user.id)
       return await errorEmbed(interaction, "Invalid opponent", "You cannot play against yourself!");
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      ...rpsChoices.map((choice: RPSChoice) =>
-        new ButtonBuilder()
-          .setCustomId(`rps_${choice}`)
-          .setEmoji(rpsEmojis[choice])
-          .setStyle(ButtonStyle.Primary),
-      ),
-    );
-
-    const embed = new EmbedBuilder()
-      .setTitle("Rock Paper Scissors")
-      .setDescription(
-        `${interaction.user} has challenged ${opponent} to a game!\n` +
-          `Both players, make your choice!`,
-      )
-      .setColor(genColor(120));
-
     const reply = await interaction.reply({
-      embeds: [embed],
-      components: [row],
+      embeds: [baseEmbed],
+      components: [optionsRow],
     });
 
     const playerChoices = new Map<string, RPSChoice>();
@@ -125,23 +126,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
   }
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    ...rpsChoices.map((choice: RPSChoice) =>
-      new ButtonBuilder()
-        .setCustomId(`rps_${choice}`)
-        .setEmoji(rpsEmojis[choice])
-        .setStyle(ButtonStyle.Primary),
-    ),
-  );
-
-  const embed = new EmbedBuilder()
-    .setTitle("Rock Paper Scissors")
-    .setDescription(`Choose your weapon!`)
-    .setColor(genColor(100));
-
   const reply = await interaction.reply({
-    embeds: [embed],
-    components: [row],
+    embeds: [baseEmbed],
+    components: [optionsRow],
   });
 
   const collector = reply.createMessageComponentCollector({
@@ -175,8 +162,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({
       embeds: [
         new EmbedBuilder()
-          .setTitle("Game Timed Out")
-          .setDescription("The game has been cancelled due to inactivity.")
+          .setTitle("Game timed out")
+          .setDescription("The game was cancelled due to inactivity.")
           .setColor(genColor(0)),
       ],
       components: [],
