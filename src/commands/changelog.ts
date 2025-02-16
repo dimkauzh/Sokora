@@ -1,7 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { version } from "../../package.json";
-import { genColor } from "../utils/colorGen";
-import { imageColor } from "../utils/imageColor";
+import { genColor, genImageColor } from "../utils/colorGen";
 import { replace } from "../utils/replace";
 
 export const data = new SlashCommandBuilder()
@@ -18,7 +17,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(text)
     .setFooter({ text: replace("(madeWith)") })
     .setThumbnail(avatar)
-    .setColor(user.hexAccentColor ?? (await imageColor(undefined, avatar)) ?? genColor(270));
+    .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
 
   await interaction.reply({ embeds: [embed] });
 }

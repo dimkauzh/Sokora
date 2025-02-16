@@ -45,7 +45,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           `\`(count)\` - member count`,
           `\`(servername)\` - name of this server`,
           `\`(serverowner)\` - ${
-            interaction.member?.user.id === interaction.guild?.ownerId
+            interaction.member?.user.id == interaction.guild?.ownerId
               ? "your name!"
               : "name of this server's owner"
           }`,

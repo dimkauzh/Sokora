@@ -12,8 +12,8 @@ import { errorEmbed } from "./errorEmbed";
 
 type Options = {
   interaction: ChatInputCommandInteraction;
-  user: User;
-  action: string;
+  action?: string;
+  user?: User;
   duration?: string | null;
   dm?: boolean;
   dbAction?: modType;
@@ -65,7 +65,7 @@ export async function errorCheck(
         "The user was never banned.",
       );
 
-  if (!allErrors) return;
+  if (!allErrors || !user || !action) return;
   const target = members.get(user.id)!;
   const name = user.displayName;
   const highestModPos = member.roles.highest.position;
@@ -123,6 +123,7 @@ export async function modEmbed(
   showModerator: boolean = false,
 ) {
   const { interaction, user, action, duration, dm, dbAction, expiresAt, previousID } = options;
+  if (!user || !action) return;
   const guild = interaction.guild!;
   const name = user.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];

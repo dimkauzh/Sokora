@@ -54,7 +54,6 @@ export default (async function run(message) {
   if (getSetting(guild.id, "moderation", "automod_enabled"))
     for (const rule of getAutomodRules(guild.id)) {
       const whitelistRoles = JSON.parse(rule.whitelist_roles as string);
-
       if (JSON.parse(rule.whitelist_channels as string).includes(message.channel.id)) continue;
       if (message.member?.roles.cache.some(role => whitelistRoles.includes(role.id))) continue;
 

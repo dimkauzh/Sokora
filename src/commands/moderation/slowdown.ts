@@ -4,9 +4,9 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import ms from "ms";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 import { mention } from "../../utils/mention";
+import { errorCheck } from "../../utils/embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("slowdown")
@@ -34,12 +34,15 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageChannels"))
-    return await errorEmbed(
-      interaction,
-      "You can't execute this command.",
-      "You need the **Manage Channels** permission.",
-    );
+  if (
+    await errorCheck(
+      "ManageChannels",
+      { interaction },
+      { allErrors: false, botError: true },
+      "Manage Channels",
+    )
+  )
+    return;
 
   const time = interaction.options.getString("time")!;
   const reason = interaction.options.getString("reason");

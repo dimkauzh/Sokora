@@ -27,11 +27,11 @@ export const data = new SlashCommandSubcommandBuilder()
   );
 
 function getWinner(choice1: RPSChoice, choice2: RPSChoice): 0 | 1 | 2 {
-  if (choice1 === choice2) return 0;
+  if (choice1 == choice2) return 0;
   if (
-    (choice1 === "rock" && choice2 === "scissors") ||
-    (choice1 === "paper" && choice2 === "rock") ||
-    (choice1 === "scissors" && choice2 === "paper")
+    (choice1 == "rock" && choice2 == "scissors") ||
+    (choice1 == "paper" && choice2 == "rock") ||
+    (choice1 == "scissors" && choice2 == "paper")
   )
     return 1;
   return 2;
@@ -63,7 +63,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         interaction,
         "Invalid opponent",
         `You cannot play against a bot!${
-          opponent.id === interaction.client.user.id
+          opponent.id == interaction.client.user.id
             ? " To challenge Sokora itself, run `/games rps` without specifying the opponent."
             : ""
         }`,
@@ -101,7 +101,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           components: [],
         });
 
-      if (reason === "game-complete") {
+      if (reason == "game-complete") {
         const p1Choice = playerChoices.get(interaction.user.id)!;
         const p2Choice = playerChoices.get(opponent.id)!;
         const winner = getWinner(p1Choice, p2Choice);
@@ -112,10 +112,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
             `${interaction.user}: ${rpsEmojis[p1Choice]}\n` +
               `${opponent}: ${rpsEmojis[p2Choice]}\n\n` +
               `Winner: ${
-                winner === 0 ? "It's a tie!" : winner === 1 ? interaction.user : opponent
+                winner == 0 ? "It's a tie!" : winner == 1 ? interaction.user : opponent
               }`,
           )
-          .setColor(winner === 0 ? genColor(60) : genColor(120));
+          .setColor(winner == 0 ? genColor(60) : genColor(120));
 
         await interaction.editReply({
           embeds: [resultEmbed],
@@ -132,7 +132,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
 
   const collector = reply.createMessageComponentCollector({
-    filter: i => i.user.id === interaction.user.id,
+    filter: i => i.user.id == interaction.user.id,
     time: 30000,
   });
 
@@ -146,9 +146,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(
         `You: ${rpsEmojis[playerChoice]}\n` +
           `Bot: ${rpsEmojis[botChoice]}\n\n` +
-          `Result: ${winner === 0 ? "It's a tie!" : winner === 1 ? "You win!" : "Bot wins!"}`,
+          `Result: ${winner == 0 ? "It's a tie!" : winner == 1 ? "You win!" : "Bot wins!"}`,
       )
-      .setColor(winner === 0 ? genColor(60) : winner === 1 ? genColor(120) : genColor(0));
+      .setColor(winner == 0 ? genColor(60) : winner == 1 ? genColor(120) : genColor(0));
 
     await i.update({
       embeds: [resultEmbed],
