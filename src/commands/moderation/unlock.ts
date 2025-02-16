@@ -4,7 +4,6 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { logChannel } from "../../utils/logChannel";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 import { mention } from "../../utils/mention";
 
@@ -41,11 +40,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       "The channel is not locked.",
     );
 
-  const embed = modActionEmbed("Unlocked a channel.", [
-    `**Moderator**: ${interaction.user.displayName}`,
-    `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
-  ]);
-
   if (
     channel.type == ChannelType.GuildText &&
     ChannelType.PublicThread &&
@@ -61,6 +55,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       })
       .catch(error => console.error(error));
 
-  await logChannel(guild, embed);
-  await interaction.reply({ embeds: [embed] });
+  await modActionEmbed(
+    "Unlocked a channel.",
+    [
+      `**Moderator**: ${interaction.user.displayName}`,
+      `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+    ],
+    guild,
+    interaction,
+  );
 }

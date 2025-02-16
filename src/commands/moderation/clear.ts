@@ -4,7 +4,6 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { logChannel } from "../../utils/logChannel";
 import { pluralOrNot } from "../../utils/pluralOrNot";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 import { mention } from "../../utils/mention";
@@ -87,7 +86,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     }
   }
 
-  const embed = modActionEmbed(
+  await modActionEmbed(
     `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}.`,
     [
       `**Moderator**: ${interaction.user.displayName}`,
@@ -96,8 +95,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ]
       .filter(Boolean)
       .join("\n"),
+    guild,
+    interaction,
   );
-
-  await logChannel(guild, embed);
-  await interaction.reply({ embeds: [embed] });
 }
