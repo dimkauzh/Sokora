@@ -1,12 +1,7 @@
-import {
-  EmbedBuilder,
-  SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction,
-} from "discord.js";
-import { genColor } from "../../utils/colorGen";
+import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { getAutomodRules, removeAutomodRule } from "../../utils/database/automod";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { logChannel } from "../../utils/logChannel";
+import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("automodremove")
@@ -33,11 +28,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
 
   removeAutomodRule(guild.id, pattern);
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: "Automod Rule Removed" })
-    .setDescription(`**Pattern**: \`${pattern}\``)
-    .setColor(genColor(100));
 
-  await logChannel(guild, embed);
-  await interaction.reply({ embeds: [embed] });
+  await modActionEmbed(
+    { title: "Automod Rule Removed", body: `**Pattern**: \`${pattern}\`` },
+    guild,
+    interaction,
+  );
 }

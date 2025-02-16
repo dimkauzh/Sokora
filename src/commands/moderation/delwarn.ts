@@ -1,14 +1,12 @@
 import {
   DMChannel,
-  EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
 import { listUserModeration, removeModeration } from "../../utils/database/moderation";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { errorCheck } from "../../utils/embeds/modEmbed";
-import { logChannel } from "../../utils/logChannel";
+import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("delwarn")
@@ -43,20 +41,23 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (newWarns.length == warns.length)
     return await errorEmbed(interaction, `There is no warning with the id of ${id}.`);
 
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  Removed a warning from ${name}`, iconURL: user.displayAvatarURL() })
-    .setDescription(`**Moderator**: ${interaction.user.displayName}`)
-    .setFooter({ text: `User ID: ${user.id}` })
-    .setColor(genColor(100));
-
-  await logChannel(guild, embed);
   try {
     removeModeration(guild.id, `${id}`);
   } catch (error) {
     console.error(error);
   }
 
-  await interaction.reply({ embeds: [embed] });
+  const embed = await modActionEmbed(
+    {
+      title: `•  Removed a warning from ${name}`,
+      iconURL: user.displayAvatarURL(),
+      body: `**Moderator**: ${interaction.user.displayName}`,
+      footer: `User ID: ${user.id}`,
+    },
+    guild,
+    interaction,
+  );
+
   const dmChannel = (await user.createDM().catch(() => null)) as DMChannel | null;
   if (!dmChannel) return;
   if (user.bot) return;

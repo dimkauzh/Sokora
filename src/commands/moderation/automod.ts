@@ -1,13 +1,8 @@
-import {
-  EmbedBuilder,
-  SlashCommandSubcommandBuilder,
-  type ChatInputCommandInteraction,
-} from "discord.js";
-import { genColor } from "../../utils/colorGen";
+import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { addAutomodRule } from "../../utils/database/automod";
 import { setSetting } from "../../utils/database/settings";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { logChannel } from "../../utils/logChannel";
+import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("automod")
@@ -56,15 +51,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
   addAutomodRule(guild.id, pattern, action, duration, [], []);
   setSetting(guild.id, "moderation", "automod_enabled", "1");
 
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: "Automod Rule Added" })
-    .setDescription(
-      [`**Pattern**: \`${pattern}\``, `**Action**: ${action}`, `**Duration**: ${duration}`].join(
-        "\n",
-      ),
-    )
-    .setColor(genColor(100));
-
-  await logChannel(guild, embed);
-  await interaction.reply({ embeds: [embed] });
+  await modActionEmbed(
+    {
+      title: "Automod Rule Added",
+      body: [`**Pattern**: \`${pattern}\``, `**Action**: ${action}`, `**Duration**: ${duration}`],
+    },
+    guild,
+    interaction,
+  );
 }

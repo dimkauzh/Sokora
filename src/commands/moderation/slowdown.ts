@@ -64,12 +64,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .catch(error => console.error(error));
 
   await modActionEmbed(
-    title,
-    [
-      `**Moderator**: ${interaction.user.displayName}`,
-      reason ? `**Reason**: ${reason}` : "*No reason provided*",
-      `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
-    ],
+    {
+      title,
+      body: [
+        `**Moderator**: ${interaction.user.displayName}`,
+        reason ? `**Reason**: ${reason}` : "*No reason provided*",
+        `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+      ],
+    },
     guild,
     interaction,
   );
