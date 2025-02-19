@@ -28,7 +28,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
 
   removeAutomodRule(guild.id, pattern);
-
   await modActionEmbed(
     { title: "Automod Rule Removed", body: `**Pattern**: \`${pattern}\`` },
     guild,

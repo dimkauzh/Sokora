@@ -34,11 +34,13 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
+  const channelOption = interaction.options.getChannel("channel")!;
+  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
   if (
     await errorCheck(
       "ManageChannels",
-      { interaction },
-      { allErrors: false, botError: true },
+      { interaction, channel },
+      { allErrors: false, botError: true, channelError: true },
       "Manage Channels",
     )
   )
@@ -46,8 +48,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const time = interaction.options.getString("time")!;
   const reason = interaction.options.getString("reason");
-  const channelOption = interaction.options.getChannel("channel")!;
-  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
   let title = `Set a slowdown of ${channelOption ?? `${channel.name}`} to ${ms(ms(time), {
     long: true,
   })}.`;

@@ -7,6 +7,7 @@ import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { pluralOrNot } from "../../utils/pluralOrNot";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
 import { mention } from "../../utils/mention";
+import { errorCheck } from "../../utils/embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("clear")
@@ -34,12 +35,17 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageMessages"))
-    return await errorEmbed(
-      interaction,
-      "You can't execute this command.",
-      "You need the **Manage Messages** permission.",
-    );
+  const channelOption = interaction.options.getChannel("channel")!;
+  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
+  if (
+    await errorCheck(
+      "ManageMessages",
+      { interaction, channel },
+      { allErrors: false, botError: true, channelError: true },
+      "Manage Messages",
+    )
+  )
+    return;
 
   const amount = interaction.options.getNumber("amount")!;
   if (amount > 100)
@@ -47,10 +53,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   if (amount < 1) return await errorEmbed(interaction, "You must clear at least 1 message.");
 
-  const channelOption = interaction.options.getChannel("channel")!;
-  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
   const targetUser = interaction.options.getUser("user");
-
   let deletedAmount = 0;
   if (
     channel.type == ChannelType.GuildText ||
@@ -60,13 +63,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
   ) {
     try {
       if (targetUser) {
-        const messages = await channel.messages.fetch({ limit: 100 });
-        const userMessages = messages.filter(m => m.author.id == targetUser.id).first(amount);
+        const userMessages = (await channel.messages.fetch({ limit: 100 }))
+          .filter(m => m.author.id == targetUser.id)
+          .first(amount);
 
         if (userMessages.length == 0)
           return await errorEmbed(
             interaction,
-            "No messages found",
+            "No messages found.",
             "No messages from this user were found in the recent history.",
           );
 
@@ -80,7 +84,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       console.error(error);
       return await errorEmbed(
         interaction,
-        "Error",
+        "Error.",
         "An error occurred while trying to delete messages.",
       );
     }

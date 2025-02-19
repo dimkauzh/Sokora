@@ -43,14 +43,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
   } catch (error) {
     return await errorEmbed(
       interaction,
-      "Invalid regex pattern",
+      "Invalid regex pattern.",
       "The provided pattern is not a valid regular expression.",
     );
   }
 
   addAutomodRule(guild.id, pattern, action, duration, [], []);
   setSetting(guild.id, "moderation", "automod_enabled", "1");
-
   await modActionEmbed(
     {
       title: "Automod Rule Added",

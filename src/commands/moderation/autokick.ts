@@ -36,8 +36,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   if (days == 0) {
     removeAutokickData(guild.id, targetUser.id);
-
-    await modActionEmbed(
+    return await modActionEmbed(
       {
         title: "Auto-kick Disabled",
         body: [`**Member**: ${targetUser.tag}`, "Auto-kick has been disabled for this member."],
@@ -45,11 +44,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       guild,
       interaction,
     );
-    return;
   }
 
   setAutokickData(guild.id, targetUser.id, days);
-
   await modActionEmbed(
     {
       title: "Auto-kick Configured",

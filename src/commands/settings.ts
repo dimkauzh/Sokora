@@ -104,6 +104,7 @@ function addOptions(
 
 settingsKeys.forEach(key => {
   const setting = settingsDefinition[key];
+  const settings = Object.keys(setting.settings);
   const subcommand = new SlashCommandSubcommandBuilder()
     .setName(key)
     .setDescription(setting.description);
@@ -112,19 +113,21 @@ settingsKeys.forEach(key => {
     .setName(key)
     .setDescription(setting.description);
 
-  Object.keys(setting.settings).forEach(sub => {
+  settings.forEach(sub => {
     const subSetting = setting.settings[sub];
-    if (subSetting.type != "LIST") addOptions(subcommand, key, sub);
+    if (subSetting.type != "LIST") {
+      addOptions(subcommand, key, sub);
+
+      if (settings.map(sub => setting.settings[sub].type).includes("LIST")) {
+        const otherSettings = new SlashCommandSubcommandBuilder()
+          .setName("default")
+          .setDescription(setting.description);
+
+        addOptions(otherSettings, key, sub);
+        subcommandGroup.addSubcommand(otherSettings);
+      }
+    }
     if (!subSetting.settings) return;
-
-    const otherSettings = new SlashCommandSubcommandBuilder()
-      .setName("default")
-      .setDescription(setting.description);
-
-    console.log(key);
-    console.log(sub);
-    addOptions(otherSettings, key, sub);
-    subcommandGroup.addSubcommand(otherSettings);
 
     const listSubcommand = new SlashCommandSubcommandBuilder()
       .setName(sub)
@@ -135,11 +138,7 @@ settingsKeys.forEach(key => {
     data.addSubcommandGroup(subcommandGroup);
   });
 
-  if (
-    !Object.keys(setting.settings)
-      .map(sub => setting.settings[sub].type)
-      .includes("LIST")
-  )
+  if (!settings.map(sub => setting.settings[sub].type).includes("LIST"))
     data.addSubcommand(subcommand);
 });
 
@@ -194,8 +193,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   const embed = new EmbedBuilder()
-    .setColor(genColor(100))
-    .setAuthor({ name: `✅ • ${capitalize(key)} settings changed` });
+    .setAuthor({ name: `${capitalize(key)} settings changed` })
+    .setColor(genColor(100));
 
   let description = "";
   for (let i = 0; i < values.length; i++) {
@@ -210,8 +209,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
     )
       return await errorEmbed(
         interaction,
-        "I can't view this channel.",
-        "You can either give the **View Channel** permission for Sokora or use a channel from the dropdown menu.",
+        "The bot can't view this channel.",
+        "You can either give the **View Channel** permission for the bot or use a channel from the dropdown menu.",
       );
 
     setSetting(guild.id, key, option.name, option.value as string);

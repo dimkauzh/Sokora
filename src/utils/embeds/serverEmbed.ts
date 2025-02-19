@@ -22,10 +22,7 @@ type Options = {
 export async function serverEmbed(options: Options) {
   const { page, pages, guild } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
-  const members = guild.members.cache;
-  const boosters = members.filter(member => member.premiumSince);
-  const bots = members.filter(member => member.user.bot);
-  const formattedUserCount = (guild.memberCount - bots.size)?.toLocaleString("en-US");
+  const boosters = guild.members.cache.filter(member => member.premiumSince);
   const icon = guild.iconURL()!;
 
   const roles = guild.roles.cache;
@@ -38,7 +35,6 @@ export async function serverEmbed(options: Options) {
     text: channels.filter(channel => channel.type == 0 || channel.type == 15 || channel.type == 5)
       .size,
     voice: channels.filter(channel => channel.type == 2 || channel.type == 13).size,
-    categories: channels.filter(channel => channel.type == 4).size,
   };
   const channelCount = channelSizes.text + channelSizes.voice;
 
@@ -61,11 +57,33 @@ export async function serverEmbed(options: Options) {
   if (NSFW != 0)
     safetyValues.push(`**${NSFW == 1 ? "Explicit" : NSFW == 2 ? "Safe" : "Age restricted"}**`);
 
+  const statValues: (string | null)[] = [
+    `👥 • **${guild.memberCount?.toLocaleString("en-US")}** members`,
+    `🗨️ • **${channelCount}** ${pluralOrNot("channel", channelCount)}: **${channelSizes.text}** text • **${channelSizes.voice}** voice`,
+  ];
+
+  if (boostTier)
+    statValues.push(
+      `🌟 • ${!boostTier ? "**No** level" : `Level **${boostTier}**`}: **${boostCount}**${
+        !boostTier ? "/2" : boostTier == 1 ? "/7" : boostTier == 2 ? "/14" : ""
+      } ${pluralOrNot("boost", boostCount!)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
+    );
+
+  if (options.roles)
+    statValues.push(
+      `🎭 • **${roles.size - 1}** ${pluralOrNot("role", roles.size - 1)}: ${
+        roles.size == 1
+          ? "*None*"
+          : `${sortedRoles
+              .slice(0, 5)
+              .map(role => mention(role[0], "ROLE"))
+              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
+      }`,
+    );
+
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pages ? `#${page}  •  ` : icon ? "•  " : ""}${guild.name}${
-        guild.verified ? " ✅" : ""
-      }`,
+      name: `${pages ? `#${page}  •  ` : icon ? "•  " : ""}${guild.name}`,
       iconURL: icon,
     })
     .setDescription(guild.description ? `> ${guild.description}` : null)
@@ -78,51 +96,14 @@ export async function serverEmbed(options: Options) {
         name: "🛡 • Safety setup",
         value: safetyValues.join(" • "),
       },
+      {
+        name: "📈 • Stats",
+        value: statValues.join("\n"),
+      },
     )
     .setFooter({ text: `${pages ? `Page ${page}/${pages} • ` : ""}Server ID: ${guild.id}` })
     .setThumbnail(icon)
     .setColor((await genImageColor(icon)) ?? genColor(200));
-
-  if (options.roles)
-    embed.addFields({
-      name: `🎭 • ${roles.size - 1} ${pluralOrNot("role", roles.size - 1)}`,
-      value:
-        roles.size == 1
-          ? "*None*"
-          : `${sortedRoles
-              .slice(0, 5)
-              .map(role => mention(role[0], "ROLE"))
-              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`,
-    });
-
-  embed.addFields(
-    {
-      name: `👥 • ${guild.memberCount?.toLocaleString("en-US")} members`,
-      value: [
-        `**${formattedUserCount}** ${pluralOrNot("user", guild.memberCount - bots.size)}`,
-        `**${bots.size?.toLocaleString("en-US")}** ${pluralOrNot("bot", bots.size)}`,
-      ].join("\n"),
-      inline: true,
-    },
-    {
-      name: `🗨️ • ${channelCount} ${pluralOrNot("channel", channelCount)}`,
-      value: [
-        `**${channelSizes.text}** text • **${channelSizes.voice}** voice`,
-        `**${channelSizes.categories}** ${pluralOrNot("category", channelSizes.categories)}`,
-      ].join("\n"),
-      inline: true,
-    },
-    {
-      name: `🌟 • ${!boostTier ? "No level" : `Level ${boostTier}`}`,
-      value: [
-        `**${boostCount}**${
-          !boostTier ? "/2" : boostTier == 1 ? "/7" : boostTier == 2 ? "/14" : ""
-        } ${pluralOrNot("boost", boostCount!)}`,
-        `**${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
-      ].join("\n"),
-      inline: true,
-    },
-  );
 
   if (options.invite?.show) {
     const previousInvite: Invite | undefined = (await options.guild.invites.fetch()).find(

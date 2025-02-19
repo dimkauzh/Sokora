@@ -53,11 +53,6 @@ export const settingsDefinition: FullSettingsDefinition = {
           },
         },
       },
-      testuhh: {
-        type: "BOOL",
-        desc: "oml",
-        val: true,
-      },
     },
   },
   leveling: {

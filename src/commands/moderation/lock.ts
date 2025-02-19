@@ -25,18 +25,18 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
+  const channelOption = interaction.options.getChannel("channel")!;
+  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
   if (
     await errorCheck(
       "ManageRoles",
-      { interaction },
-      { allErrors: false, botError: true },
+      { interaction, channel },
+      { allErrors: false, botError: true, channelError: true },
       "Manage Roles",
     )
   )
     return;
 
-  const channelOption = interaction.options.getChannel("channel")!;
-  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
   if (!channel.permissionsFor(guild.id)?.has("SendMessages"))
     return await errorEmbed(
       interaction,
