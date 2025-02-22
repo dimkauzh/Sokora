@@ -2,7 +2,8 @@ import {
   EmbedBuilder,
   type PermissionResolvable,
   type ChatInputCommandInteraction,
-  type User
+  type User,
+  type GuildBasedChannel
 } from "discord.js";
 import ms from "ms";
 import { genColor } from "../colorGen";
@@ -12,8 +13,9 @@ import { errorEmbed } from "./errorEmbed";
 
 type Options = {
   interaction: ChatInputCommandInteraction;
-  user: User;
-  action: string;
+  action?: string;
+  channel?: GuildBasedChannel;
+  user?: User;
   duration?: string | null;
   dm?: boolean;
   dbAction?: modType;
@@ -24,6 +26,7 @@ type Options = {
 type ErrorOptions = {
   allErrors: boolean;
   botError: boolean;
+  channelError?: boolean;
   ownerError?: boolean;
   outsideError?: boolean;
   unbanError?: boolean;
@@ -35,8 +38,8 @@ export async function errorCheck(
   errorOptions: ErrorOptions,
   permissionAction: string
 ) {
-  const { interaction, user, action } = options;
-  const { allErrors, botError, ownerError, outsideError, unbanError } = errorOptions;
+  const { interaction, user, channel, action } = options;
+  const { allErrors, botError, channelError, ownerError, outsideError, unbanError } = errorOptions;
   const guild = interaction.guild!;
   const members = guild.members.cache!;
   const member = members.get(interaction.user.id)!;
@@ -47,7 +50,15 @@ export async function errorCheck(
       return await errorEmbed(
         interaction,
         "The bot can't execute this command.",
-        `The bot is missing the **${permissionAction}** permission.`
+        `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`
+      );
+
+  if (channelError)
+    if (!channel?.permissionsFor(client).has("ViewChannel"))
+      return await errorEmbed(
+        interaction,
+        "The bot can't execute this command.",
+        `The bot is missing the **View Channel** permission. If you want to run this command, you might want to give the bot this permission from the channel settings.`
       );
 
   if (!member.permissions.has(permission))
@@ -65,7 +76,7 @@ export async function errorCheck(
         "The user was never banned."
       );
 
-  if (!allErrors) return;
+  if (!allErrors || !user || !action) return;
   const target = members.get(user.id)!;
   const name = user.displayName;
   const highestModPos = member.roles.highest.position;
@@ -89,7 +100,9 @@ export async function errorCheck(
     return await errorEmbed(
       interaction,
       `You can't ${action.toLowerCase()} ${name}.`,
-      `The member has ${highestModPos == highestTargetPos ? "the same" : "a higher"} role position ${highestModPos == highestTargetPos ? "as" : "than"} you.`
+      `The member has ${
+        highestModPos == highestTargetPos ? "the same" : "a higher"
+      } role position ${highestModPos == highestTargetPos ? "as" : "than"} you.`
     );
 
   if (ownerError) {
@@ -121,10 +134,13 @@ export async function modEmbed(
   showModerator: boolean = false
 ) {
   const { interaction, user, action, duration, dm, dbAction, expiresAt, previousID } = options;
+  if (!user || !action) return;
   const guild = interaction.guild!;
   const name = user.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
-  let author = `•  ${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
+  let author = `•  ${previousID ? "Edited a " : ""}${
+    previousID ? dbAction?.toLowerCase() : action
+  }${previousID ? " on" : ""} ${name}`;
   reason ? generalValues.push(`**Reason**: ${reason}`) : generalValues.push("*No reason provided*");
   if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
   if (previousID) {
@@ -189,6 +205,6 @@ export async function modEmbed(
       })
       .catch(() => null);
   } catch (e) {
-    return console.log(e);
+    return console.error(e);
   }
 }

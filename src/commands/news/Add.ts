@@ -70,7 +70,7 @@ export default class Add {
       await sendChannelNews(guild, id, interaction).catch(err => console.error(err));
       await i.reply({
         embeds: [new EmbedBuilder().setTitle("News added.").setColor(genColor(100))],
-        ephemeral: true
+        flags: "Ephemeral"
       });
     });
   }

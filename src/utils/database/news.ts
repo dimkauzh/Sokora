@@ -44,7 +44,13 @@ export function get(guildID: string, id: string) {
   return getIdQuery.get(guildID, id) as TypeOfDefinition<typeof definition> | null;
 }
 
-export function updateNews(guildID: string, id: string, title?: string, body?: string, messageID?: string) {
+export function updateNews(
+  guildID: string,
+  id: string,
+  title?: string,
+  body?: string,
+  messageID?: string
+) {
   const lastElem = get(guildID, id)!;
   deleteQuery.run(guildID, id);
   sendQuery.run(

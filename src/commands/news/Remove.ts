@@ -44,7 +44,7 @@ export default class Remove {
     deleteNews(guild.id, id);
     await interaction.reply({
       embeds: [new EmbedBuilder().setTitle("News removed.").setColor(genColor(100))],
-      ephemeral: true
+      flags: "Ephemeral"
     });
   }
 }

@@ -100,7 +100,7 @@ export default class Edit {
       updateNews(guild.id, id, title, body);
       await i.reply({
         embeds: [new EmbedBuilder().setTitle("News edited.").setColor(genColor(100))],
-        ephemeral: true
+        flags: "Ephemeral"
       });
     });
   }

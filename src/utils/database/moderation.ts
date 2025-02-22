@@ -15,7 +15,7 @@ const definition = {
   }
 } satisfies TableDefinition;
 
-export type modType = "MUTE" | "WARN" | "KICK" | "BAN" | "NOTE";
+export type modType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "NOTE";
 const database = getDatabase(definition);
 const addQuery = database.query(
   "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);"
