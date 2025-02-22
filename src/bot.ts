@@ -1,5 +1,5 @@
 import { ActivityType, Client } from "discord.js";
-import { registerCommands } from "./handlers/commands";
+import { registerGuildCommands } from "./handlers/commands";
 import { loadEvents } from "./handlers/events";
 import { leavePlease } from "./utils/leavePlease";
 import { rescheduleUnbans } from "./utils/unbanScheduler";
@@ -24,7 +24,12 @@ client.on("ready", async () => {
     await leavePlease(guilds.get(id)!, await guilds.get(id)?.fetchOwner()!, "Not like that.");
 
   await loadEvents(client);
-  await registerCommands(client);
+  // uncomment if you want to remove guild/global commands or register guild/global commands
+  // if you register guild and then global commands, remember to remove one of them to avoid duplicate commands
+  // await removeGuildCommands(client);
+  // await removeGlobalCommands(client);
+  await registerGuildCommands(client);
+  // await registerGlobalCommands(client);
   console.log("ちーっす！");
   rescheduleUnbans(client);
 });

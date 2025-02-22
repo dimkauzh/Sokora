@@ -77,13 +77,24 @@ async function loadCommands(client: Client, ...disabledCommands: string[]) {
   return commands;
 }
 
-export async function registerCommands(client: Client) {
+export async function removeGuildCommands(client: Client) {
+  const guilds = client.guilds.cache;
+  for (const guildID of guilds.keys()) await guilds.get(guildID)?.commands.set([]);
+}
+
+export async function removeGlobalCommands(client: Client) {
+  await client.application?.commands.set([]);
+}
+
+export async function registerGuildCommands(client: Client) {
   await loadCommands(client);
   const guilds = client.guilds.cache;
 
-  for (const guildID of guilds.keys()) {
-    const disabledCommands = getDisabledCommands(guildID);
-    if (disabledCommands.length > 0) await loadCommands(client, ...disabledCommands);
+  for (const guildID of guilds.keys())
     await guilds.get(guildID)?.commands.set(commands.map(command => command.data));
-  }
+}
+
+export async function registerGlobalCommands(client: Client) {
+  await loadCommands(client);
+  await client.application?.commands.set(commands.map(command => command.data));
 }
