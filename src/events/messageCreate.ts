@@ -1,7 +1,5 @@
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import { readdirSync } from "fs";
-import { join } from "path";
-import { pathToFileURL } from "url";
+import { easterEggs } from "../handlers/events.ts";
 import { genColor } from "../utils/colorGen";
 import { add, check, remove } from "../utils/database/blocklist";
 import { getLevel, setLevel } from "../utils/database/leveling";
@@ -48,12 +46,8 @@ export default (async function run(message) {
   const guild = message.guild!;
 
   // Easter egg handler
-  if (getSetting(guild.id, "easter", "enabled")) {
-    const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
-
-    for (const easterEggFile of readdirSync(eventsPath))
-      (await import(pathToFileURL(join(eventsPath, easterEggFile)).toString())).default(message);
-  }
+  if (getSetting(guild.id, "easter", "enabled"))
+    for (const easterEgg of easterEggs) easterEgg.run(message);
 
   // Leveling
   if (!getSetting(guild.id, "leveling", "enabled")) return;

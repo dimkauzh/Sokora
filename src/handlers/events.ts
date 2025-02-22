@@ -17,3 +17,13 @@ export async function loadEvents(client: Client) {
     events.push({ name: eventName, event: clientEvent });
   }
 }
+
+export let easterEggs: any[] = [];
+export async function loadEasterEggs() {
+  const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
+
+  for (const easterEggFile of readdirSync(eventsPath)) {
+    const easterEgg = await import(pathToFileURL(join(eventsPath, easterEggFile)).toString());
+    easterEggs.push(easterEgg);
+  }
+}
