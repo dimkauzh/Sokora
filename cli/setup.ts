@@ -14,7 +14,7 @@ const readHiddenInput = async (prompt: string): Promise<string> => {
     if (stdin.isTTY) stdin.setRawMode(true);
 
     stdin.on("data", data => {
-      if (data.toString() === "\n" || data.toString() === "\r") {
+      if (data.toString() == "\n" || data.toString() == "\r") {
         if (stdin.isTTY) stdin.setRawMode(false);
         process.stdout.moveCursor(0, -1);
         process.stdout.clearLine(1);

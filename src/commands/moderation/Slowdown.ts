@@ -6,7 +6,7 @@ import {
 } from "discord.js";
 import ms from "ms";
 import { genColor } from "../../utils/colorGen";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { errorEmbed, logError } from "../../utils/embeds/errorEmbed";
 import { logChannel } from "../../utils/logChannel";
 
 export default class Slowdown {
@@ -68,15 +68,20 @@ export default class Slowdown {
       )
       .setColor(genColor(100));
 
-    if (
-      channel.type == ChannelType.GuildText &&
-      ChannelType.PublicThread &&
-      ChannelType.PrivateThread &&
-      ChannelType.GuildVoice
-    )
-      await channel
-        .setRateLimitPerUser(ms(time) / 1000, interaction.options.getString("reason")!)
-        .catch(error => console.error(error));
+    try {
+      if (
+        channel.type == ChannelType.GuildText &&
+        ChannelType.PublicThread &&
+        ChannelType.PrivateThread &&
+        ChannelType.GuildVoice
+      )
+        await channel.setRateLimitPerUser(
+          ms(time) / 1000,
+          interaction.options.getString("reason")!
+        );
+    } catch (error: any | Error) {
+      return await logError(interaction, error);
+    }
 
     await logChannel(guild, embed);
     await interaction.reply({ embeds: [embed] });

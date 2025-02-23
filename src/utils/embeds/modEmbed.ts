@@ -1,14 +1,15 @@
 import {
   EmbedBuilder,
-  type PermissionResolvable,
   type ChatInputCommandInteraction,
-  type User,
-  type GuildBasedChannel
+  type GuildBasedChannel,
+  type PermissionResolvable,
+  type User
 } from "discord.js";
 import ms from "ms";
 import { genColor } from "../colorGen";
-import { getModeration, addModeration, editModeration, type modType } from "../database/moderation";
+import { addModeration, editModeration, getModeration, type modType } from "../database/moderation";
 import { logChannel } from "../logChannel";
+import { reply } from "../reply";
 import { errorEmbed } from "./errorEmbed";
 
 type Options = {
@@ -184,8 +185,7 @@ export async function modEmbed(
     .setColor(genColor(100));
 
   await logChannel(guild, embed);
-  if (interaction.replied) await interaction.followUp({ embeds: [embed] });
-  else await interaction.reply({ embeds: [embed] });
+  await reply(interaction, { embeds: [embed] });
 
   if (!dm) return;
   const dmChannel = await user.createDM().catch(() => null);

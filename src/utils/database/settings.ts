@@ -165,7 +165,7 @@ export function getSetting<
     case "TEXT":
       return res[0].value as SqlType<typeof set.type>;
     case "BOOL":
-      return (res[0].value === "1" ? true : false) as SqlType<typeof set.type>;
+      return (res[0].value == "1" ? true : false) as SqlType<typeof set.type>;
     case "INTEGER":
       return parseInt(res[0].value) as SqlType<typeof set.type>;
     case "CHANNEL":
@@ -173,7 +173,7 @@ export function getSetting<
     case "LIST":
       return kominator(res[0].value) as SqlType<typeof set.type>;
     default:
-      return "WIP"; // as TypeOfKey<K>;
+      return "WIP";
   }
 }
 
@@ -181,7 +181,7 @@ export function setSetting<K extends keyof typeof settingsDefinition>(
   guildID: string,
   key: K,
   setting: string,
-  value: string // TypeOfKey<K>
+  value: string
 ) {
   const doInsert = getSetting(guildID, key, setting) == null;
   if (!doInsert) deleteQuery.all(JSON.stringify(guildID), key + "." + setting);
@@ -193,8 +193,3 @@ export function listPublicServers() {
     JSON.parse(entry.guildID)
   );
 }
-
-// Utility type
-type TypeOfKey<K extends keyof typeof settingsDefinition, S extends string> = SqlType<
-  (typeof settingsDefinition)[K]["settings"][S]["type"]
->;
