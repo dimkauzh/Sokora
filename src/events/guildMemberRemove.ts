@@ -3,7 +3,7 @@ import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { imageColor } from "../utils/imageColor";
 import { replace } from "../utils/replace";
-import { Event } from "../utils/types";
+import type { Event } from "../utils/types";
 
 export default (async function run(member: GuildMember) {
   const guildID = member.guild.id;

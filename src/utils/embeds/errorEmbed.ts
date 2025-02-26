@@ -1,4 +1,5 @@
 import {
+  Client,
   EmbedBuilder,
   codeBlock,
   type ButtonInteraction,
@@ -49,15 +50,23 @@ export async function errorEmbed(
  * @returns Embed with the internal error.
  */
 
-export async function logError(
-  interaction: ChatInputCommandInteraction | ButtonInteraction,
-  error: Error
-) {
-  return await errorEmbed(
-    interaction,
-    "The bot has experienced an internal error.",
-    "If you want to, you can go to our [support server](https://discord.gg/c6C25P4BuY) to report this issue.",
-    error.stack,
-    true
-  );
+export async function logError(options: {
+  error: Error | any;
+  interaction?: ChatInputCommandInteraction | ButtonInteraction;
+  client?: Client;
+}) {
+  const { error, interaction, client } = options;
+  const embed = new EmbedBuilder()
+    .setAuthor({ name: "Something went wrong!" })
+    .setDescription(
+      "The bot has experienced an internal error.\nThe team has been informed. If you keep encountering this issue, you can go to our [support server](https://discord.gg/c6C25P4BuY) to report it."
+    )
+    .addFields({ name: "📜 • Error log", value: codeBlock(error.stack) })
+    .setColor(genColor(0));
+
+  const channel = (client ? client : interaction!.client).channels.cache.get("1343140645132308532");
+  if (!channel?.isTextBased() || !channel.isSendable()) return;
+  await channel.send({ embeds: [embed] });
+
+  if (interaction) await reply(interaction, { embeds: [embed], flags: "Ephemeral" });
 }

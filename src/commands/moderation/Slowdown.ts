@@ -80,7 +80,7 @@ export default class Slowdown {
           interaction.options.getString("reason")!
         );
     } catch (error: any | Error) {
-      return await logError(interaction, error);
+      return await logError({ interaction, error });
     }
 
     await logChannel(guild, embed);

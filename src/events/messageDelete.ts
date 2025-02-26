@@ -2,7 +2,7 @@ import { EmbedBuilder } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { logChannel } from "../utils/logChannel";
-import { Event } from "../utils/types";
+import type { Event } from "../utils/types";
 
 /** Copied from https://jsr.io/@zakahacecosas/string-utils/ */
 function truncate(str: string, length: number): string {

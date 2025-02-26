@@ -6,7 +6,7 @@ import { getLevel, setLevel } from "../utils/database/leveling";
 import { getSetting } from "../utils/database/settings";
 import { kominator } from "../utils/kominator";
 import { leavePlease } from "../utils/leavePlease";
-import { Event } from "../utils/types";
+import type { Event } from "../utils/types";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {

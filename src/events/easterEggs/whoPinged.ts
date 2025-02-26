@@ -1,7 +1,7 @@
 import type { Message, TextChannel } from "discord.js";
 import { randomise } from "../../utils/randomise";
 
-export default async function run(message: Message) {
+export async function run(message: Message) {
   if (message.content.toLowerCase() != `<@${message.client.user.id}>`) return;
   const gifs = randomise([
     "https://tenor.com/view/who-pinged-me-ping-discord-up-opening-door-gif-20065356",

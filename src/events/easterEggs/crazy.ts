@@ -1,6 +1,6 @@
 import type { Message, TextChannel } from "discord.js";
 
-export default async function run(message: Message) {
+export async function run(message: Message) {
   if (!message.content.toLowerCase().includes("crazy")) return;
   if (Math.round(Math.random()) <= 0.5)
     await (message.channel as TextChannel).send(
