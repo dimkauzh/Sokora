@@ -184,7 +184,7 @@ export async function modEmbed(
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(100));
 
-  await logChannel(guild, embed);
+  await logChannel(guild, { embeds: [embed] });
   await reply(interaction, { embeds: [embed] });
 
   if (!dm) return;

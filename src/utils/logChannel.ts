@@ -1,20 +1,24 @@
 /**
  * Sends a message in the log channel. (if there is one set)
  * @param guild The guild where the log channel is located.
- * @param embed Embed of the log.
+ * @param options Reply options of the log.
  * @returns Log message.
  */
 
 import {
   ChannelType,
   type Channel,
-  type EmbedBuilder,
   type Guild,
+  type MessageCreateOptions,
+  type MessagePayload,
   type TextChannel
 } from "discord.js";
 import { getSetting } from "./database/settings";
 
-export async function logChannel(guild: Guild, embed: EmbedBuilder) {
+export async function logChannel(
+  guild: Guild,
+  options: string | MessagePayload | MessageCreateOptions
+) {
   const logChannel = getSetting(guild.id, "moderation", "channel");
   if (!logChannel) return;
 
@@ -36,5 +40,5 @@ export async function logChannel(guild: Guild, embed: EmbedBuilder) {
 
   if (!channel) return;
   if (!channel.permissionsFor(guild.client.user)?.has("ViewChannel")) return;
-  return await channel.send({ embeds: [embed] });
+  return await channel.send(options);
 }

@@ -83,7 +83,7 @@ export default class Slowdown {
       return await logError({ interaction, error });
     }
 
-    await logChannel(guild, embed);
+    await logChannel(guild, { embeds: [embed] });
     await interaction.reply({ embeds: [embed] });
   }
 }

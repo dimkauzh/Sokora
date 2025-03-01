@@ -53,7 +53,7 @@ export default class Delwarn {
       .setFooter({ text: `User ID: ${user.id}` })
       .setColor(genColor(100));
 
-    await logChannel(guild, embed);
+    await logChannel(guild, { embeds: [embed] });
     try {
       removeModeration(guild.id, `${id}`);
     } catch (error) {

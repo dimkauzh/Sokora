@@ -70,7 +70,7 @@ export default class Unlock {
         })
         .catch(error => console.error(error));
 
-    await logChannel(guild, embed);
+    await logChannel(guild, { embeds: [embed] });
     await interaction.reply({ embeds: [embed] });
   }
 }

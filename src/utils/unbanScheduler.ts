@@ -27,7 +27,7 @@ export function scheduleUnban(
         .setFooter({ text: `User ID: ${user.id}` })
         .setColor(genColor(100));
 
-      await logChannel(guild, embed);
+      await logChannel(guild, { embeds: [embed] });
       await guild.members.unban(userID, "Temporary ban has expired");
       removeModeration(guildID, userID);
       scheduledUnbans.delete(key);

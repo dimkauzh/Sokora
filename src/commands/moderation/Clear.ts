@@ -75,7 +75,7 @@ export default class Clear {
         console.error(error);
       }
 
-    await logChannel(guild, embed);
+    await logChannel(guild, { embeds: [embed] });
     await interaction.reply({ embeds: [embed] });
   }
 }
