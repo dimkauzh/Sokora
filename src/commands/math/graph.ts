@@ -40,11 +40,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const ctx = canvas.getContext("2d");
 
     // me when background?!
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#151515";
     ctx.fillRect(0, 0, width, height);
 
-    ctx.strokeStyle = "#000000";
-    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#ffffff";
+    ctx.lineWidth = 2;
 
     const yAxis = height - ((0 - ymin) * height) / (ymax - ymin);
     ctx.beginPath();
@@ -59,7 +59,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ctx.stroke();
 
     ctx.strokeStyle = "#ff0000";
-    ctx.lineWidth = 3;
+    ctx.lineWidth = 4;
     ctx.beginPath();
 
     const points = 1000;
@@ -92,7 +92,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setTitle("Function Graph")
       .setDescription(`\`f(x) = ${func}\``)
       .setImage("attachment://graph.png")
-      .setColor(genColor(100));
+      .setColor(genColor(120));
 
     await interaction.reply({ embeds: [embed], files: [attachment] });
   } catch (error) {
