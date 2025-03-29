@@ -2,7 +2,6 @@ import { SlashCommandBuilder, SlashCommandSubcommandBuilder, type Client } from 
 import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
-import { getDisabledCommands } from "../utils/database/disabledCommands";
 
 export let commands: { data: SlashCommandBuilder; run: any; autocomplete: any }[] = [];
 export let subCommands: { data: SlashCommandSubcommandBuilder; run: any; autocomplete: any }[] = [];

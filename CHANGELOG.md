@@ -1,7 +1,7 @@
 <!-- markdownlint-disable md024 -->
 <!-- preserve old changelogs here -->
 
-# [0.2.1] (_Kaishi_)
+# 0.3.0
 
 ## Fixed
 
@@ -15,7 +15,7 @@
 - Fixed a `Jump to message` option being shown on deleted messages (you cannot jump to a deleted message).
 - Fixed the bot showing "Application didn't respond" when unmuting someone muted by another bot.
 
-# [0.2.0] (_Kaishi_)
+# 0.2.0
 
 ## Added
 

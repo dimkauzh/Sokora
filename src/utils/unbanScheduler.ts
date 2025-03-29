@@ -45,7 +45,7 @@ export function rescheduleUnbans(client: Client) {
 
   for (const ban of pendingBans) {
     if (!ban.expiresAt) continue;
-    if (typeof ban.expiresAt !== "number" || isNaN(ban.expiresAt)) {
+    if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
       console.error(`Invalid expiresAt value for ban: ${ban.expiresAt}`);
       continue;
     }
