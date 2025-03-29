@@ -1,7 +1,7 @@
 import { commands, subCommands } from "../handlers/commands";
 import { check } from "../utils/database/blocklist";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { Event } from "../utils/types";
+import type { Event } from "../utils/types";
 
 export default (async function run(interaction) {
   if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;

@@ -16,7 +16,7 @@ export async function errorEmbed(
   errorLog?: string,
 ) {
   const content = [`**${title}**`];
-  if (reason != undefined) content.push(reason);
+  if (reason) content.push(reason);
   const embed = new EmbedBuilder()
     .setAuthor({ name: "Something went wrong!" })
     .setDescription(content.join("\n"))

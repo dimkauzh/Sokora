@@ -1,15 +1,15 @@
 import {
   ChannelType,
+  EmbedBuilder,
   Message,
   type Channel,
-  type EmbedBuilder,
   type Guild,
   type TextChannel,
 } from "discord.js";
 import { getSetting } from "./database/settings";
 
 /**
- * Sends a message in the log channel. (if there is one set)
+ * Sends a message in the log channel (if there is one set)
  * @param {Guild} guild The guild where the log channel is located.
  * @param {EmbedBuilder} embed Embed of the log.
  * @returns {Promise<Message<boolean> | undefined>} Log message, or undefined if no log channel is set.
