@@ -3,6 +3,8 @@ import { version } from "../../package.json";
 import { genColor, genImageColor } from "../utils/colorGen";
 import { replace } from "../utils/replace";
 import { parseChangelogString } from "../utils/parseChangelog";
+import { pathToFileURL } from "bun";
+import { join } from "path";
 
 export const data = new SlashCommandBuilder()
   .setName("changelog")
@@ -11,8 +13,7 @@ export const data = new SlashCommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
-  // (this assumes you're running sokora from the repo's root)
-  const text = parseChangelogString(await Bun.file("./CHANGELOG.md").text());
+  const text = parseChangelogString(await Bun.file(pathToFileURL(join(process.cwd(), "CHANGELOG.md"))).text());
 
   const embed = new EmbedBuilder()
     .setAuthor({ name: `•  Changelog for ${version}`, iconURL: avatar })
