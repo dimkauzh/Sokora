@@ -1,9 +1,17 @@
 <!-- markdownlint-disable md024 -->
 <!-- preserve old changelogs here -->
+<!-- don't make multiline comments for the parser to work -->
 
 # Sokora Changelog
 
 ## 0.3.0
+
+<!-- todo: look at sokora diff and log all changes (they're a lot) -->
+### Added
+
+#### About
+
+- Added bot ping and latency to the `/about` command.
 
 ### Fixed
 

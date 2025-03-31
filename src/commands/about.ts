@@ -46,6 +46,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
           "Also, please read the [ToS](https://sokora.org/terms) and the [privacy policy](https://sokora.org/privacy).",
         ].join("\n"),
       },
+      {
+        name: "📨 • Ping",
+        value: `\`Latency\` **${Date.now() - interaction.createdTimestamp}ms**.\n\`API Latency\` **${client.ws.ping}ms**.\n\`Bot uptime\`: **${(client.uptime / (1000 * 60)).toFixed(2)} minutes**.`,
+      },
+
     )
     .setFooter({ text: replace("(madeWith)") })
     .setThumbnail(avatar)
