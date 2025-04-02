@@ -1,21 +1,32 @@
 /**
- * Takes a MarkDown string that follows Sokora's CHANGELOG format and turns it into a Discord's-limited-markdown-friendly string containing only the latest release.
+ * Takes a MarkDown string that follows Sokora's CHANGELOG format and turns it into an array of Discord's-limited-markdown-friendly strings containing the changelog of each release.
  *
  * @export
  * @param {string} string MarkDown string.
- * @returns {string} Parsed string.
+ * @returns {{ ver: string, changelog: string }[]} Parsed strings.
  */
-export function parseChangelogString(string: string): string {
-    const array = string.split("\n")
-        .filter((s) => s.trim() !== "")
-        .filter((s) => !s.trim().startsWith("<!--"))
+export function parseChangelogString(string: string): { ver: string, changelog: string }[] {
+    const array = string
+        .split(/(?=^##\s+\d+\.\d+\.\d+)/gm) // this regexp delimits versions
+        .map(s => s.trim())
 
-    const start = array.findIndex((s) => s.trim().startsWith("## "))
-    const end = array.findIndex((s, i) => s.trim().startsWith("## ") && i > start)
+    const versions: { ver: string, changelog: string }[] = []
 
-    const newArray = array
-        .splice(start, end - 1)
-        .map((s) => s.replace("##", "#"))
-    console.debug(newArray)
-    return newArray.join("\n")
+    for (const version of array) {
+        if (version.includes("Sokora Changelog")) continue; // skip heading
+
+        const cleanArray = version
+            .split("\n")
+            .filter((s) => !s.trim().startsWith("<!--"))
+            .filter(Boolean)
+            .filter((s) => s.trim() !== "")
+            .map((s) => s.replace("##", "#"))
+
+        versions.push({
+            ver: cleanArray.join("\n").split("##")[0].trim().replace("# ", ""),
+            changelog: cleanArray.join("\n")
+        })
+    }
+
+    return versions
 }

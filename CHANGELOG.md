@@ -9,6 +9,10 @@
 <!-- todo: look at sokora diff and log all changes (they're a lot) -->
 ### Added
 
+#### Changelog
+
+- Added older versions to the `/changelog` command.
+
 #### About
 
 - Added bot ping and latency to the `/about` command.
@@ -70,3 +74,7 @@
 
 - warn mentions in /moderation warn are now warning to be more consistent
 - Removed old markdown remnants from /moderation slowdown
+
+## 0.1.0
+
+### Initial release :)
