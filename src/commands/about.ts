@@ -23,6 +23,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
 
+  const allMembers = await Promise.all(guilds.map(guild => guild.members.fetch()));
+  const uniqueIDs = new Set<string>();
+
+  for (const col of allMembers) {
+    for (const member of col.values()) {
+      uniqueIDs.add(member.id);
+    }
+  }
+
+  const uniqueUsers = (Array.from(uniqueIDs)).length;
+
   const embed = new EmbedBuilder()
     .setAuthor({ name: "•  About Sokora", iconURL: avatar })
     .setDescription(
@@ -33,10 +44,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
         name: "📃 • General",
         value: [
           `Version **${version}**, *Antei*`,
-          `**${members}** ${pluralOrNot("member", members)} • **${guilds.size}** ${pluralOrNot(
+          `**${members}** ${pluralOrNot("member", members)} • **${uniqueUsers}** ${pluralOrNot("unique user", uniqueUsers)} • **${guilds.size}** ${pluralOrNot(
             "guild",
             guilds.size,
-          )} ${!shards ? "" : `• **${shards}** ${pluralOrNot("shard", shards)}`}`,
+          )}${!shards ? "" : ` • **${shards}** ${pluralOrNot("shard", shards)}`}`,
         ].join("\n"),
       },
       {
@@ -48,7 +59,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       },
       {
         name: "📨 • Ping",
-        value: `\`Latency\` **${Date.now() - interaction.createdTimestamp}ms**.\n\`API Latency\` **${client.ws.ping}ms**.\n\`Bot uptime\`: **${(client.uptime / (1000 * 60)).toFixed(2)} minutes**.`,
+        value: `\`Latency\` **${Date.now() - interaction.createdTimestamp}ms**.\n\`API Latency\` **${client.ws.ping}ms**.\n\`Bot uptime\` **${(client.uptime / (1000 * 60)).toFixed(2)} minutes**.`,
       },
 
     )
@@ -63,7 +74,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setEmoji("🗳️")
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
-      .setLabel("•  Donate")
+      .setLabel("• Donate")
       .setURL("https://paypal.me/SokoraTheBot")
       .setEmoji("⭐")
       .setStyle(ButtonStyle.Link),

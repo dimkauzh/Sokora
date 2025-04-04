@@ -17,9 +17,7 @@ export function parseChangelogString(string: string): { ver: string, changelog: 
 
         const cleanArray = version
             .split("\n")
-            .filter((s) => !s.trim().startsWith("<!--"))
-            .filter(Boolean)
-            .filter((s) => s.trim() !== "")
+            .filter((s) => Boolean(s) && s.trim() !== "" && !s.trim().startsWith("<!--"))
             .map((s) => s.replace("##", "#"))
 
         versions.push({
