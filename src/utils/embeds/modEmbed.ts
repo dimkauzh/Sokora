@@ -180,7 +180,7 @@ export async function modEmbed(
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(100));
 
-  await logChannel(guild, embed);
+  await logChannel(guild, { embeds: [embed] });
   if (interaction.replied) await interaction.followUp({ embeds: [embed] });
   else await interaction.reply({ embeds: [embed] });
 

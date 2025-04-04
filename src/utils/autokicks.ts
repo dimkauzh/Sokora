@@ -36,7 +36,7 @@ async function handleAutokick(guild: Guild, member: GuildMember, days: number): 
       )
       .setColor(genColor(100));
 
-    await logChannel(guild, embed);
+    await logChannel(guild, { embeds: [embed] });
   } catch (error) {
     console.error(`Failed to auto-kick member ${member.id} from guild ${guild.id}:`, error);
   }

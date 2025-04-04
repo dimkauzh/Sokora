@@ -103,7 +103,7 @@ export default (async function run(message) {
             .setColor(genColor(100))
             .setTimestamp();
 
-          return await logChannel(guild, embed);
+          return await logChannel(guild, { embeds: [embed] });
         }
       } catch (error) {
         console.error(`Error with regex pattern: ${rule.pattern}`, error);

@@ -51,5 +51,5 @@ async function kickMember(member: GuildMember, reason: string, timestamp: number
     )
     .setColor(genColor(100));
 
-  await logChannel(member.guild, embed);
+  await logChannel(member.guild, { embeds: [embed] });
 }

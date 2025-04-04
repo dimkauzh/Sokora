@@ -32,7 +32,7 @@ export async function modActionEmbed(
 
   if (footer) embed.setFooter({ text: footer });
 
-  await logChannel(guild, embed).catch(e => console.error(e));
+  await logChannel(guild, { embeds: [embed] }).catch(e => console.error(e));
   await i.reply({ embeds: [embed] }).catch(e => console.error(e));
 
   return embed;

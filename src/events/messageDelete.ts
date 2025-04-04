@@ -36,5 +36,5 @@ export default (async function run(message) {
     .setFooter({ text: `User ID: ${author.id}` })
     .setColor(genColor(0));
 
-  await logChannel(guild, embed);
+  await logChannel(guild, { embeds: [embed] });
 } as Event<"messageDelete">);
