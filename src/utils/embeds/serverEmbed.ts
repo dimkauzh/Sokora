@@ -127,7 +127,7 @@ export async function serverEmbed(options: Options) {
       : await inviteChannel.createInvite({
         maxAge: undefined,
         maxUses: undefined,
-        reason: "Serverboard",
+        reason: "ServerBoard invite",
         temporary: false,
         unique: true,
       });
