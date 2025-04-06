@@ -56,11 +56,16 @@ export default (async function run(
       name: message.author.tag,
       iconURL: message.author.displayAvatarURL(),
     })
-    .setDescription(message.content || "")
-    .addFields({
-      name: "Source",
-      value: `[Jump to message](${message.url})`,
-    })
+    .addFields([
+      {
+        name: "Message",
+        value: message.content || ""
+      },
+      {
+        name: "Source",
+        value: `[Jump to message](${message.url})`,
+      }]
+    )
     .setTimestamp(message.createdAt)
     .setFooter({ text: `ID: ${message.id}` })
     .setColor(genColor(80));

@@ -14,6 +14,7 @@ const client = new Client({
     "GuildMessages",
     "GuildEmojisAndStickers",
     "GuildBans",
+    "GuildMessageReactions",
     "MessageContent",
   ],
 });
