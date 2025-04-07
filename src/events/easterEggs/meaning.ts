@@ -2,10 +2,9 @@ import type { Message } from "discord.js";
 import { randomize } from "../../utils/randomize";
 
 export async function run(message: Message) {
-  const msg = message.content.toLowerCase();
+  const msg = message.content.trim().toLowerCase();
 
-  if (!(msg.includes("what does sokora mean") || msg.includes("what's sokora supposed to mean")))
-    return;
+  if (!/what(?:'s| does)? .*sokora.*mean/.test(msg)) return;
 
   const chances = parseFloat((Math.random() * 10).toFixed(3));
 
@@ -26,8 +25,8 @@ export async function run(message: Message) {
     message.author.id === "823939421686071386" || chances < 0.3
       ? ultraRareReply
       : chances >= 0.3 && chances < 3
-      ? randomize(rareReplies)
-      : randomize(normalReplies);
+        ? randomize(rareReplies)
+        : randomize(normalReplies);
 
   await message.reply(reply);
 }

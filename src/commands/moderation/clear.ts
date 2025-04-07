@@ -56,38 +56,40 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const targetUser = interaction.options.getUser("user");
   let deletedAmount = 0;
   if (
-    channel.type == ChannelType.GuildText ||
-    channel.type == ChannelType.PublicThread ||
-    channel.type == ChannelType.PrivateThread ||
-    channel.type == ChannelType.GuildVoice
-  ) {
-    try {
-      if (targetUser) {
-        const userMessages = (await channel.messages.fetch({ limit: 100 }))
-          .filter(m => m.author.id == targetUser.id)
-          .first(amount);
+    !(
+      channel.type == ChannelType.GuildText ||
+      channel.type == ChannelType.PublicThread ||
+      channel.type == ChannelType.PrivateThread ||
+      channel.type == ChannelType.GuildVoice
+    )
+  ) return;
 
-        if (userMessages.length == 0)
-          return await errorEmbed(
-            interaction,
-            "No messages found.",
-            "No messages from this user were found in the recent history.",
-          );
+  try {
+    if (targetUser) {
+      const userMessages = (await channel.messages.fetch({ limit: 100 }))
+        .filter(m => m.author.id == targetUser.id)
+        .first(amount);
 
-        await channel.bulkDelete(userMessages, true);
-        deletedAmount = userMessages.length;
-      } else {
-        await channel.bulkDelete(amount, true);
-        deletedAmount = amount;
-      }
-    } catch (error) {
-      console.error(error);
-      return await errorEmbed(
-        interaction,
-        "Error.",
-        "An error occurred while trying to delete messages.",
-      );
+      if (userMessages.length == 0)
+        return await errorEmbed(
+          interaction,
+          "No messages found.",
+          "No messages from this user were found in the recent history.",
+        );
+
+      await channel.bulkDelete(userMessages, true);
+      deletedAmount = userMessages.length;
+    } else {
+      await channel.bulkDelete(amount, true);
+      deletedAmount = amount;
     }
+  } catch (error) {
+    console.error(error);
+    return await errorEmbed(
+      interaction,
+      "Error.",
+      "An error occurred while trying to delete messages.",
+    );
   }
 
   await modActionEmbed(
