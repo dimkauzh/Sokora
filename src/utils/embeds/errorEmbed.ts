@@ -44,14 +44,14 @@ export async function errorEmbed(
 
 /**
  * Sends the embed containing an internal error and forwards it to the internal error log channel.
- * @param interaction The interaction (slash command).
  * @param error The error log.
+ * @param interaction The interaction (slash command).
  * @returns Embed with the internal error.
  */
 
 export async function logError(options: {
-  error: Error | any;
-  interaction?: ChatInputCommandInteraction | ButtonInteraction;
+  error: Error;
+  interaction: ChatInputCommandInteraction | ButtonInteraction;
   client?: Client;
 }) {
   const { error, interaction, client } = options;
@@ -60,22 +60,24 @@ export async function logError(options: {
     .setDescription(
       "The bot has experienced an internal error.\nThe team has been informed. If you keep encountering this issue, you can go to our [support server](https://discord.gg/c6C25P4BuY) to report it.",
     )
+    .addFields({ name: "💬 • Error message", value: codeBlock(error.message) })
     .addFields({
-      name: "📜 • Error log",
-      value:
-        error.stack.length <= 4096
+      name: "📜 • Error stack",
+      value: error.stack
+        ? error.stack.length <= 4096
           ? codeBlock(error.stack)
-          : "The error log is an attachment below this embed due to it being too large.",
+          : "The error stacktrace is an attachment below this embed due to it being too large."
+        : "No error stacktrace.",
     })
     .setColor(genColor(0));
 
   let sendingOptions: MessageCreateOptions | InteractionReplyOptions = { embeds: [embed] };
-  if (error.stack.length > 4096)
+  if (error.stack && error.stack.length > 4096)
     sendingOptions.files = [
       new AttachmentBuilder(Buffer.from(error.stack, "utf8"), { name: "errorMessage.txt" }),
     ];
 
-  const channel = (client ? client : interaction!.client).channels.cache.get("1343140645132308532");
+  const channel = (client ? client : interaction.client).channels.cache.get("1343140645132308532");
   if (!channel?.isTextBased() || !channel.isSendable()) return;
   await channel.send(sendingOptions as MessageCreateOptions);
 

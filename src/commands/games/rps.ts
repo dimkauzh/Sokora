@@ -72,10 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (opponent.id == interaction.user.id)
       return await errorEmbed(interaction, "Invalid opponent", "You cannot play against yourself!");
 
-    const reply = await interaction.reply({
-      embeds: [baseEmbed],
-      components: [optionsRow],
-    });
+    const reply = await interaction.reply({ embeds: [baseEmbed], components: [optionsRow] });
 
     const playerChoices = new Map<string, RPSChoice>();
     const collector = reply.createMessageComponentCollector({
@@ -111,25 +108,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .setDescription(
             `${interaction.user}: ${rpsEmojis[p1Choice]}\n` +
               `${opponent}: ${rpsEmojis[p2Choice]}\n\n` +
-              `Winner: ${
-                winner == 0 ? "It's a tie!" : winner == 1 ? interaction.user : opponent
-              }`,
+              `Winner: ${winner == 0 ? "It's a tie!" : winner == 1 ? interaction.user : opponent}`,
           )
           .setColor(winner == 0 ? genColor(60) : genColor(120));
 
-        await interaction.editReply({
-          embeds: [resultEmbed],
-          components: [],
-        });
+        await interaction.editReply({ embeds: [resultEmbed], components: [] });
       }
     });
     return;
   }
 
-  const reply = await interaction.reply({
-    embeds: [baseEmbed],
-    components: [optionsRow],
-  });
+  const reply = await interaction.reply({ embeds: [baseEmbed], components: [optionsRow] });
 
   const collector = reply.createMessageComponentCollector({
     filter: i => i.user.id == interaction.user.id,
@@ -150,10 +139,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       )
       .setColor(winner == 0 ? genColor(60) : winner == 1 ? genColor(120) : genColor(0));
 
-    await i.update({
-      embeds: [resultEmbed],
-      components: [],
-    });
+    await i.update({ embeds: [resultEmbed], components: [] });
     collector.stop();
   });
 

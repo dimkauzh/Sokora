@@ -1,4 +1,12 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
+  EmbedBuilder,
+  SlashCommandBuilder,
+  type ChatInputCommandInteraction,
+} from "discord.js";
 import { version } from "../../package.json";
 import { genColor, genImageColor } from "../utils/colorGen";
 import { replace } from "../utils/replace";
@@ -15,26 +23,30 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
   const versions = parseChangelogString(
-    await Bun.file(pathToFileURL(join(process.cwd(), "CHANGELOG.md"))).text()
+    await Bun.file(pathToFileURL(join(process.cwd(), "CHANGELOG.md"))).text(),
   );
 
-  const buttons: ButtonBuilder[] = []
+  const buttons: ButtonBuilder[] = [];
 
   for (const version of versions) {
     buttons.push(
       new ButtonBuilder()
         .setCustomId(version.ver)
         .setLabel(version.ver)
-        .setStyle(ButtonStyle.Primary)
-    )
+        .setStyle(ButtonStyle.Primary),
+    );
   }
 
-  const row = new ActionRowBuilder()
-    .addComponents(...buttons);
+  const row = new ActionRowBuilder().addComponents(...buttons);
 
   const embed = new EmbedBuilder()
     .setAuthor({ name: `•  Changelog for ${version}`, iconURL: avatar })
-    .setDescription([versions[0].changelog, "-# See older versions [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md)."].join("\n"))
+    .setDescription(
+      [
+        versions[0].changelog,
+        "-# See older versions [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
+      ].join("\n"),
+    )
     .setFooter({ text: replace("(madeWith)") })
     .setThumbnail(avatar)
     .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
@@ -61,7 +73,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (version) {
       embed
         .setAuthor({ name: `•  Changelog for ${version.ver}`, iconURL: avatar })
-        .setDescription([version.changelog, "-# See older versions [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md)."].join("\n"));
+        .setDescription(
+          [
+            version.changelog,
+            "-# See older versions [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
+          ].join("\n"),
+        );
       // @ts-expect-error whatever, it works
       await i.update({ embeds: [embed], components: [row] });
     }

@@ -62,18 +62,20 @@ export async function serverEmbed(options: Options) {
 
   if (boostTier)
     statValues.push(
-      `🌟 • ${!boostTier ? "**No** level" : `Level **${boostTier}**`}: **${boostCount}**${!boostTier ? "/2" : boostTier == 1 ? "/7" : boostTier == 2 ? "/14" : ""
+      `🌟 • ${!boostTier ? "**No** level" : `Level **${boostTier}**`}: **${boostCount}**${
+        !boostTier ? "/2" : boostTier == 1 ? "/7" : boostTier == 2 ? "/14" : ""
       } ${pluralOrNot("boost", boostCount!)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
     );
 
   if (options.roles)
     statValues.push(
-      `🎭 • **${roles.size - 1}** ${pluralOrNot("role", roles.size - 1)}: ${roles.size == 1
-        ? "*None*"
-        : `${sortedRoles
-          .slice(0, 5)
-          .map(role => mention(role[0], "ROLE"))
-          .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
+      `🎭 • **${roles.size - 1}** ${pluralOrNot("role", roles.size - 1)}: ${
+        roles.size == 1
+          ? "*None*"
+          : `${sortedRoles
+              .slice(0, 5)
+              .map(role => mention(role[0], "ROLE"))
+              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
       }`,
     );
 
@@ -115,8 +117,8 @@ export async function serverEmbed(options: Options) {
 
     const inviteChannel =
       possiblyFetchedInviteChannel &&
-        possiblyFetchedInviteChannel.isTextBased() &&
-        !possiblyFetchedInviteChannel.isThread()
+      possiblyFetchedInviteChannel.isTextBased() &&
+      !possiblyFetchedInviteChannel.isThread()
         ? possiblyFetchedInviteChannel
         : options.guild.rulesChannel;
 
@@ -125,12 +127,12 @@ export async function serverEmbed(options: Options) {
     const inviteUrl = previousInvite
       ? previousInvite.url
       : await inviteChannel.createInvite({
-        maxAge: undefined,
-        maxUses: undefined,
-        reason: "ServerBoard invite",
-        temporary: false,
-        unique: true,
-      });
+          maxAge: undefined,
+          maxUses: undefined,
+          reason: "ServerBoard invite",
+          temporary: false,
+          unique: true,
+        });
 
     embed.addFields({
       name: `🚪 • Join in!`,

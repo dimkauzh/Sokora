@@ -59,13 +59,13 @@ export default (async function run(
     .addFields([
       {
         name: "Message",
-        value: message.content || ""
+        value: message.content || "",
       },
       {
         name: "Source",
         value: `[Jump to message](${message.url})`,
-      }]
-    )
+      },
+    ])
     .setTimestamp(message.createdAt)
     .setFooter({ text: `ID: ${message.id}` })
     .setColor(genColor(80));

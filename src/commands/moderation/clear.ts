@@ -62,7 +62,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       channel.type == ChannelType.PrivateThread ||
       channel.type == ChannelType.GuildVoice
     )
-  ) return;
+  )
+    return;
 
   try {
     if (targetUser) {

@@ -96,12 +96,13 @@ export async function errorCheck(
       "The member has a higher (or the same) role position than Sokora.",
     );
 
+  const same: boolean = highestModPos == highestTargetPos;
+
   if (highestModPos <= highestTargetPos)
     return await errorEmbed(
       interaction,
       `You can't ${action.toLowerCase()} ${name}.`,
-      `The member has ${highestModPos == highestTargetPos ? "the same" : "a higher"
-      } role position ${highestModPos == highestTargetPos ? "as" : "than"} you.`,
+      `The member has ${same ? "the same" : "a higher"} role position ${same ? "as" : "than"} you.`,
     );
 
   if (ownerError) {

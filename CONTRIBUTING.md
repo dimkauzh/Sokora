@@ -42,6 +42,7 @@ A few guides onto how code contributed to Sokora should look like.
 
 - Keep a consistent indentation of two spaces. Don't use tabs.
 - Use `K&R` style for bracket placement (`function() {}` instead of `function() \n {}`).
+- Avoid arrow parenthesis, this means preferring, for example, `.filter(s => s.trim())` above `.filter((s) => s.trim())`. Use parenthesis only if they're necessary, for example when you need to explicitly type a parameter.
 - Use `camelCase` for both variables and function names.
 - Keep lines reasonably short, don't fear linebreaks. Of course, longer lines are valid where needed.
 - Use early returns to avoid nesting.
