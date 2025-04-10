@@ -19,7 +19,7 @@ const client = new Client({
   ],
 });
 
-client.on("ready", async () => {
+client.once("ready", async () => {
   const guilds = client.guilds.cache;
   for (const id of guilds.keys())
     await leavePlease(guilds.get(id)!, await guilds.get(id)?.fetchOwner()!, "Not like that.");

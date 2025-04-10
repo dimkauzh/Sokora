@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { logChannel } from "../logChannel";
+import { reply } from "../reply";
 
 type Content = {
   title: string;
@@ -33,7 +34,7 @@ export async function modActionEmbed(
   if (footer) embed.setFooter({ text: footer });
 
   await logChannel(guild, { embeds: [embed] }).catch(e => console.error(e));
-  await i.reply({ embeds: [embed] }).catch(e => console.error(e));
+  await reply(i, { embeds: [embed] }).catch(e => console.error(e));
 
   return embed;
 }

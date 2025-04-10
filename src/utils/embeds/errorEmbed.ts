@@ -2,14 +2,13 @@ import {
   AttachmentBuilder,
   Client,
   EmbedBuilder,
-  InteractionReplyOptions,
-  MessageCreateOptions,
   codeBlock,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../colorGen";
 import { reply } from "../reply";
+import { errorType } from "../errorType";
 
 /**
  * Sends the embed containing an error.
@@ -51,10 +50,11 @@ export async function errorEmbed(
 
 export async function logError(options: {
   error: Error;
-  interaction: ChatInputCommandInteraction | ButtonInteraction;
+  interaction?: ChatInputCommandInteraction | ButtonInteraction;
   client?: Client;
 }) {
   const { error, interaction, client } = options;
+  const stack = errorType(error).stack;
   const embed = new EmbedBuilder()
     .setAuthor({ name: "Something went wrong!" })
     .setDescription(
@@ -63,26 +63,21 @@ export async function logError(options: {
     .addFields({ name: "💬 • Error message", value: codeBlock(error.message) })
     .addFields({
       name: "📜 • Error stack",
-      value: error.stack
-        ? error.stack.length <= 4096
-          ? codeBlock(error.stack)
+      value: stack
+        ? stack.length <= 4096
+          ? codeBlock(stack)
           : "The error stacktrace is an attachment below this embed due to it being too large."
         : "No error stacktrace.",
     })
     .setColor(genColor(0));
 
-  let sendingOptions: MessageCreateOptions | InteractionReplyOptions = { embeds: [embed] };
-  if (error.stack && error.stack.length > 4096)
-    sendingOptions.files = [
-      new AttachmentBuilder(Buffer.from(error.stack, "utf8"), { name: "errorMessage.txt" }),
-    ];
+  const files: AttachmentBuilder[] = [];
+  if (stack && stack.length >= 1024)
+    files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
 
-  const channel = (client ? client : interaction.client).channels.cache.get("1343140645132308532");
+  const channel = (client ? client : interaction!.client).channels.cache.get("1343140645132308532");
   if (!channel?.isTextBased() || !channel.isSendable()) return;
-  await channel.send(sendingOptions as MessageCreateOptions);
+  await channel.send({ embeds: [embed], files: files });
 
-  if (interaction) {
-    sendingOptions.flags = "Ephemeral";
-    await reply(interaction, sendingOptions as InteractionReplyOptions);
-  }
+  if (interaction) await reply(interaction, { embeds: [embed], files: files, flags: "Ephemeral" });
 }
