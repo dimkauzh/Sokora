@@ -49,7 +49,7 @@ export async function errorEmbed(
  */
 
 export async function logError(options: {
-  error: Error;
+  error: unknown | Error;
   interaction?: ChatInputCommandInteraction | ButtonInteraction;
   client?: Client;
 }) {

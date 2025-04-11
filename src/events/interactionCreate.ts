@@ -1,6 +1,7 @@
 import { commands, subCommands } from "../handlers/commands";
 import { check } from "../utils/database/blocklist";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
+import { noErrorsPlease } from "../utils/noErrorsPlease";
 import type { Event } from "../utils/types";
 
 export default (async function run(interaction) {
@@ -23,6 +24,7 @@ export default (async function run(interaction) {
         "Please try again later.",
       );
 
+    await noErrorsPlease(interaction);
     command.run(interaction);
   }
   if (command.autocomplete) command.autocomplete(interaction);

@@ -1,9 +1,9 @@
-import type { Client } from "discord.js";
+import type { ChatInputCommandInteraction } from "discord.js";
 import { logError } from "./embeds/errorEmbed";
 import { errorType } from "./errorType";
 
 const errorRateLimit = new Set<string>();
-export async function noErrorsPlease(client: Client) {
+export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
   process.removeAllListeners();
 
   const sendErrorMessage = async (
@@ -16,7 +16,7 @@ export async function noErrorsPlease(client: Client) {
 
     errorRateLimit.add(errorKey);
     setTimeout(() => errorRateLimit.delete(errorKey), 10000);
-    await logError({ error, client });
+    await logError({ error, interaction });
   };
 
   const handleError = async (error: Error, eventType: string, additionalInfo: string = "") => {
@@ -24,25 +24,33 @@ export async function noErrorsPlease(client: Client) {
     return await sendErrorMessage(error, eventType, additionalInfo);
   };
 
-  const processEventListeners: { [key: string]: { listener: (...args: any[]) => void } } = {
-    unhandledRejection: {
-      listener: async (reason, promise) =>
-        await handleError(errorType(reason), "unhandledRejection", `Promise: ${promise}`),
-    },
-    uncaughtException: {
-      listener: async (error, origin) =>
-        await handleError(errorType(error), "uncaughtException", `Origin: ${origin}`),
-    },
-    uncaughtExceptionMonitor: {
-      listener: async (error, origin) =>
-        await handleError(errorType(error), "uncaughtExceptionMonitor", `Origin: ${origin}`),
-    },
-  };
+  const processEventListeners: { [key: string]: { listener: (...args: any[]) => Promise<void> } } =
+    {
+      unhandledRejection: {
+        listener: async (reason, promise) => {
+          return await handleError(errorType(reason), "unhandledRejection", `Promise: ${promise}`);
+        },
+      },
+      uncaughtException: {
+        listener: async (error, origin) => {
+          return await handleError(errorType(error), "uncaughtException", `Origin: ${origin}`);
+        },
+      },
+      uncaughtExceptionMonitor: {
+        listener: async (error, origin) => {
+          return await handleError(
+            errorType(error),
+            "uncaughtExceptionMonitor",
+            `Origin: ${origin}`,
+          );
+        },
+      },
+    };
 
   for (const [event, { listener }] of Object.entries(processEventListeners))
     process.on(event, async (...args) => {
       try {
-        listener(...args);
+        return await listener(...args);
       } catch (err) {
         await handleError(errorType(err), "listenerError", `Event: ${event}`);
       }

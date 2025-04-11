@@ -5,8 +5,8 @@ import {
 } from "discord.js";
 import ms from "ms";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { mention } from "../../utils/mention";
 import { errorCheck } from "../../utils/embeds/modEmbed";
+import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("slowdown")
@@ -36,15 +36,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const channelOption = interaction.options.getChannel("channel")!;
   const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
-  // if (
-  //   await errorCheck(
-  //     "ManageChannels",
-  //     { interaction, channel },
-  //     { allErrors: false, botError: true, channelError: true },
-  //     "Manage Channels",
-  //   )
-  // )
-  //   return;
+  if (
+    await errorCheck(
+      "ManageChannels",
+      { interaction, channel },
+      { allErrors: false, botError: true, channelError: true },
+      "Manage Channels",
+    )
+  )
+    return;
 
   const time = interaction.options.getString("time")!;
   const reason = interaction.options.getString("reason");
@@ -59,11 +59,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ChannelType.PrivateThread &&
     ChannelType.GuildVoice
   )
-    await channel
-      .setRateLimitPerUser(ms(time) / 1000, interaction.options.getString("reason")!)
-      .catch(error => {
-        return console.error(error);
-      });
+    await channel.setRateLimitPerUser(ms(time) / 1000, interaction.options.getString("reason")!);
 
   await modActionEmbed(
     {

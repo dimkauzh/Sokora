@@ -1,6 +1,6 @@
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import ms from "ms";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { errorEmbed, logError } from "../../utils/embeds/errorEmbed";
 import { errorCheck, modEmbed } from "../../utils/embeds/modEmbed";
 import { scheduleUnban } from "../../utils/unbanScheduler";
 
@@ -57,7 +57,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason,
     );
     await guild.members.ban(user.id, { reason: reason ?? undefined });
-  } catch (err) {
-    console.error("Failed to ban user:", err);
+  } catch (error) {
+    return await logError({ error, interaction });
   }
 }

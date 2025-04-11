@@ -6,6 +6,5 @@ export function errorType(value: unknown): Error {
     stringified = JSON.stringify(value);
   } catch {}
 
-  const error = new Error(`${stringified}`);
-  return error;
+  return new Error(stringified);
 }
