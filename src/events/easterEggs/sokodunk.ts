@@ -2,9 +2,15 @@ import type { Message, TextChannel } from "discord.js";
 
 export async function run(message: Message) {
   if (
-    !["sokodunk", "sokodunk!", "sike", "sike!", "sokoballing", "sokoballer", "sokoballer!"].includes(
-      message.content.trim().toLowerCase(),
-    )
+    ![
+      "sokodunk",
+      "sokodunk!",
+      "sike",
+      "sike!",
+      "sokoballing",
+      "sokoballer",
+      "sokoballer!",
+    ].includes(message.content.trim().toLowerCase())
   )
     return;
 
