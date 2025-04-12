@@ -1,4 +1,8 @@
-import { SlashCommandSubcommandBuilder, EmbedBuilder, type ChatInputCommandInteraction } from "discord.js";
+import {
+  SlashCommandSubcommandBuilder,
+  EmbedBuilder,
+  type ChatInputCommandInteraction,
+} from "discord.js";
 import * as math from "mathjs";
 import { genColor } from "../../utils/colorGen";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
@@ -19,7 +23,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let result: number;
   try {
     result = math.evaluate(expr);
-    if (typeof result !== "number" || !isFinite(result)) throw new Error("Invalid result");
+    if (typeof result !== "number" || Number.isNaN(result) || !Number.isFinite(result)) {
+      throw new Error("Invalid result");
+    }
   } catch {
     return await errorEmbed(
       interaction,
@@ -31,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const embed = new EmbedBuilder()
     .setTitle("Calculation Result")
     .setDescription(`\`${expr}\` = **${result}**`)
-    .setColor(genColor(240));
+    .setColor(genColor(200));
 
   await interaction.reply({ embeds: [embed] });
 }

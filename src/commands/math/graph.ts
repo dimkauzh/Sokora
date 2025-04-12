@@ -92,7 +92,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setTitle("Function Graph")
       .setDescription(`\`f(x) = ${func}\``)
       .setImage("attachment://graph.png")
-      .setColor(genColor(120));
+      .setColor(genColor(200));
 
     await interaction.reply({ embeds: [embed], files: [attachment] });
   } catch (error) {
