@@ -53,8 +53,9 @@ export async function logError(options: {
   interaction?: ChatInputCommandInteraction | ButtonInteraction;
   client?: Client;
 }) {
-  const { error, interaction, client } = options;
-  const stack = errorType(error).stack;
+  const { interaction, client } = options;
+  const error = errorType(options.error);
+  const stack = error.stack;
   const embed = new EmbedBuilder()
     .setAuthor({ name: "Something went wrong!" })
     .setDescription(
