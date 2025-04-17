@@ -59,7 +59,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setLabel("• Vote")
-      .setURL(`https://top.gg/bot/${client.user.id}/vote`)
+      .setURL(`https://top.gg/bot/${user.id}/vote`)
       .setEmoji("🗳️")
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
