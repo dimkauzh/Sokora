@@ -7,6 +7,8 @@ export async function run(message: Message) {
       "sokodunk!",
       "sike",
       "sike!",
+      "sokoball",
+      "sokoball!",
       "sokoballing",
       "sokoballer",
       "sokoballer!",
