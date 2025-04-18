@@ -1,6 +1,7 @@
 import { SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 import figlet from "figlet";
+import { randomize } from "../utils/randomize";
 
 export const data = new SlashCommandBuilder()
   .setName("ascii")
@@ -17,7 +18,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let ascii: string;
 
   try {
-    ascii = figlet.textSync(text, { font: "Standard" });
+    ascii = figlet.textSync(text, {
+      font: randomize(["Standard", "Univers", "Train", "Stop", "Roman"]) as "Standard",
+    });
   } catch (error) {
     return await errorEmbed({ error, interaction, forward: true });
   }

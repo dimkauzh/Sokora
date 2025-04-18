@@ -57,7 +57,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         CreatePublicThreads: null,
         CreatePrivateThreads: null,
       })
-      .catch(error => console.error(error));
+      .catch(async error => await errorEmbed({ error, interaction }));
 
   await modActionEmbed(
     {

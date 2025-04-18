@@ -3,18 +3,25 @@ import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { logChannel } from "../utils/logChannel";
 import type { Event } from "../utils/types";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export default (async function run(message) {
   const author = message.author;
   if (!author) {
-    console.error(`message ${message} lacks author?`);
+    await errorEmbed({
+      title: "Cannot log deleted message",
+      reason: `message ${message} lacks author?`,
+    });
     return;
   }
   if (author.bot) return;
 
   const guild = message.guild;
   if (!guild) {
-    console.error(`message ${message} lacks guild?`);
+    await errorEmbed({
+      title: "Cannot log deleted message",
+      reason: `message ${message} lacks guild?`,
+    });
     return;
   }
   if (!getSetting(guild.id, "moderation", "log_messages")) return;

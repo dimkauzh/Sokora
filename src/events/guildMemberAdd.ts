@@ -3,6 +3,7 @@ import { genColor, genImageColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { replaceVariables } from "../utils/replace";
 import { Event } from "../utils/types";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export default (async function run(member) {
   const guildID = member.guild.id;
@@ -47,7 +48,7 @@ export default (async function run(member) {
   );
   try {
     await dmChannel.send({ embeds: [embed] }).catch(() => null);
-  } catch (e) {
-    return console.error(e);
+  } catch (error) {
+    await errorEmbed({ error });
   }
 } as Event<"guildMemberAdd">);

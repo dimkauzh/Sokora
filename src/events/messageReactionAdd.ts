@@ -9,6 +9,7 @@ import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { getStarred, setStarred } from "../utils/database/starboard";
 import { Event } from "../utils/types";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export default (async function run(
   reaction: MessageReaction | PartialMessageReaction,
@@ -19,7 +20,9 @@ export default (async function run(
   console.log(`User: ${user.tag}`);
 
   if (reaction.partial)
-    await reaction.fetch().catch(error => console.error(`Error fetching reaction: ${error}`));
+    await reaction
+      .fetch()
+      .catch(async error => await errorEmbed({ title: `Error fetching reaction`, error }));
 
   const message = await reaction.message.fetch();
   if (!message.guild) return console.log("No guild found, returning");
@@ -109,6 +112,6 @@ export default (async function run(
     );
     console.log("Successfully updated starred message");
   } catch (error) {
-    console.error("Error handling starboard message:", error);
+    await errorEmbed({ title: "Error handling starboard message", error });
   }
 } as Event<"messageReactionAdd">);

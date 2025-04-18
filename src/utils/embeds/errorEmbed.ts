@@ -26,7 +26,8 @@ export async function errorEmbed(options: {
   reason?: string;
   forward?: boolean;
 }) {
-  const { interaction, client, title, reason, forward } = options;
+  const { interaction, title, reason, forward } = options;
+  const client = options.client ? (interaction ? interaction.client : null) : null;
   const error = errorType(options.error);
   const stack = error.stack;
   const content = [];

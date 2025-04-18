@@ -2,6 +2,7 @@ import { Client, EmbedBuilder, Guild, GuildMember } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getAutokickData, getAutokickSettings, trackActivityAdd } from "../utils/database/autokick";
 import { logChannel } from "../utils/logChannel";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export async function checkAutokicks(client: Client) {
   for (const guild of client.guilds.cache.values()) {
@@ -11,7 +12,7 @@ export async function checkAutokicks(client: Client) {
     try {
       await processInactivityAutokicks(guild, autokickSettings.threshold);
     } catch (error) {
-      console.error(`Error processing autokicks for guild ${guild.id}:`, error);
+      await errorEmbed({ error, client });
     }
   }
 }

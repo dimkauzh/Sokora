@@ -12,6 +12,7 @@ import { leavePlease } from "../utils/leavePlease";
 import { logChannel } from "../utils/logChannel.ts";
 import { Event } from "../utils/types";
 import { mention } from "../utils/mention.ts";
+import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {
@@ -106,7 +107,7 @@ export default (async function run(message) {
           return await logChannel(guild, { embeds: [embed] });
         }
       } catch (error) {
-        console.error(`Error with regex pattern: ${rule.pattern}`, error);
+        await errorEmbed({ title: `Error with regex pattern: ${rule.pattern}`, error });
       }
     }
 

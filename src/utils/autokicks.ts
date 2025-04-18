@@ -2,6 +2,7 @@ import { Client, EmbedBuilder, Guild, GuildMember } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getAllAutokicks } from "../utils/database/autokick";
 import { logChannel } from "../utils/logChannel";
+import { errorEmbed } from "./embeds/errorEmbed";
 
 export async function checkAutokicks(client: Client): Promise<void> {
   for (const guild of client.guilds.cache.values()) {
@@ -14,10 +15,10 @@ export async function checkAutokicks(client: Client): Promise<void> {
         if (Date.now() - new Date(autokick.last_message as string).getTime() >= delay)
           await handleAutokick(guild, member, autokick.delay as number);
       } catch (error) {
-        console.error(
-          `Error processing autokick for user ${autokick.user} in guild ${guild.id}:`,
+        await errorEmbed({
+          title: `Error processing autokick for user ${autokick.user} in guild ${guild.id}:`,
           error,
-        );
+        });
       }
   }
 }
@@ -38,6 +39,9 @@ async function handleAutokick(guild: Guild, member: GuildMember, days: number): 
 
     await logChannel(guild, { embeds: [embed] });
   } catch (error) {
-    console.error(`Failed to auto-kick member ${member.id} from guild ${guild.id}:`, error);
+    await errorEmbed({
+      title: `Failed to auto-kick member ${member.id} from guild ${guild.id}:`,
+      error,
+    });
   }
 }

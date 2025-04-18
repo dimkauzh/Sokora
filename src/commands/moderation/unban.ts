@@ -1,5 +1,6 @@
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorCheck, modEmbed } from "../../utils/embeds/modEmbed";
+import { errorEmbed } from "../../utils/embeds/errorEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("unban")
@@ -29,5 +30,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   await modEmbed({ interaction, user: target, action: "Unbanned" }, reason);
-  await guild.members.unban(id, reason ?? undefined).catch(error => console.error(error));
+  await guild.members
+    .unban(id, reason ?? undefined)
+    .catch(async error => await errorEmbed({ error, interaction }));
 }

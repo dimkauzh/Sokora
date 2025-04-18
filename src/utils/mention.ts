@@ -31,6 +31,7 @@ export function mention(
     case "DETAILED_TIMESTAMP":
     case "SIMPLE_TIMESTAMP": {
       if (typeof who !== "number" || isNaN(Number(who))) {
+        // TODO - if i add errorEmbed here, too much stuff breaks because of async/await
         console.error(
           "Asked to format a timestamp but provided a string. You should provide timestamps as a number by using Date.now() (without flooring whatsoever). You were given back the string untouched.",
         );

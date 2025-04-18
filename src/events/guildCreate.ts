@@ -5,6 +5,7 @@ import { check } from "../utils/database/blocklist";
 import { leavePlease } from "../utils/leavePlease";
 import { replace } from "../utils/replace";
 import type { Event } from "../utils/types";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export default (async function run(guild) {
   const owner = await guild.fetchOwner();
@@ -34,6 +35,7 @@ export default (async function run(guild) {
     if (!welcomeChannel.permissionsFor(guild.client.user)?.has("SendMessages")) return;
     await welcomeChannel.send({ embeds: [embed] });
   } catch (e) {
-    console.error(e);
+    await errorEmbed({ error: e });
+    return;
   }
 } as Event<"guildCreate">);
