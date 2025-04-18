@@ -13,19 +13,19 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageGuild"))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "You need the **Manage Server** permission.",
-    );
+      title: "You can't execute this command.",
+      reason: "You need the **Manage Server** permission.",
+    });
 
   const pattern = interaction.options.getString("pattern", true);
   if (!getAutomodRules(guild.id).some(rule => rule.pattern == pattern))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "Rule not found",
-      "No automod rule found with this pattern.",
-    );
+      title: "Rule not found",
+      reason: "No automod rule found with this pattern.",
+    });
 
   removeAutomodRule(guild.id, pattern);
   await modActionEmbed(

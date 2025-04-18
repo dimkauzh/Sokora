@@ -59,21 +59,24 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   if (opponent) {
     if (opponent.bot)
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        "Invalid opponent",
-        `You cannot play against a bot!${
+        title: "Invalid opponent",
+        reason: `You cannot play against a bot!${
           opponent.id == interaction.client.user.id
             ? " To challenge Sokora itself, run `/games rps` without specifying the opponent."
             : ""
         }`,
-      );
+      });
 
     if (opponent.id == interaction.user.id)
-      return await errorEmbed(interaction, "Invalid opponent", "You cannot play against yourself!");
+      return await errorEmbed({
+        interaction,
+        title: "Invalid opponent.",
+        reason: "You cannot play against yourself.",
+      });
 
     const reply = await interaction.reply({ embeds: [baseEmbed], components: [optionsRow] });
-
     const playerChoices = new Map<string, RPSChoice>();
     const collector = reply.createMessageComponentCollector({
       filter: i => [interaction.user.id, opponent.id].includes(i.user.id),

@@ -105,13 +105,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed(
-        i,
-        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      );
+      return await errorEmbed({
+        interaction: i,
+        title:
+          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
+      });
 
     if (i.user.id != interaction.user.id)
-      return await errorEmbed(i, "You aren't the person who executed this command.");
+      return await errorEmbed({
+        interaction: i,
+        title: "You aren't the person who executed this command.",
+      });
 
     collector.resetTimer({ time: 30000 });
     i.customId == "general"

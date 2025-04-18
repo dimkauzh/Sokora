@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { logError } from "./embeds/errorEmbed";
+import { errorEmbed } from "./embeds/errorEmbed";
 import { errorType } from "./errorType";
 
 const errorRateLimit = new Set<string>();
@@ -16,7 +16,7 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
 
     errorRateLimit.add(errorKey);
     setTimeout(() => errorRateLimit.delete(errorKey), 10000);
-    await logError({ error, interaction });
+    await errorEmbed({ error, interaction, forward: true });
   };
 
   const handleError = async (error: Error, eventType: string, additionalInfo: string = "") => {
@@ -34,15 +34,6 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
       uncaughtException: {
         listener: async (error, origin) => {
           return await handleError(errorType(error), "uncaughtException", `Origin: ${origin}`);
-        },
-      },
-      uncaughtExceptionMonitor: {
-        listener: async (error, origin) => {
-          return await handleError(
-            errorType(error),
-            "uncaughtExceptionMonitor",
-            `Origin: ${origin}`,
-          );
         },
       },
     };

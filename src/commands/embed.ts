@@ -50,10 +50,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     await interaction.reply({ embeds: [embed] });
   } catch (error) {
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "Invalid embed parameters",
-      "One or more of your inputs were invalid. Make sure image/thumbnail URLs are valid.",
-    );
+      title: "Invalid embed parameters",
+      reason: "One or more of your inputs were invalid. Make sure image/thumbnail URLs are valid.",
+    });
   }
 }

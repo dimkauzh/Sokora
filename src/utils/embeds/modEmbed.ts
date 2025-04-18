@@ -47,34 +47,34 @@ export async function errorCheck(
 
   if (botError)
     if (!client.permissions.has(permission))
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        "The bot can't execute this command.",
-        `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`,
-      );
+        title: "The bot can't execute this command.",
+        reason: `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`,
+      });
 
   if (channelError)
     if (!channel?.permissionsFor(client).has("ViewChannel"))
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        "The bot can't execute this command.",
-        `The bot is missing the **View Channel** permission. If you want to run this command, you might want to give the bot this permission from the channel settings.`,
-      );
+        title: "The bot can't execute this command.",
+        reason: `The bot is missing the **View Channel** permission. If you want to run this command, you might want to give the bot this permission from the channel settings.`,
+      });
 
   if (!member.permissions.has(permission))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      `You're missing the **${permissionAction}** permission.`,
-    );
+      title: "You can't execute this command.",
+      reason: `You're missing the **${permissionAction}** permission.`,
+    });
 
   if (unbanError)
     if (!user)
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        "You can't unban this user.",
-        "The user was never banned.",
-      );
+        title: "You can't unban this user.",
+        reason: "The user was never banned.",
+      });
 
   if (!allErrors || !user || !action) return;
   const target = members.get(user.id)!;
@@ -84,34 +84,34 @@ export async function errorCheck(
 
   if (!target) return;
   if (target == member)
-    return await errorEmbed(interaction, `You can't ${action.toLowerCase()} yourself.`);
+    return await errorEmbed({ interaction, title: `You can't ${action.toLowerCase()} yourself.` });
 
   if (target.id == interaction.client.user.id)
-    return await errorEmbed(interaction, `You can't ${action.toLowerCase()} Sokora.`);
+    return await errorEmbed({ interaction, title: `You can't ${action.toLowerCase()} Sokora.` });
 
   if (!target.manageable)
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      `You can't ${action.toLowerCase()} ${name}.`,
-      "The member has a higher (or the same) role position than Sokora.",
-    );
+      title: `You can't ${action.toLowerCase()} ${name}.`,
+      reason: "The member has a higher (or the same) role position than Sokora.",
+    });
 
   const same: boolean = highestModPos == highestTargetPos;
 
   if (highestModPos <= highestTargetPos)
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      `You can't ${action.toLowerCase()} ${name}.`,
-      `The member has ${same ? "the same" : "a higher"} role position ${same ? "as" : "than"} you.`,
-    );
+      title: `You can't ${action.toLowerCase()} ${name}.`,
+      reason: `The member has ${same ? "the same" : "a higher"} role position ${same ? "as" : "than"} you.`,
+    });
 
   if (ownerError) {
     if (target.id == guild.ownerId)
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        `You can't ${action.toLowerCase()} ${name}.`,
-        "The member owns the server.",
-      );
+        title: `You can't ${action.toLowerCase()} ${name}.`,
+        reason: "The member owns the server.",
+      });
   }
 
   if (outsideError)
@@ -121,11 +121,11 @@ export async function errorCheck(
         .then(() => true)
         .catch(() => false))
     )
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        `You can't ${action.toLowerCase()} ${name}.`,
-        "This user isn't in this server.",
-      );
+        title: `You can't ${action.toLowerCase()} ${name}.`,
+        reason: "This user isn't in this server.",
+      });
 }
 
 export async function modEmbed(
@@ -147,11 +147,11 @@ export async function modEmbed(
       (!previousCase.length && previousCase[0].user != user.id) ||
       previousCase[0].type != dbAction
     )
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        `You can't edit this ${dbAction?.toLowerCase()}.`,
-        `The ${dbAction?.toLowerCase()} doesn't exist.`,
-      );
+        title: `You can't edit this ${dbAction?.toLowerCase()}.`,
+        reason: `The ${dbAction?.toLowerCase()} doesn't exist.`,
+      });
 
     try {
       editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);

@@ -18,11 +18,11 @@ export default (async function run(interaction) {
   if (!command) return;
   if (interaction.isChatInputCommand()) {
     if (!check(interaction.member?.user.id!))
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        "The bot has experienced an internal error.",
-        "Please try again later.",
-      );
+        title: "The bot has experienced an internal error.",
+        reason: "Please try again later.",
+      });
 
     await noErrorsPlease(interaction);
     command.run(interaction);

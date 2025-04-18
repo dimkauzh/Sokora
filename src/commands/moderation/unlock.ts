@@ -38,11 +38,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   if (channel.permissionsFor(guild.id)?.has("SendMessages"))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "The channel is not locked.",
-    );
+      title: "You can't execute this command.",
+      reason: "The channel is not locked.",
+    });
 
   if (
     channel.type == ChannelType.GuildText &&

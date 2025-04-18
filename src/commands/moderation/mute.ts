@@ -32,11 +32,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   if (!ms(duration) || ms(duration) > ms("28d") || ms(duration) <= 0)
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      `You can't mute ${user.displayName}.`,
-      "The duration is invalid or is above the 28 day limit.",
-    );
+      title: `You can't mute ${user.displayName}.`,
+      reason: "The duration is invalid or is above the 28 day limit.",
+    });
 
   const time = new Date(
     Date.parse(new Date().toISOString()) + Date.parse(new Date(ms(duration)).toISOString()),

@@ -145,11 +145,11 @@ settingsKeys.forEach(key => {
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   if (!guild.members.cache?.get(interaction.user.id)?.permissions.has("Administrator"))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "You need the **Administrator** permission.",
-    );
+      title: "You can't execute this command.",
+      reason: "You need the **Administrator** permission.",
+    });
 
   const key = interaction.options.getSubcommand() as keyof typeof settingsDefinition;
   const values = interaction.options.data[0].options!;
@@ -207,11 +207,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ?.permissionsFor(interaction.client.user)
         ?.has("ViewChannel")
     )
-      return await errorEmbed(
+      return await errorEmbed({
         interaction,
-        "The bot can't view this channel.",
-        "You can either give the **View Channel** permission for the bot or use a channel from the dropdown menu.",
-      );
+        title: "The bot can't view this channel.",
+        reason:
+          "You can either give the **View Channel** permission for the bot or use a channel from the dropdown menu.",
+      });
 
     setSetting(guild.id, key, option.name, option.value as string);
     description += `**${humanizeSettings(capitalize(option.name))}:** ${humanizeSettings(

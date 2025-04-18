@@ -38,11 +38,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   if (!channel.permissionsFor(guild.id)?.has("SendMessages"))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "The channel is already locked.",
-    );
+      title: "You can't execute this command.",
+      reason: "The channel is already locked.",
+    });
 
   if (
     channel.type == ChannelType.GuildText &&
@@ -57,7 +57,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
         CreatePublicThreads: false,
         CreatePrivateThreads: false,
       })
-      .catch(error => console.error(error));
+      .catch(
+        async error =>
+          await errorEmbed({
+            interaction,
+            error,
+            forward: true,
+          }),
+      );
 
   await modActionEmbed(
     {

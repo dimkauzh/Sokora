@@ -22,15 +22,15 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageGuild"))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "You need the **Manage Server** permission.",
-    );
+      title: "You can't execute this command.",
+      reason: "You need the **Manage Server** permission.",
+    });
 
   const id = interaction.options.getString("id")!;
   const news = get(guild.id, id);
-  if (!news) return await errorEmbed(interaction, "The specified news don't exist.");
+  if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
 
   const newsChannel = (await guild.channels
     .fetch((getSetting(guild.id, "news", "channel_id") as string) ?? interaction.channel?.id)

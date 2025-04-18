@@ -26,7 +26,7 @@
   "devDependencies": {
     "@types/figlet": "^1.7.0",
     "@types/ms": "^0.7.34",
-    "bun-types": "^1.2.9",
+    "bun-types": "^1.2.10",
     "prettier": "^3.5.3",
     "typescript": "^5.8.3"
   }

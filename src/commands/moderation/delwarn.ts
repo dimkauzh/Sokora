@@ -39,12 +39,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   if (newWarns.length == warns.length)
-    return await errorEmbed(interaction, `There is no warning with the id of ${id}.`);
+    return await errorEmbed({ interaction, title: `There is no warning with the id of ${id}.` });
 
   try {
     removeModeration(guild.id, `${id}`);
   } catch (error) {
-    console.error(error);
+    return await errorEmbed({
+      interaction,
+      error,
+      forward: true,
+    });
   }
 
   const embed = await modActionEmbed(
@@ -64,6 +68,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     await dmChannel.send({ embeds: [embed.setTitle("Your warning has been removed.")] });
   } catch (e) {
-    console.error(e);
+    return await errorEmbed({
+      interaction,
+      error: e,
+      forward: true,
+    });
   }
 }

@@ -23,16 +23,23 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   if (!interaction.guild?.members.cache.get(user.id))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      `You can't kick ${user.displayName}.`,
-      "This user is not in the server.",
-    );
+      title: `You can't kick ${user.displayName}.`,
+      reason: "This user is not in the server.",
+    });
 
   const reason = interaction.options.getString("reason");
   await modEmbed({ interaction, user, action: "Kicked", dm: true, dbAction: "KICK" }, reason);
   await interaction.guild?.members.cache
     .get(user.id)
     ?.kick(reason ?? undefined)
-    .catch(error => console.error(error));
+    .catch(
+      async error =>
+        await errorEmbed({
+          interaction,
+          error,
+          forward: true,
+        }),
+    );
 }

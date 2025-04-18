@@ -36,11 +36,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const guild = interaction.guild!;
   if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ModerateMembers"))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "You need the **Moderate Members** permission.",
-    );
+      title: "You can't execute this command.",
+      reason: "You need the **Moderate Members** permission.",
+    });
 
   const user = interaction.options.getUser("user")!;
   // const warns = listUserModeration(guild.id, user.id, "WARN");

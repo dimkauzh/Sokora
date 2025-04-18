@@ -18,15 +18,16 @@ export const data = new SlashCommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guildID = interaction.guild?.id;
-  if (!guildID) return errorEmbed(interaction, "This command can only be used in a server.");
+  if (!guildID)
+    return await errorEmbed({ interaction, title: "This command can only be used in a server." });
 
   const leaderboardData = getGuildLeaderboard(guildID);
   if (!leaderboardData.length)
-    return errorEmbed(
+    return await errorEmbed({
       interaction,
-      "No data found.",
-      "There is no leveling data for this server yet.",
-    );
+      title: "No data found.",
+      reason: "There is no leveling data for this server yet.",
+    });
 
   leaderboardData.sort((a, b) => {
     if (b.level != a.level) return b.level - a.level;
@@ -80,13 +81,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   collector.on("collect", async (i: ButtonInteraction) => {
     if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed(
-        i,
-        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      );
+      return await errorEmbed({
+        interaction: i,
+        title:
+          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
+      });
 
     if (i.user.id != interaction.user.id)
-      return errorEmbed(i, "You are not the person who executed this command.");
+      return await errorEmbed({
+        interaction: i,
+        title: "You are not the person who executed this command.",
+      });
 
     collector.resetTimer({ time: 30000 });
     if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;

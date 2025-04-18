@@ -1,15 +1,15 @@
-import {
-  SlashCommandBuilder,
-  type ChatInputCommandInteraction,
-} from "discord.js";
-import { errorEmbed, logError } from "../utils/embeds/errorEmbed";
-import figlet from 'figlet';
+import { SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
+import figlet from "figlet";
 
 export const data = new SlashCommandBuilder()
   .setName("ascii")
   .setDescription("Converts text you send into ASCII art.")
   .addStringOption(option =>
-    option.setName("text").setDescription("The text you want to convert into ASCII art.").setRequired(true)
+    option
+      .setName("text")
+      .setDescription("The text you want to convert into ASCII art.")
+      .setRequired(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -17,22 +17,18 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let ascii: string;
 
   try {
-    ascii = figlet.textSync(text, { font: 'Standard' });
+    ascii = figlet.textSync(text, { font: "Standard" });
   } catch (error) {
-    return logError({ error, interaction })
+    return await errorEmbed({ error, interaction, forward: true });
   }
 
-  if (!ascii) {
-    return await errorEmbed(
+  if (!ascii)
+    return await errorEmbed({
       interaction,
-      `You can't create ASCII art from \`${text}\`!`,
-      "This text is either empty or only contains invalid characters.",
-    );
-  }
+      title: `You can't create ASCII art from \`${text}\`!`,
+      reason: "This text is either empty or only contains invalid characters.",
+    });
 
-  if (ascii.length > 1990) {
-    ascii = ascii.substring(0, 1987) + "...";
-  }
-
+  if (ascii.length > 1990) ascii = ascii.substring(0, 1987) + "...";
   await interaction.reply({ content: `\`\`\`${ascii}\`\`\`` });
 }

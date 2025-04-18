@@ -96,10 +96,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     await interaction.reply({ embeds: [embed], files: [attachment] });
   } catch (error) {
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "Invalid function",
-      "Please provide a valid mathematical function. Examples: 'x^2', 'sin(x)', '2*x + 1'.",
-    );
+      title: "Invalid function",
+      reason: "Please provide a valid mathematical function. Examples: 'x^2', 'sin(x)', '2*x + 1'.",
+    });
   }
 }

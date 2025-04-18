@@ -49,9 +49,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const amount = interaction.options.getNumber("amount")!;
   if (amount > 100)
-    return await errorEmbed(interaction, "You can only clear up to 100 messages at a time.");
+    return await errorEmbed({
+      interaction,
+      title: "You can only clear up to 100 messages at a time.",
+    });
 
-  if (amount < 1) return await errorEmbed(interaction, "You must clear at least 1 message.");
+  if (amount < 1)
+    return await errorEmbed({ interaction, title: "You must clear at least 1 message." });
 
   const targetUser = interaction.options.getUser("user");
   let deletedAmount = 0;
@@ -72,11 +76,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
         .first(amount);
 
       if (userMessages.length == 0)
-        return await errorEmbed(
+        return await errorEmbed({
           interaction,
-          "No messages found.",
-          "No messages from this user were found in the recent history.",
-        );
+          title: "No messages found.",
+          reason: "No messages from this user were found in the recent history.",
+        });
 
       await channel.bulkDelete(userMessages, true);
       deletedAmount = userMessages.length;
@@ -85,12 +89,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
       deletedAmount = amount;
     }
   } catch (error) {
-    console.error(error);
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "Error.",
-      "An error occurred while trying to delete messages.",
-    );
+      error,
+      forward: true,
+    });
   }
 
   await modActionEmbed(

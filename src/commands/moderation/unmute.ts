@@ -28,11 +28,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   if (!target?.communicationDisabledUntil)
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't unmute this user.",
-      "The user was never muted.",
-    );
+      title: "You can't unmute this user.",
+      reason: "The user was never muted.",
+    });
 
   await modEmbed({ interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE" }, reason);
   await target?.edit({ communicationDisabledUntil: null }).catch(error => console.error(error));

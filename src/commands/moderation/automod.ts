@@ -29,11 +29,11 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageGuild"))
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "You need the **Manage Server** permission.",
-    );
+      title: "You can't execute this command.",
+      reason: "You need the **Manage Server** permission.",
+    });
 
   const pattern = interaction.options.getString("pattern", true);
   const action = interaction.options.getString("action", true);
@@ -41,11 +41,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     new RegExp(pattern);
   } catch (error) {
-    return await errorEmbed(
+    return await errorEmbed({
       interaction,
-      "Invalid regex pattern.",
-      "The provided pattern is not a valid regular expression.",
-    );
+      title: "Invalid regex pattern.",
+      reason: "The provided pattern is not a valid regular expression.",
+    });
   }
 
   addAutomodRule(guild.id, pattern, action, duration, [], []);

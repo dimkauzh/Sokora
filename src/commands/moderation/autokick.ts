@@ -23,17 +23,15 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageGuild")) {
-    return await errorEmbed(
+  if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageGuild"))
+    return await errorEmbed({
       interaction,
-      "You can't execute this command.",
-      "You need the **Manage Server** permission.",
-    );
-  }
+      title: "You can't execute this command.",
+      reason: "You need the **Manage Server** permission.",
+    });
 
   const targetUser = interaction.options.getUser("user", true);
   const days = interaction.options.getInteger("days", true);
-
   if (days == 0) {
     removeAutokickData(guild.id, targetUser.id);
     return await modActionEmbed(
