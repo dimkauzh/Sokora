@@ -25,7 +25,7 @@ export type SqlType<T extends FieldData> = {
   USER: string;
   ROLE: string;
   COMMAND: string;
-  LIST: any[];
+  LIST: Record<string, any>;
   SETTING: any[];
   SETTING_CATEGORY: any[];
 }[T];

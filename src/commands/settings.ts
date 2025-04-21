@@ -151,11 +151,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Administrator** permission.",
     });
 
-  const key = interaction.options.getSubcommand() as keyof typeof settingsDefinition;
+  const key = interaction.options.getSubcommand();
   const values = interaction.options.data[0].options!;
   const settingsDef = settingsDefinition[key];
   const settingText = (name: string): string => {
     const setting = getSetting(guild.id, key, name)?.toString();
+    // KNOWN ISSUE - if type = list, key ^^^ is wrong
+    if (!setting) return "*Undefined.*";
     let text;
     switch (settingsDef.settings[name].type) {
       case "CHANNEL":

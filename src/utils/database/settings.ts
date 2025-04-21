@@ -51,6 +51,7 @@ const _test: FullSettingsDefinition = {
 };
 
 export const settingsDefinition: FullSettingsDefinition = {
+  ..._test,
   leveling: {
     description: "Customize the behavior of the leveling system.",
     settings: {
