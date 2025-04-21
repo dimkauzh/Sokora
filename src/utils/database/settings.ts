@@ -16,29 +16,22 @@ type SingleSettingDefinition = {
   desc: string;
   emoji?: string;
   val?: any;
+  settings?: Record<
+    string,
+    SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
+  >;
 };
 
 type FullSettingsDefinition = Record<
   string,
   {
     description: string;
-    settings: Record<
-      string,
-      {
-        type: FieldData;
-        desc: string;
-        emoji?: string;
-        settings?: Record<
-          string,
-          SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
-        >;
-        val?: any;
-      }
-    >;
+    settings: Record<string, SingleSettingDefinition>;
   }
 >;
 
-export const settingsDefinition: FullSettingsDefinition = {
+// @ts-ignore
+const _test: FullSettingsDefinition = {
   test: {
     description: "this is a test",
     settings: {
@@ -55,6 +48,9 @@ export const settingsDefinition: FullSettingsDefinition = {
       },
     },
   },
+};
+
+export const settingsDefinition: FullSettingsDefinition = {
   leveling: {
     description: "Customize the behavior of the leveling system.",
     settings: {
