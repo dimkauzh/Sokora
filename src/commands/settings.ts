@@ -151,12 +151,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Administrator** permission.",
     });
 
-  const key = interaction.options.getSubcommand();
+  const key = interaction.options.getSubcommandGroup() ?? interaction.options.getSubcommand();
   const values = interaction.options.data[0].options!;
   const settingsDef = settingsDefinition[key];
   const settingText = (name: string): string => {
     const setting = getSetting(guild.id, key, name)?.toString();
-    // KNOWN ISSUE - if type = list, key ^^^ is wrong
     if (!setting) return "*Undefined.*";
     let text;
     switch (settingsDef.settings[name].type) {
@@ -176,14 +175,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return text;
   };
 
-  if (!values.length) {
+  if (!values.length || !values.filter(value => value.type != 1)[0]) {
     const embed = new EmbedBuilder()
       .setAuthor({ name: `${capitalize(key)} settings` })
       .setDescription(
         Object.keys(settingsDef.settings)
           .map(
             setting =>
-              `${settingsDef.settings[setting].emoji} **• ${humanizeSettings(
+              `${settingsDef.settings[setting].emoji ? `${settingsDef.settings[setting].emoji} • ` : ""}**${humanizeSettings(
                 capitalize(setting),
               )}**: ${humanizeSettings(settingText(setting))}`,
           )

@@ -32,13 +32,8 @@ client.once("ready", async () => {
   await registerGuildCommands(client);
   // await registerGlobalCommands(client);
 
-  if (Math.random() < 0.001) {
-    console.log("こんにちは! (konichi whats upppppppp)");
-  } else {
-    console.log("ちーっす！");
-  }
-
   rescheduleUnbans(client);
+  console.log(Math.random() < 0.001 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！");
 });
 
 client.login(process.env.TOKEN);

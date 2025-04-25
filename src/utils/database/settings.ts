@@ -1,5 +1,4 @@
 import { getDatabase } from ".";
-import { kominator } from "../kominator";
 import { FieldData, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
@@ -348,7 +347,7 @@ export function getSetting<
     return null;
   }
 
-  let res = getQuery.all(JSON.stringify(guildID), key + "." + setting) as TypeOfDefinition<
+  let res = getQuery.all(JSON.stringify(guildID), `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];
   const set = settingsDefinition[key].settings[setting];
@@ -360,29 +359,23 @@ export function getSetting<
   }
 
   switch (set.type) {
-    case "TEXT":
-      return res[0].value as SqlType<typeof set.type>;
     case "BOOL":
       return (res[0].value == "1" ? true : false) as SqlType<typeof set.type>;
     case "INTEGER":
       return parseInt(res[0].value) as SqlType<typeof set.type>;
-    case "CHANNEL":
-      return res[0].value;
     case "LIST":
-      return kominator(res[0].value) as SqlType<typeof set.type>;
+      return res[0] as { [key: string]: any } as SqlType<typeof set.type>;
     default:
-      return "WIP";
+      return res[0].value as SqlType<typeof set.type>;
   }
 }
 
-export function setSetting<K extends keyof typeof settingsDefinition>(
-  guildID: string,
-  key: K,
-  setting: string,
-  value: string,
-) {
+export function setSetting<
+  K extends keyof typeof settingsDefinition,
+  S extends keyof (typeof settingsDefinition)[K]["settings"],
+>(guildID: string, key: K, setting: S, value: any) {
   const doInsert = getSetting(guildID, key, setting) == null;
-  if (!doInsert) deleteQuery.all(JSON.stringify(guildID), key + "." + setting);
+  if (!doInsert) deleteQuery.all(JSON.stringify(guildID), `${key}.${setting}`);
   insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, value);
 }
 
@@ -405,7 +398,6 @@ export function listPublicServers(): {
 
   return Array.from(publicGuildSet).map(entry => {
     const inviteChannel = getSetting(entry, "serverboard", "invite_channel");
-
     return {
       guildID: entry,
       showInvite: inviteGuildsSet.has(entry),
