@@ -5,7 +5,6 @@ import {
   PermissionsBitField,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
-  SlashCommandSubcommandGroupBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../utils/colorGen";
@@ -25,121 +24,46 @@ export let data = new SlashCommandBuilder()
   .setDescription("Configure Sokora to your liking.")
   .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator);
 
-function addOptions(
-  subcommand: SlashCommandSubcommandBuilder,
-  key: string,
-  sub: string,
-  sub1?: string,
-) {
-  const setting = settingsDefinition[key].settings[sub];
-  switch (setting.type) {
-    case "BOOL":
-      subcommand.addBooleanOption(option =>
-        option.setName(sub).setDescription(setting.desc).setRequired(false),
-      );
-      break;
-    case "INTEGER":
-      subcommand.addIntegerOption(option =>
-        option.setName(sub).setDescription(setting.desc).setRequired(false),
-      );
-      break;
-    case "CHANNEL":
-      subcommand.addChannelOption(option =>
-        option.setName(sub).setDescription(setting.desc).setRequired(false),
-      );
-      break;
-    case "USER":
-      subcommand.addUserOption(option =>
-        option.setName(sub).setDescription(setting.desc).setRequired(false),
-      );
-      break;
-    case "ROLE":
-      subcommand.addRoleOption(option =>
-        option.setName(sub).setDescription(setting.desc).setRequired(false),
-      );
-      break;
-    case "LIST":
-      if (!setting.settings || !sub1) return;
-      const subSetting = setting.settings[sub1];
-      switch (subSetting.type) {
-        case "BOOL":
-          subcommand.addBooleanOption(option =>
-            option.setName(sub1).setDescription(subSetting.desc).setRequired(false),
-          );
-          break;
-        case "INTEGER":
-          subcommand.addIntegerOption(option =>
-            option.setName(sub1).setDescription(subSetting.desc).setRequired(false),
-          );
-          break;
-        case "CHANNEL":
-          subcommand.addChannelOption(option =>
-            option.setName(sub1).setDescription(subSetting.desc).setRequired(false),
-          );
-          break;
-        case "USER":
-          subcommand.addUserOption(option =>
-            option.setName(sub1).setDescription(subSetting.desc).setRequired(false),
-          );
-          break;
-        case "ROLE":
-          subcommand.addRoleOption(option =>
-            option.setName(sub1).setDescription(subSetting.desc).setRequired(false),
-          );
-          break;
-        default:
-          subcommand.addStringOption(option =>
-            option.setName(sub1).setDescription(subSetting.desc).setRequired(false),
-          );
-          break;
-      }
-      break;
-    default:
-      subcommand.addStringOption(option =>
-        option.setName(sub).setDescription(setting.desc).setRequired(false),
-      );
-      break;
-  }
-}
-
 settingsKeys.forEach(key => {
-  const setting = settingsDefinition[key];
-  const settings = Object.keys(setting.settings);
   const subcommand = new SlashCommandSubcommandBuilder()
     .setName(key)
-    .setDescription(setting.description);
+    .setDescription(settingsDefinition[key].description);
 
-  const subcommandGroup = new SlashCommandSubcommandGroupBuilder()
-    .setName(key)
-    .setDescription(setting.description);
-
-  settings.forEach(sub => {
-    const subSetting = setting.settings[sub];
-    if (subSetting.type != "LIST") {
-      addOptions(subcommand, key, sub);
-
-      if (settings.map(sub => setting.settings[sub].type).includes("LIST")) {
-        const otherSettings = new SlashCommandSubcommandBuilder()
-          .setName("default")
-          .setDescription(setting.description);
-
-        addOptions(otherSettings, key, sub);
-        subcommandGroup.addSubcommand(otherSettings);
-      }
+  Object.keys(settingsDefinition[key].settings).forEach(sub => {
+    const setting = settingsDefinition[key].settings[sub];
+    switch (setting.type) {
+      case "BOOL":
+        subcommand.addBooleanOption(option =>
+          option.setName(sub).setDescription(setting.desc).setRequired(false),
+        );
+        break;
+      case "INTEGER":
+        subcommand.addIntegerOption(option =>
+          option.setName(sub).setDescription(setting.desc).setRequired(false),
+        );
+        break;
+      case "CHANNEL":
+        subcommand.addChannelOption(option =>
+          option.setName(sub).setDescription(setting.desc).setRequired(false),
+        );
+        break;
+      case "USER":
+        subcommand.addUserOption(option =>
+          option.setName(sub).setDescription(setting.desc).setRequired(false),
+        );
+        break;
+      case "ROLE":
+        subcommand.addRoleOption(option =>
+          option.setName(sub).setDescription(setting.desc).setRequired(false),
+        );
+        break;
+      default:
+        subcommand.addStringOption(option =>
+          option.setName(sub).setDescription(setting.desc).setRequired(false),
+        );
+        break;
     }
-    if (!subSetting.settings) return;
-
-    const listSubcommand = new SlashCommandSubcommandBuilder()
-      .setName(sub)
-      .setDescription(subSetting.desc);
-
-    Object.keys(subSetting.settings).forEach(sub1 => addOptions(listSubcommand, key, sub, sub1));
-    subcommandGroup.addSubcommand(listSubcommand);
-    data.addSubcommandGroup(subcommandGroup);
   });
-
-  if (!settings.map(sub => setting.settings[sub].type).includes("LIST"))
-    data.addSubcommand(subcommand);
 });
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -151,12 +75,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Administrator** permission.",
     });
 
-  const key = interaction.options.getSubcommandGroup() ?? interaction.options.getSubcommand();
+  const key = interaction.options.getSubcommand();
   const values = interaction.options.data[0].options!;
   const settingsDef = settingsDefinition[key];
   const settingText = (name: string): string => {
     const setting = getSetting(guild.id, key, name)?.toString();
-    console.log(getSetting(guild.id, key, name));
     if (!setting) return "*Undefined.*";
     let text;
     switch (settingsDef.settings[name].type) {
@@ -168,9 +91,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
         break;
       case "ROLE":
         text = setting ? mention(setting, "ROLE") : "*Not set*";
-        break;
-      case "LIST":
-        text = setting || "*Not set*";
         break;
       default:
         text = setting || "*Not set*";

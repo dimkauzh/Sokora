@@ -29,27 +29,7 @@ type FullSettingsDefinition = Record<
   }
 >;
 
-// @ts-ignore
-const _test: FullSettingsDefinition = {
-  test: {
-    description: "this is a test",
-    settings: {
-      testy: {
-        type: "LIST",
-        desc: "this is a big huge test",
-        settings: {
-          tester: {
-            type: "ROLE",
-            desc: "this is an even bigger test",
-          },
-        },
-      },
-    },
-  },
-};
-
 export const settingsDefinition: FullSettingsDefinition = {
-  ..._test,
   leveling: {
     description: "Customize the behavior of the leveling system.",
     settings: {
@@ -351,7 +331,6 @@ export function getSetting<
   >[];
   const set = settingsDefinition[key].settings[setting];
 
-  if (!res.filter(value => !value.value)[0]) if (set.type == "LIST") return set.settings!;
   if (!res.length) {
     if (!set) return null;
     return set.val;
@@ -362,8 +341,6 @@ export function getSetting<
       return (res[0].value == "1" ? true : false) as SqlType<typeof set.type>;
     case "INTEGER":
       return parseInt(res[0].value) as SqlType<typeof set.type>;
-    case "LIST":
-      return res[0] as Record<string, any> as SqlType<typeof set.type>;
     default:
       return res[0].value as SqlType<typeof set.type>;
   }
