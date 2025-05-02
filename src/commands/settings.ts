@@ -156,6 +156,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const settingsDef = settingsDefinition[key];
   const settingText = (name: string): string => {
     const setting = getSetting(guild.id, key, name)?.toString();
+    console.log(getSetting(guild.id, key, name));
     if (!setting) return "*Undefined.*";
     let text;
     switch (settingsDef.settings[name].type) {
@@ -167,6 +168,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
         break;
       case "ROLE":
         text = setting ? mention(setting, "ROLE") : "*Not set*";
+        break;
+      case "LIST":
+        text = setting || "*Not set*";
         break;
       default:
         text = setting || "*Not set*";

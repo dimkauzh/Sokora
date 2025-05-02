@@ -13,7 +13,9 @@ export type FieldData =
 
 export type TableDefinition = {
   name: string;
-  definition: Record<string, FieldData>;
+  definition:
+    | Record<string, FieldData>
+    | Record<string, { name: string; definition: Record<string, FieldData> }>;
 };
 
 export type SqlType<T extends FieldData> = {

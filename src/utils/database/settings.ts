@@ -41,7 +41,6 @@ const _test: FullSettingsDefinition = {
           tester: {
             type: "ROLE",
             desc: "this is an even bigger test",
-            val: true,
           },
         },
       },
@@ -352,9 +351,9 @@ export function getSetting<
   >[];
   const set = settingsDefinition[key].settings[setting];
 
+  if (!res.filter(value => !value.value)[0]) if (set.type == "LIST") return set.settings!;
   if (!res.length) {
     if (!set) return null;
-    if (set.type == "LIST") return null;
     return set.val;
   }
 
@@ -364,7 +363,7 @@ export function getSetting<
     case "INTEGER":
       return parseInt(res[0].value) as SqlType<typeof set.type>;
     case "LIST":
-      return res[0] as { [key: string]: any } as SqlType<typeof set.type>;
+      return res[0] as Record<string, any> as SqlType<typeof set.type>;
     default:
       return res[0].value as SqlType<typeof set.type>;
   }
