@@ -30,7 +30,7 @@ export const data = new SlashCommandSubcommandBuilder()
       ),
   )
   .addUserOption(user =>
-    user.setName("user").setDescription("Only clear messages from this specific user"),
+    user.setName("user").setDescription("Only clear messages from this specific user."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {

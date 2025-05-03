@@ -21,15 +21,13 @@ type SingleSettingDefinition = {
   >;
 };
 
-type FullSettingsDefinition = Record<
+export const settingsDefinition: Record<
   string,
   {
     description: string;
     settings: Record<string, SingleSettingDefinition>;
   }
->;
-
-export const settingsDefinition: FullSettingsDefinition = {
+> = {
   leveling: {
     description: "Customize the behavior of the leveling system.",
     settings: {

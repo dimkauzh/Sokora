@@ -7,7 +7,9 @@ import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export default (async function run(member) {
   const guildID = member.guild.id;
-  const id = getSetting(guildID, "welcome", "channel") as string;
+  const id =
+    (getSetting(guildID, "", "join_channel") as string) ??
+    (getSetting(guildID, "welcome", "leave_channel") as string);
   const user = member.user;
   const avatar = member.displayAvatarURL();
 
@@ -46,9 +48,10 @@ export default (async function run(member) {
       member.user,
     ),
   );
+
   try {
     await dmChannel.send({ embeds: [embed] }).catch(() => null);
   } catch (error) {
-    await errorEmbed({ error });
+    await errorEmbed({ error, forward: true });
   }
 } as Event<"guildMemberAdd">);

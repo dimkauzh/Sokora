@@ -64,6 +64,7 @@ settingsKeys.forEach(key => {
         break;
     }
   });
+  data.addSubcommand(subcommand);
 });
 
 export async function run(interaction: ChatInputCommandInteraction) {
