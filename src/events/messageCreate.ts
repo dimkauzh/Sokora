@@ -134,7 +134,7 @@ export default (async function run(message) {
 
             await easterEgg.run(message);
           } catch (error) {
-            await errorEmbed({ title: `Error running easter egg ${easterEgg.name}: ${error}`, forward: true });
+            await errorEmbed({ title: `Error running easter egg ${easterEgg.name}`, error: error, forward: true });
           }
         }
       }

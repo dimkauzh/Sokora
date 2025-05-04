@@ -60,10 +60,10 @@ export async function loadEasterEggs() {
 
         easterEggs.push(easterEgg);
       } catch (error) {
-        await errorEmbed({ title: `Error loading easter egg ${easterEggFile}: ${error}`, forward: true });
+        await errorEmbed({ title: `Error loading easter egg ${easterEggFile}`, error: error, forward: true });
       }
     }
   } catch (error) {
-    await errorEmbed({ title: `Error loading easter eggs: ${error}`, forward: true});
+    await errorEmbed({ title: `Error loading easter eggs`, error: error, forward: true});
   }
 }
