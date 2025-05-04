@@ -128,15 +128,13 @@ export default (async function run(message) {
         if (shouldRunEgg) {
           try {
             if (typeof easterEgg.run !== 'function') {
-              const error = `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}`
-              await errorEmbed({ title: error, forward: true });
+              await errorEmbed({ title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}`, forward: true });
               continue;
             }
 
             await easterEgg.run(message);
           } catch (error) {
-            const error2 = `Error running easter egg ${easterEgg.name}: ${error}`;
-            await errorEmbed({ title: error2, forward: true });
+            await errorEmbed({ title: `Error running easter egg ${easterEgg.name}: ${error}`, forward: true });
           }
         }
       }
