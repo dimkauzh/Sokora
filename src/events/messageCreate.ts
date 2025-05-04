@@ -120,15 +120,12 @@ export default (async function run(message) {
       allowedChannels.split(',').map(id => id.trim()).includes(message.channel.id);
 
     if (isChannelAllowed) {
-      console.log("Processing easter eggs for message:", message.content);
       for (const easterEgg of easterEggs) {
         const shouldRunEgg = !enabledEggs ||
           enabledEggs.split(',').map(egg => egg.trim()).includes(easterEgg.name);
 
-        console.log(`Easter egg ${easterEgg.name} - should run:`, shouldRunEgg);
 
         if (shouldRunEgg) {
-          console.log(`Attempting to run easter egg: ${easterEgg.name}`);
           try {
             if (typeof easterEgg.run !== 'function') {
               console.error(`Easter egg ${easterEgg.name} does not have a valid run function:`, easterEgg);
@@ -136,7 +133,6 @@ export default (async function run(message) {
             }
 
             await easterEgg.run(message);
-            console.log(`Finished running easter egg: ${easterEgg.name}`);
           } catch (error) {
             console.error(`Error running easter egg ${easterEgg.name}:`, error);
           }
