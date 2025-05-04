@@ -111,9 +111,39 @@ export default (async function run(message) {
       }
     }
 
-  if (getSetting(guild.id, "easter", "enabled"))
-    for (const easterEgg of easterEggs) easterEgg.run(message);
 
+  if (getSetting(guild.id, "easter", "enabled")) {
+    const enabledEggs = getSetting(guild.id, "easter", "enabled_eggs") as string;
+    const allowedChannels = getSetting(guild.id, "easter", "allowed_channels") as string;
+
+    const isChannelAllowed = !allowedChannels ||
+      allowedChannels.split(',').map(id => id.trim()).includes(message.channel.id);
+
+    if (isChannelAllowed) {
+      console.log("Processing easter eggs for message:", message.content);
+      for (const easterEgg of easterEggs) {
+        const shouldRunEgg = !enabledEggs ||
+          enabledEggs.split(',').map(egg => egg.trim()).includes(easterEgg.name);
+
+        console.log(`Easter egg ${easterEgg.name} - should run:`, shouldRunEgg);
+
+        if (shouldRunEgg) {
+          console.log(`Attempting to run easter egg: ${easterEgg.name}`);
+          try {
+            if (typeof easterEgg.run !== 'function') {
+              console.error(`Easter egg ${easterEgg.name} does not have a valid run function:`, easterEgg);
+              continue;
+            }
+
+            await easterEgg.run(message);
+            console.log(`Finished running easter egg: ${easterEgg.name}`);
+          } catch (error) {
+            console.error(`Error running easter egg ${easterEgg.name}:`, error);
+          }
+        }
+      }
+    }
+  }
   if (!getSetting(guild.id, "leveling", "enabled")) return;
   const blockedChannels = getSetting(guild.id, "leveling", "block_channels") as string;
   if (blockedChannels != undefined)

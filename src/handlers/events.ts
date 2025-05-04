@@ -1,4 +1,4 @@
-import type { Client } from "discord.js";
+import type { Client, Message } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
@@ -18,12 +18,49 @@ export async function loadEvents(client: Client) {
   }
 }
 
-export let easterEggs: any[] = [];
+export interface EasterEgg {
+  name: string;
+  run: (message: Message) => Promise<void>;
+}
+
+export let easterEggs: EasterEgg[] = [];
 export async function loadEasterEggs() {
   const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
 
-  for (const easterEggFile of readdirSync(eventsPath)) {
-    const easterEgg = await import(pathToFileURL(join(eventsPath, easterEggFile)).toString());
-    easterEggs.push(easterEgg);
+  try {
+    const files = readdirSync(eventsPath);
+
+    for (const easterEggFile of files) {
+      if (!easterEggFile.endsWith(".ts")) {
+        continue;
+      }
+
+      const fullPath = join(eventsPath, easterEggFile);
+
+      try {
+        const eggModule = await import(pathToFileURL(fullPath).toString());
+
+        if (typeof eggModule.run !== 'function') {
+          console.error(`Easter egg ${easterEggFile} does not have a run function, please fix this`);
+          continue;
+        }
+
+        const eggName = easterEggFile.split(".")[0];
+
+        const easterEgg: EasterEgg = {
+          name: eggName,
+          run: async (message: Message) => {
+            return await eggModule.run(message);
+          }
+        };
+
+        easterEggs.push(easterEgg);
+      } catch (error) {
+        console.error(`Error loading easter egg ${easterEggFile}:`, error);
+      }
+    }
+
+  } catch (error) {
+    console.error("Error loading easter eggs:", error);
   }
 }
