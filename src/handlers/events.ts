@@ -2,6 +2,7 @@ import type { Client, Message } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
+import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
 
 let events = [];
 export async function loadEvents(client: Client) {
@@ -41,7 +42,10 @@ export async function loadEasterEggs() {
         const eggModule = await import(pathToFileURL(fullPath).toString());
 
         if (typeof eggModule.run !== 'function') {
-          console.error(`Easter egg ${easterEggFile} does not have a run function, please fix this`);
+          await errorEmbed({
+            title: `Easter egg ${easterEggFile} does not have a run function, please fix this`,
+            forward: true
+          });
           continue;
         }
 
@@ -56,11 +60,10 @@ export async function loadEasterEggs() {
 
         easterEggs.push(easterEgg);
       } catch (error) {
-        console.error(`Error loading easter egg ${easterEggFile}:`, error);
+        await errorEmbed({ title: `Error loading easter egg ${easterEggFile}: ${error}`, forward: true });
       }
     }
-
   } catch (error) {
-    console.error("Error loading easter eggs:", error);
+    await errorEmbed({ title: `Error loading easter eggs: ${error}`, forward: true});
   }
 }
