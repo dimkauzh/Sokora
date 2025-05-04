@@ -289,7 +289,6 @@ export const settingsDefinition: Record<
         type: "TEXT",
         desc: "Specific easter eggs to enable (comma-separated). If empty, all easter eggs are enabled.",
         emoji: "🥚",
-        val: "",
       },
       allowed_channels: {
         type: "TEXT",
