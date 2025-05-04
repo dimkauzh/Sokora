@@ -334,6 +334,8 @@ export function getSetting<
     return set.val;
   }
 
+  if (res[0].value == "null" || !res[0].value) return set.val;
+
   switch (set.type) {
     case "BOOL":
       return (res[0].value == "1" ? true : false) as SqlType<typeof set.type>;
