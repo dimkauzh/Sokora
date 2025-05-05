@@ -41,10 +41,10 @@ export async function loadEasterEggs() {
       try {
         const eggModule = await import(pathToFileURL(fullPath).toString());
 
-        if (typeof eggModule.run !== 'function') {
+        if (typeof eggModule.run !== "function") {
           await errorEmbed({
             title: `Easter egg ${easterEggFile} does not have a run function, please fix this`,
-            forward: true
+            forward: true,
           });
           continue;
         }
@@ -55,15 +55,19 @@ export async function loadEasterEggs() {
           name: eggName,
           run: async (message: Message) => {
             return await eggModule.run(message);
-          }
+          },
         };
 
         easterEggs.push(easterEgg);
       } catch (error) {
-        await errorEmbed({ title: `Error loading easter egg ${easterEggFile}`, error: error, forward: true });
+        await errorEmbed({
+          title: `Error loading easter egg ${easterEggFile}`,
+          error: error,
+          forward: true,
+        });
       }
     }
   } catch (error) {
-    await errorEmbed({ title: `Error loading easter eggs`, error: error, forward: true});
+    await errorEmbed({ title: `Error loading easter eggs`, error: error, forward: true });
   }
 }

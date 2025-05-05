@@ -111,30 +111,43 @@ export default (async function run(message) {
       }
     }
 
-
   if (getSetting(guild.id, "easter", "enabled")) {
     const enabledEggs = getSetting(guild.id, "easter", "enabled_eggs") as string;
     const allowedChannels = getSetting(guild.id, "easter", "allowed_channels") as string;
 
-    const isChannelAllowed = !allowedChannels ||
-      allowedChannels.split(',').map(id => id.trim()).includes(message.channel.id);
+    const isChannelAllowed =
+      !allowedChannels ||
+      allowedChannels
+        .split(",")
+        .map(id => id.trim())
+        .includes(message.channel.id);
 
     if (isChannelAllowed) {
       for (const easterEgg of easterEggs) {
-        const shouldRunEgg = !enabledEggs ||
-          enabledEggs.split(',').map(egg => egg.trim()).includes(easterEgg.name);
-
+        const shouldRunEgg =
+          !enabledEggs ||
+          enabledEggs
+            .split(",")
+            .map(egg => egg.trim())
+            .includes(easterEgg.name);
 
         if (shouldRunEgg) {
           try {
-            if (typeof easterEgg.run !== 'function') {
-              await errorEmbed({ title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}`, forward: true });
+            if (typeof easterEgg.run !== "function") {
+              await errorEmbed({
+                title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}`,
+                forward: true,
+              });
               continue;
             }
 
             await easterEgg.run(message);
           } catch (error) {
-            await errorEmbed({ title: `Error running easter egg ${easterEgg.name}`, error: error, forward: true });
+            await errorEmbed({
+              title: `Error running easter egg ${easterEgg.name}`,
+              error: error,
+              forward: true,
+            });
           }
         }
       }
