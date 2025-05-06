@@ -62,9 +62,7 @@ export async function errorEmbed(options: {
     files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
 
   if (forward) {
-    const channel = (client ? client : interaction!.client).channels.cache.get(
-      "1343140645132308532",
-    );
+    const channel = (client ? client : interaction!.client).channels.cache.get(process.env.DEV_ERROR_CHANNEL_ID || "1343140645132308532",);
     if (!channel?.isTextBased() || !channel.isSendable()) return;
     await channel.send({ embeds: [embed], files: files });
   }

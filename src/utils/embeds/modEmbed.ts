@@ -73,16 +73,30 @@ export async function errorCheck(
       return await errorEmbed({
         interaction,
         title: "You can't unban this user.",
-        reason: "The user was never banned.",
+        reason: "This user isn't currently banned.",
       });
 
   if (!allErrors || !user || !action) return;
   const target = members.get(user.id)!;
   const name = user.displayName;
   const highestModPos = member.roles.highest.position;
-  const highestTargetPos = target.roles.highest.position;
+
+  if (outsideError)
+    if (
+      !(await guild.members
+        .fetch(user.id)
+        .then(() => true)
+        .catch(() => false))
+    )
+      return await errorEmbed({
+        interaction,
+        title: `You can't ${action.toLowerCase()} ${name}.`,
+        reason: "This user isn't in this server.",
+      });
 
   if (!target) return;
+  const highestTargetPos = target.roles.highest.position;
+  
   if (target == member)
     return await errorEmbed({ interaction, title: `You can't ${action.toLowerCase()} yourself.` });
 
@@ -113,19 +127,6 @@ export async function errorCheck(
         reason: "The member owns the server.",
       });
   }
-
-  if (outsideError)
-    if (
-      !(await guild.members
-        .fetch(user.id)
-        .then(() => true)
-        .catch(() => false))
-    )
-      return await errorEmbed({
-        interaction,
-        title: `You can't ${action.toLowerCase()} ${name}.`,
-        reason: "This user isn't in this server.",
-      });
 }
 
 export async function modEmbed(
@@ -137,10 +138,10 @@ export async function modEmbed(
   if (!user || !action) return;
   const guild = interaction.guild!;
   const name = user.displayName;
-  const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
+  const generalValues = [`**Moderator:** ${interaction.user.displayName}`];
   let author = `•  ${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
-  reason ? generalValues.push(`**Reason**: ${reason}`) : generalValues.push("*No reason provided*");
-  if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
+  reason ? generalValues.push(`**Reason:** ${reason}`) : generalValues.push("*No reason provided*");
+  if (duration) generalValues.push(`**Duration:** ${ms(ms(duration), { long: true })}`);
   if (previousID) {
     let previousCase = getModeration(guild.id, user.id, `${previousID}`);
     if (
@@ -194,9 +195,10 @@ export async function modEmbed(
         embeds: [
           embed
             .setAuthor({
-              name: `•  You got ${action.toLowerCase()}.`,
-              iconURL: user.displayAvatarURL(),
+              name: `•  ${guild.name}`,
+              iconURL: guild.icon ? guild.iconURL()! : undefined,
             })
+            .setTitle(`You got ${action.toLowerCase()}.`)
             .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
             .setColor(genColor(0)),
         ],

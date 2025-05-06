@@ -64,7 +64,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       channel.type == ChannelType.GuildText ||
       channel.type == ChannelType.PublicThread ||
       channel.type == ChannelType.PrivateThread ||
-      channel.type == ChannelType.GuildVoice
+      channel.type == ChannelType.GuildVoice ||
+      channel.type == ChannelType.GuildStageVoice
     )
   )
     return;
@@ -85,8 +86,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
       await channel.bulkDelete(userMessages, true);
       deletedAmount = userMessages.length;
     } else {
-      await channel.bulkDelete(amount, true);
-      deletedAmount = amount;
+      await channel.bulkDelete(amount, true).then(async messages => {
+        deletedAmount = messages.size;
+      });
+      if (deletedAmount == 0)
+        return await errorEmbed({
+          interaction,
+          title: "No messages found.",
+          reason: "No messages were found in the recent history.",
+        });
     }
   } catch (error) {
     return await errorEmbed({

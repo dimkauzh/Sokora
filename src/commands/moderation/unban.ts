@@ -29,8 +29,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
-  await modEmbed({ interaction, user: target, action: "Unbanned" }, reason);
-  await guild.members
-    .unban(id, reason ?? undefined)
-    .catch(async error => await errorEmbed({ error, interaction }));
+  try {
+    await modEmbed({ interaction, user: target, action: "Unbanned", dbAction: "UNBAN" }, reason);
+    await guild.members
+      .unban(id, reason ?? undefined)
+      .catch(async error => await errorEmbed({ error, interaction }));
+  } catch (error) {
+    return await errorEmbed({ error, interaction });
+  }
+  
 }

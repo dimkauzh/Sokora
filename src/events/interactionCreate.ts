@@ -14,7 +14,7 @@ export default (async function run(interaction) {
   if (!subCommand)
     command = commands.filter(command => command.data.name == interaction.commandName)[0];
   else command = subCommand;
-  console.log(command.run);
+  //console.log(command.run);
 
   if (!command) return;
   if (interaction.isChatInputCommand()) {

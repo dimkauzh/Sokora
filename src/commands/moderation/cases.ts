@@ -24,6 +24,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     MUTE: "🔇",
     KICK: "📤",
     BAN: "🔨",
+    UNBAN: "🔓",
     NOTE: "📝",
   };
 
