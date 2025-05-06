@@ -1,5 +1,5 @@
 import { getDatabase } from ".";
-import { FieldData, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { SqlType, TableDefinition, TypeOfDefinition, SingleSettingDefinition } from "./types";
 
 const tableDefinition = {
   name: "settings",
@@ -9,17 +9,6 @@ const tableDefinition = {
     value: "TEXT",
   },
 } satisfies TableDefinition;
-
-type SingleSettingDefinition = {
-  type: FieldData;
-  desc: string;
-  emoji?: string;
-  val?: any;
-  settings?: Record<
-    string,
-    SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
-  >;
-};
 
 export const settingsDefinition: Record<
   string,

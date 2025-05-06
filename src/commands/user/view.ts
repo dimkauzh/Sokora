@@ -4,18 +4,18 @@ import {
   ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
-  SlashCommandBuilder,
+  SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor, genImageColor } from "../utils/colorGen";
-import { getLevel } from "../utils/database/leveling";
-import { getSetting } from "../utils/database/settings";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { pluralOrNot } from "../utils/pluralOrNot";
-import { mention } from "../utils/mention";
+import { genColor, genImageColor } from "../../utils/colorGen";
+import { getLevel } from "../../utils/database/leveling";
+import { getSetting } from "../../utils/database/settings";
+import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { pluralOrNot } from "../../utils/pluralOrNot";
+import { mention } from "../../utils/mention";
 
-export const data = new SlashCommandBuilder()
-  .setName("user")
+export const data = new SlashCommandSubcommandBuilder()
+  .setName("view")
   .setDescription("Shows your (or another user's) info.")
   .addUserOption(user => user.setName("user").setDescription("Select the user."));
 

@@ -9,7 +9,12 @@ import { join } from "path";
 import { pathToFileURL } from "url";
 
 export let commands: { data: SlashCommandBuilder; run: any; autocomplete: any }[] = [];
-export let subCommands: { data: SlashCommandSubcommandBuilder; run: any; autocomplete: any }[] = [];
+export let subCommands: {
+  data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;
+  run: any;
+  autocomplete: any;
+}[] = [];
+
 function pushCommand(array: any[], command: any) {
   return array.push({ data: command.data, run: command.run, autocomplete: command.autocomplete });
 }
@@ -17,10 +22,9 @@ function pushCommand(array: any[], command: any) {
 function pushSubCommand(client: Client, run: any[], autocomplete: any[], command: any) {
   run.push(command.run);
   pushCommand(subCommands, command);
-  if ("autocompleteHandler" in command) {
-    command.autocompleteHandler(client);
-    autocomplete.push(command.autocomplete);
-  }
+  if (!("autocompleteHandler" in command)) return;
+  command.autocompleteHandler(client);
+  autocomplete.push(command.autocomplete);
 }
 
 async function createSubCommand(name: string, client: Client) {
@@ -39,7 +43,10 @@ async function createSubCommand(name: string, client: Client) {
         pathToFileURL(join(commandsPath, name, subCommandFile.name)).toString()
       );
 
-      command.addSubcommand(subCommand.data);
+      subCommand.data instanceof SlashCommandSubcommandBuilder
+        ? command.addSubcommand(subCommand.data)
+        : command.addSubcommandGroup(subCommand.data);
+
       pushSubCommand(client, run, autocomplete, subCommand);
       continue;
     }

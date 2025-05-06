@@ -14,6 +14,7 @@ export default (async function run(interaction) {
   if (!subCommand)
     command = commands.filter(command => command.data.name == interaction.commandName)[0];
   else command = subCommand;
+  console.log(command.run);
 
   if (!command) return;
   if (interaction.isChatInputCommand()) {
@@ -25,6 +26,7 @@ export default (async function run(interaction) {
       });
 
     await noErrorsPlease(interaction);
+    // TODO: fix error (command.run is an array when running /user settings)
     command.run(interaction);
   }
   if (command.autocomplete) command.autocomplete(interaction);
