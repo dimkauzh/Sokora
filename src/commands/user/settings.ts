@@ -51,7 +51,7 @@ settingsKeys.forEach(key => {
 export async function run(interaction: ChatInputCommandInteraction) {
   const userID = interaction.user.id;
   const key = interaction.options.getSubcommand();
-  const values = interaction.options.data[0].options!;
+  const values = interaction.options.data[0].options![0].options!;
   const settingsDef = settingsDefinition[key];
   const settingText = (name: string): string => {
     const setting = getUserSetting(userID, key, name)?.toString();

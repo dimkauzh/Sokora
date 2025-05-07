@@ -67,10 +67,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (user.bot) return;
   try {
     await dmChannel.send({ embeds: [embed.setTitle("Your warning has been removed.")] });
-  } catch (e) {
+  } catch (error) {
     return await errorEmbed({
       interaction,
-      error: e,
+      error,
       forward: true,
     });
   }

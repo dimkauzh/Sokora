@@ -53,7 +53,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   await interaction
     .showModal(newsModal)
-    .catch(async error => await errorEmbed({ error, interaction }));
+    .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
 
@@ -73,7 +74,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     addNews(guild.id, title, body, i.user.displayName, i.user.avatarURL()!, null!, id);
 
     await sendChannelNews(guild, id, interaction).catch(
-      async error => await errorEmbed({ error, interaction }),
+      async error => await errorEmbed({ error, interaction, forward: true }),
     );
     await i.reply({
       embeds: [new EmbedBuilder().setTitle("News added.").setColor(genColor(100))],

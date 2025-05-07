@@ -7,25 +7,24 @@ import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export default (async function run(message) {
   const author = message.author;
-  if (!author) {
-    await errorEmbed({
-      title: "Cannot log deleted message",
-      reason: `message ${message} lacks author?`,
+  const client = message.client;
+  if (!author)
+    return await errorEmbed({
+      title: "Cannot log deleted message.",
+      reason: `Message ${message} lacks an author.`,
+      client,
     });
-    return;
-  }
+
   if (author.bot) return;
-
   const guild = message.guild;
-  if (!guild) {
-    await errorEmbed({
-      title: "Cannot log deleted message",
-      reason: `message ${message} lacks guild?`,
+  if (!guild)
+    return await errorEmbed({
+      title: "Cannot log deleted message.",
+      reason: `Message ${message} lacks the guild.`,
+      client,
     });
-    return;
-  }
-  if (!getSetting(guild.id, "moderation", "log_messages")) return;
 
+  if (!getSetting(guild.id, "moderation", "log_messages")) return;
   const value = message.content && message.content.length > 0 ? message.content : "*Empty message*";
   const embed = new EmbedBuilder()
     .setAuthor({

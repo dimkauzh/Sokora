@@ -63,7 +63,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   await interaction
     .showModal(editModal)
-    .catch(async error => await errorEmbed({ error, interaction }));
+    .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
 

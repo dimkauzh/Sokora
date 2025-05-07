@@ -68,10 +68,8 @@ async function createSubCommand(name: string, client: Client) {
       subCommandGroup.addSubcommand(subCommand.data);
       pushSubCommand(client, run, autocomplete, subCommand);
     }
-
     command.addSubcommandGroup(subCommandGroup);
   }
-
   return { data: command, run: run, autocomplete: autocomplete };
 }
 

@@ -96,7 +96,7 @@ export async function errorCheck(
 
   if (!target) return;
   const highestTargetPos = target.roles.highest.position;
-  
+
   if (target == member)
     return await errorEmbed({ interaction, title: `You can't ${action.toLowerCase()} yourself.` });
 
@@ -138,10 +138,11 @@ export async function modEmbed(
   if (!user || !action) return;
   const guild = interaction.guild!;
   const name = user.displayName;
-  const generalValues = [`**Moderator:** ${interaction.user.displayName}`];
+  const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
   let author = `•  ${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
-  reason ? generalValues.push(`**Reason:** ${reason}`) : generalValues.push("*No reason provided*");
-  if (duration) generalValues.push(`**Duration:** ${ms(ms(duration), { long: true })}`);
+  reason ? generalValues.push(`**Reason**: ${reason}`) : generalValues.push("*No reason provided*");
+
+  if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
   if (previousID) {
     let previousCase = getModeration(guild.id, user.id, `${previousID}`);
     if (
@@ -173,7 +174,7 @@ export async function modEmbed(
     );
     author = author.concat(`  •  #${id}`);
   } catch (error) {
-    console.error(error);
+    return await errorEmbed({ error, interaction, forward: true });
   }
 
   const embed = new EmbedBuilder()
@@ -190,21 +191,18 @@ export async function modEmbed(
   const dmChannel = await user.createDM().catch(() => null);
   if (!dmChannel || !guild.members.cache.get(user.id) || user.bot) return;
   try {
-    await dmChannel
-      .send({
-        embeds: [
-          embed
-            .setAuthor({
-              name: `•  ${guild.name}`,
-              iconURL: guild.icon ? guild.iconURL()! : undefined,
-            })
-            .setTitle(`You got ${action.toLowerCase()}.`)
-            .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
-            .setColor(genColor(0)),
-        ],
-      })
-      .catch(() => null);
-  } catch (e) {
-    return console.error(e);
+    await dmChannel.send({
+      embeds: [
+        embed
+          .setAuthor({
+            name: `•  You got ${action.toLowerCase()} from ${guild.name}.`,
+            iconURL: guild.icon ? guild.iconURL()! : undefined,
+          })
+          .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
+          .setColor(genColor(0)),
+      ],
+    });
+  } catch (error) {
+    return await errorEmbed({ error, interaction, forward: true });
   }
 }

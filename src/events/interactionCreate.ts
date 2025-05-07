@@ -1,3 +1,4 @@
+import { SlashCommandSubcommandBuilder } from "discord.js";
 import { commands, subCommands } from "../handlers/commands";
 import { check } from "../utils/database/blocklist";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
@@ -7,14 +8,15 @@ import type { Event } from "../utils/types";
 export default (async function run(interaction) {
   if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
   let command;
-  const subCommand = subCommands.filter(
-    subCommand => subCommand.data.name == interaction.options.getSubcommand(false),
+  const subCommand = subCommands.filter(subCommand =>
+    subCommand.data instanceof SlashCommandSubcommandBuilder
+      ? subCommand.data.name == interaction.options.getSubcommand(false)
+      : subCommand.data.name == interaction.options.getSubcommandGroup(false),
   )[0];
 
   if (!subCommand)
     command = commands.filter(command => command.data.name == interaction.commandName)[0];
   else command = subCommand;
-  //console.log(command.run);
 
   if (!command) return;
   if (interaction.isChatInputCommand()) {
@@ -26,7 +28,6 @@ export default (async function run(interaction) {
       });
 
     await noErrorsPlease(interaction);
-    // TODO: fix error (command.run is an array when running /user settings)
     command.run(interaction);
   }
   if (command.autocomplete) command.autocomplete(interaction);
