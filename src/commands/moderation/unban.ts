@@ -16,7 +16,14 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const id = interaction.options.getString("id")!;
   const reason = interaction.options.getString("reason")!;
-  const guild = interaction.guild!;
+  const guild = interaction.guild;
+  if (!guild) {
+    return await errorEmbed({
+      interaction,
+      title: "Error unbanning user",
+      reason: "Couldn't find the guild.",
+    });
+  }
   const member = (await guild.bans.fetch()).get(id);
   if (!member) {
     return await errorEmbed({
@@ -25,7 +32,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "Couldn't find the user in the ban list.",
     });
   }
-  const target = member.user!;
+  const target = member.user;
 
   if (
     await errorCheck(
