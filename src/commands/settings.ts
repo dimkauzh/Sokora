@@ -106,12 +106,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(
         (
           await Promise.all(
-            Object.keys(settingsDef.settings).map(
-              async setting =>
-                `${settingsDef.settings[setting].emoji ? `${settingsDef.settings[setting].emoji} • ` : ""}**${humanizeSettings(
-                  capitalize(setting),
-                )}**: ${humanizeSettings(await settingText(setting))}`,
-            ),
+            Object.keys(settingsDef.settings).map(async setting => {
+              const def = settingsDef.settings[setting];
+              const emoji = def.emoji ? `${def.emoji} • ` : "";
+              const title = humanizeSettings(capitalize(setting));
+              const value = humanizeSettings(await settingText(setting));
+              return `${emoji}**${title}**: ${value}`;
+            }),
           )
         ).join("\n"),
       )

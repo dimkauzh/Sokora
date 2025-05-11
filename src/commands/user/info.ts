@@ -119,9 +119,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       });
 
     collector.resetTimer({ time: 30000 });
-    i.customId == "general"
-      ? row.components[0].setDisabled(true)
-      : row.components[1].setDisabled(true);
+    if (i.customId == "general") row.components[0].setDisabled(true);
+    else row.components[1].setDisabled(true);
 
     const levelEmbed = new EmbedBuilder()
       .setAuthor({

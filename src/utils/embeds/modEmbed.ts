@@ -140,7 +140,8 @@ export async function modEmbed(
   const name = user.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
   let author = `•  ${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
-  reason ? generalValues.push(`**Reason**: ${reason}`) : generalValues.push("*No reason provided*");
+  if (reason) generalValues.push(`**Reason**: ${reason}`);
+  else generalValues.push("*No reason provided*");
 
   if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
   if (previousID) {
