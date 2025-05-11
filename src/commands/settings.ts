@@ -19,7 +19,7 @@ import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { humanizeSettings } from "../utils/humanizeSettings";
 import { mention } from "../utils/mention";
 
-export let data = new SlashCommandBuilder()
+export const data = new SlashCommandBuilder()
   .setName("settings")
   .setDescription("Configure Sokora to your liking.")
   .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator);

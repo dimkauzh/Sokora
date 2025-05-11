@@ -55,7 +55,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setTitle(`Reset all ${category} settings`)
       .setDescription(
-        "All settings from the category have reset to their default values successfully.",
+        "All settings from the category have been reset to their default values successfully.",
       )
       .setColor(genColor(0));
 
@@ -72,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   await setSetting(guild.id, category, setting, null);
   const embed = new EmbedBuilder()
     .setTitle(`Reset ${category}.${setting}`)
-    .setDescription("Setting reset to its default value successfully.")
+    .setDescription(`Setting ${setting} was reset to its default value successfully.`)
     .setColor(genColor(0));
 
   await interaction.reply({ embeds: [embed] });

@@ -19,7 +19,7 @@ export default (async function run(message) {
   const client = message.client;
   if (message.content.startsWith("!SYSTEM")) {
     if (message.author.id != process.env.OWNER) return;
-    let args = message.content.split(" ");
+    const args = message.content.split(" ");
     if (!args[2]) return message.reply("ERROR: Expected three arguments.");
     const username = (await client.users.fetch(args[2])).username;
 
@@ -29,8 +29,18 @@ export default (async function run(message) {
         await message.reply(`${username} has been blocklisted from Sokora.`);
 
         const guilds = client.guilds.cache;
-        for (const id of guilds.keys())
-          await leavePlease(guilds.get(id)!, await guilds.get(id)?.fetchOwner()!, "No.");
+        for (const id of guilds.keys()) {
+          const guild = guilds.get(id);
+          if (!guild) {
+            await errorEmbed({
+              client,
+              title: "Failed to blocklist guild.",
+              reason: `Guild ${id} not found`,
+            });
+            continue;
+          }
+          await leavePlease(guild, await guild.fetchOwner(), "No.");
+        }
         break;
       }
       case "remove":
@@ -212,7 +222,7 @@ export default (async function run(message) {
     .setColor(genColor(200));
 
   if (levelChannelId)
-    (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
+    await (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
       embeds: [embed],
       content: await mention(author.id, "USER"),
     });

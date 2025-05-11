@@ -13,7 +13,7 @@ export default (async function run(member) {
   const user = member.user;
   const avatar = member.displayAvatarURL();
 
-  let embed = new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setAuthor({ name: `•  ${user.displayName} has joined`, iconURL: avatar })
     .setFooter({ text: `User ID: ${member.id}` })
     .setThumbnail(avatar)

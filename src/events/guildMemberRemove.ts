@@ -7,8 +7,8 @@ import { Event } from "../utils/types";
 export default (async function run(member: GuildMember) {
   const guildID = member.guild.id;
   const id =
-    (await getSetting(guildID, "welcome", "leave_channel") as string) ??
-    (await getSetting(guildID, "welcome", "join_channel") as string);
+    ((await getSetting(guildID, "welcome", "leave_channel")) as string) ??
+    ((await getSetting(guildID, "welcome", "join_channel")) as string);
   if (!id) return;
   const user = member.user;
   const avatar = member.displayAvatarURL();
@@ -21,7 +21,7 @@ export default (async function run(member: GuildMember) {
     .setAuthor({ name: `•  ${member.user.displayName} has left`, iconURL: avatar })
     .setDescription(
       await replaceVariables(
-        await getSetting(guildID, "welcome", "leave_text") as string,
+        (await getSetting(guildID, "welcome", "leave_text")) as string,
         member.guild,
         user,
       ),

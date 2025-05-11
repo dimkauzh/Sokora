@@ -144,7 +144,7 @@ export async function modEmbed(
 
   if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
   if (previousID) {
-    let previousCase = getModeration(guild.id, user.id, `${previousID}`);
+    const previousCase = getModeration(guild.id, user.id, `${previousID}`);
     if (
       (!previousCase.length && previousCase[0].user != user.id) ||
       previousCase[0].type != dbAction
@@ -164,11 +164,18 @@ export async function modEmbed(
   } else if (!dbAction) return;
 
   try {
+    const moderator = guild.members.cache.get(interaction.user.id);
+    if (!moderator)
+      return await errorEmbed({
+        interaction,
+        title: `Failed to ${action.toLowerCase()}.`,
+        reason: "Cannot find moderator.",
+      });
     const id = addModeration(
       guild.id,
       user.id,
       dbAction,
-      guild.members.cache.get(interaction.user.id)?.id!,
+      moderator.id,
       reason ?? undefined,
       expiresAt ?? undefined,
     );

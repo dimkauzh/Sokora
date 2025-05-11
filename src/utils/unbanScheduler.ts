@@ -18,8 +18,24 @@ export function scheduleUnban(
   const timeout = setTimeout(async () => {
     try {
       const guild = await client.guilds.fetch(guildID);
-      const user = guild.bans.cache.get(userID)?.user!;
-      const moderator = guild.members.cache.get(modID)!;
+      const user = guild.bans.cache.get(userID)?.user;
+      if (!user) {
+        return await errorEmbed({
+          client,
+          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          reason: "User not found in the guild's ban list's cache.",
+          forward: true,
+        });
+      }
+      const moderator = guild.members.cache.get(modID);
+      if (!moderator) {
+        return await errorEmbed({
+          client,
+          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          reason: "Moderator not found in the guild cache.",
+          forward: true,
+        });
+      }
       const embed = new EmbedBuilder()
         .setAuthor({ name: `•  Unbanned ${user.displayName}.`, iconURL: user.displayAvatarURL() })
         .setDescription(

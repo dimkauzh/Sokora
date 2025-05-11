@@ -10,9 +10,13 @@ export const replacements = [
   { text: "(madeWith)", replacement: `Made with ${randomize(emojis)} by the Sokora team` },
 ];
 
-export function replace(text: string, replaceText?: { text: string; replacement: any }[]) {
+export function replace(
+  text: string,
+  replaceText?: { text: string; replacement: string | number }[],
+) {
   for (const mention of replaceText ? replaceText || replacements : replacements)
-    if (text?.includes(mention.text)) text = text.replaceAll(mention.text, mention.replacement);
+    if (text?.includes(mention.text))
+      text = text.replaceAll(mention.text, mention.replacement.toString());
 
   return text;
 }

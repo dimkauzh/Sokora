@@ -16,7 +16,7 @@ import {
 } from "../../utils/database/userSettings";
 import { humanizeSettings } from "../../utils/humanizeSettings";
 
-export let data = new SlashCommandSubcommandGroupBuilder()
+export const data = new SlashCommandSubcommandGroupBuilder()
   .setName("settings")
   .setDescription("Configure Sokora to your liking.");
 

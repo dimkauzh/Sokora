@@ -29,7 +29,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     (await genImageColor(undefined, avatar)) ??
     genColor(200);
 
-  let embed = new EmbedBuilder()
+  const embed = new EmbedBuilder()
     .setAuthor({
       name: `${avatar ? "•  " : ""}${target?.nickname ?? user.displayName}`,
       iconURL: avatar,
@@ -51,7 +51,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   await interaction.reply({ embeds: [embed] });
 
   if (!target) return;
-  let serverInfo = [`Joined on **<t:${Math.round(target.joinedAt?.valueOf()! / 1000)}:D>**`];
+  const serverInfo = [`Joined on **<t:${Math.round(target.joinedAt!.valueOf()! / 1000)}:D>**`];
   const guildRoles = guild.roles.cache.filter(role => target.roles.cache.has(role.id))!;
   const memberRoles = [...guildRoles].sort((role1, role2) => role2[1].position - role1[1].position);
   memberRoles.pop();

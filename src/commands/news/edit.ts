@@ -85,11 +85,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setFooter({ text: `Edited news from ${guild.name}\nID: ${news.id}` })
       .setColor(genColor(200));
 
-    (
-      guild.channels.cache.get(
-        ((await getSetting(guild.id, "news", "channel_id")) as string) ?? interaction.channel?.id,
-      ) as TextChannel
-    )?.messages.edit(news.messageID, {
+    const channel = guild.channels.cache.get(
+      ((await getSetting(guild.id, "news", "channel_id")) as string) ?? interaction.channel?.id,
+    ) as TextChannel;
+
+    await channel.messages.edit(news.messageID, {
       embeds: [embed],
       content: roleToSend ? await mention(roleToSend.id, "ROLE") : undefined,
     });

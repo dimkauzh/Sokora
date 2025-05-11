@@ -40,7 +40,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const duration = interaction.options.getString("duration") || "1h";
   try {
     new RegExp(pattern);
-  } catch (error) {
+  } catch {
     return await errorEmbed({
       interaction,
       title: "Invalid regex pattern.",

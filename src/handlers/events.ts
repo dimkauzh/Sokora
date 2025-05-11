@@ -5,7 +5,7 @@ import { pathToFileURL } from "url";
 import { client } from "../bot.ts";
 import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
 
-let events = [];
+const events = [];
 export async function loadEvents(client: Client) {
   const eventsPath = join(process.cwd(), "src", "events");
 
@@ -25,7 +25,7 @@ export interface EasterEgg {
   run: (message: Message) => Promise<void>;
 }
 
-export let easterEggs: EasterEgg[] = [];
+export const easterEggs: EasterEgg[] = [];
 export async function loadEasterEggs() {
   const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
 

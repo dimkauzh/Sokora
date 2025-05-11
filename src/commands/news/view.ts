@@ -20,7 +20,14 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   let page = interaction.options.getNumber("page") ?? 1;
-  const news = listAllNews(interaction.guild?.id!);
+  if (!interaction.guild) {
+    return await errorEmbed({
+      interaction,
+      title: "Error viewing news",
+      reason: "This command can only be used in a server.",
+    });
+  }
+  const news = listAllNews(interaction.guild.id);
   const sortedNews = (Object.values(news) as any[])?.sort((a, b) => b.createdAt - a.createdAt);
 
   if (!news || !sortedNews || !sortedNews.length)

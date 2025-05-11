@@ -95,7 +95,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setColor(genColor(200));
 
     await interaction.reply({ embeds: [embed], files: [attachment] });
-  } catch (error) {
+  } catch {
     return await errorEmbed({
       interaction,
       title: "Invalid function",
