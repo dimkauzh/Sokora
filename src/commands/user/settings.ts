@@ -63,14 +63,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setAuthor({ name: `${capitalize(key)} settings` })
       .setDescription(
-        Object.keys(settingsDef.settings)
-          .map(
-            async setting =>
-              `${settingsDef.settings[setting].emoji ? `${settingsDef.settings[setting].emoji} • ` : ""}**${humanizeSettings(
-                capitalize(setting),
-              )}**: ${humanizeSettings(await settingText(setting))}`,
+        (
+          await Promise.all(
+            Object.keys(settingsDef.settings).map(
+              async setting =>
+                `${settingsDef.settings[setting].emoji ? `${settingsDef.settings[setting].emoji} • ` : ""}**${humanizeSettings(
+                  capitalize(setting),
+                )}**: ${humanizeSettings(await settingText(setting))}`,
+            ),
           )
-          .join("\n"),
+        ).join("\n"),
       )
       .setColor(genColor(100));
 

@@ -19,7 +19,7 @@ export const data = new SlashCommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guildList: { guild: Guild; showInvite: boolean; inviteChannelId: string | null }[] = (
     await Promise.all(
-      listPublicServers().map(async entry => {
+      (await listPublicServers()).map(async entry => {
         try {
           return {
             guild: await interaction.client.guilds.fetch(entry.guildID),

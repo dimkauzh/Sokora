@@ -72,10 +72,11 @@ export async function serverEmbed(options: Options) {
       `🎭 • **${roles.size - 1}** ${pluralOrNot("role", roles.size - 1)}: ${
         roles.size == 1
           ? "*None*"
-          : `${sortedRoles
-              .slice(0, 5)
-              .map(async role => await mention(role[0], "ROLE"))
-              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
+          : `${(
+              await Promise.all(
+                sortedRoles.slice(0, 5).map(async role => await mention(role[0], "ROLE")),
+              )
+            ).join("  •  ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
       }`,
     );
 
@@ -129,7 +130,7 @@ export async function serverEmbed(options: Options) {
       : await inviteChannel.createInvite({
           maxAge: undefined,
           maxUses: undefined,
-          reason: "ServerBoard invite",
+          reason: "Serverboard invite",
           temporary: false,
           unique: true,
         });

@@ -355,11 +355,13 @@ export async function setSetting<
   insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, value);
 }
 
-export function listPublicServers(): Promise<{
-  guildID: string;
-  showInvite: boolean;
-  inviteChannelId: string | null;
-}>[] {
+export function listPublicServers(): Promise<
+  {
+    guildID: string;
+    showInvite: boolean;
+    inviteChannelId: string | null;
+  }[]
+> {
   const publicGuildSet = new Set(
     (listPublicQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(entry =>
       JSON.parse(entry.guildID),
@@ -372,14 +374,16 @@ export function listPublicServers(): Promise<{
     ),
   );
 
-  return Array.from(publicGuildSet).map(async entry => {
-    const inviteChannel = await getSetting(entry, "serverboard", "invite_channel");
-    return {
-      guildID: entry,
-      showInvite: inviteGuildsSet.has(entry),
-      inviteChannelId: inviteChannel ? inviteChannel.toString() : null,
-    };
-  });
+  return Promise.all(
+    Array.from(publicGuildSet).map(async entry => {
+      const inviteChannel = await getSetting(entry, "serverboard", "invite_channel");
+      return {
+        guildID: entry,
+        showInvite: inviteGuildsSet.has(entry),
+        inviteChannelId: inviteChannel ? inviteChannel.toString() : null,
+      };
+    }),
+  );
 }
 
 export async function deletePublicServer(guildId: string) {

@@ -54,7 +54,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     const embed = new EmbedBuilder()
       .setTitle(`Reset all ${category} settings`)
-      .setDescription("All settings from category reset to its default value successfully.")
+      .setDescription(
+        "All settings from the category have reset to their default values successfully.",
+      )
       .setColor(genColor(0));
 
     return await interaction.reply({ embeds: [embed] });
@@ -64,7 +66,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed({
       interaction,
       title: "Cannot reset settings.",
-      reason: `There's no **${setting}** setting inside of **${category}**!`,
+      reason: `There's no **${setting}** setting inside of **${category}**.`,
     });
 
   await setSetting(guild.id, category, setting, null);

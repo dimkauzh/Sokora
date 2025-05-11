@@ -65,10 +65,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
       `**${guildRoles.filter(role => target.roles.cache.has(role.id)).size! - 1}** ${pluralOrNot(
         "role",
         memberRoles.length,
-      )} • ${memberRoles
-        .slice(0, 3)
-        .map(async role => await mention(role[1].id, "ROLE"))
-        .join(", ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
+      )} • ${(
+        await Promise.all(
+          memberRoles.slice(0, 3).map(async role => await mention(role[1].id, "ROLE")),
+        )
+      ).join(", ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
     );
 
   embed.addFields({
