@@ -15,7 +15,7 @@ import { pluralOrNot } from "../../utils/pluralOrNot";
 import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
-  .setName("view")
+  .setName("info")
   .setDescription("Shows your (or another user's) info.")
   .addUserOption(user => user.setName("user").setDescription("Select the user."));
 
