@@ -49,7 +49,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   addAutomodRule(guild.id, pattern, action, duration, [], []);
-  setSetting(guild.id, "moderation", "automod_enabled", "1");
+  await setSetting(guild.id, "moderation", "automod_enabled", "1");
   await modActionEmbed(
     {
       title: "Automod Rule Added",

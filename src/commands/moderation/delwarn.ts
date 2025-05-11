@@ -5,8 +5,8 @@ import {
 } from "discord.js";
 import { listUserModeration, removeModeration } from "../../utils/database/moderation";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { errorCheck } from "../../utils/embeds/modEmbed";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
+import { errorCheck } from "../../utils/embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("delwarn")

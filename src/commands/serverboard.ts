@@ -27,7 +27,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             inviteChannelId: entry.inviteChannelId,
           };
         } catch {
-          deletePublicServer(entry.guildID);
+          await deletePublicServer(entry.guildID);
           return null;
         }
       }),

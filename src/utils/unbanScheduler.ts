@@ -1,6 +1,7 @@
 import { Client, EmbedBuilder } from "discord.js";
 import { genColor } from "./colorGen";
 import { getPendingBans, removeModeration } from "./database/moderation";
+import { errorEmbed } from "./embeds/errorEmbed";
 import { logChannel } from "./logChannel";
 
 export function scheduleUnban(
@@ -32,21 +33,30 @@ export function scheduleUnban(
       removeModeration(guildID, userID);
       scheduledUnbans.delete(key);
     } catch (error) {
-      console.error(`Failed to unban user ${userID} in guild ${guildID}:`, error);
+      return await errorEmbed({
+        client,
+        error,
+        title: `Failed to unban user ${userID} in guild ${guildID}`,
+        forward: true,
+      });
     }
   }, delay);
 
   return scheduledUnbans.set(key, timeout);
 }
 
-export function rescheduleUnbans(client: Client) {
+export async function rescheduleUnbans(client: Client) {
   const now = Date.now();
   const pendingBans = getPendingBans(now);
 
   for (const ban of pendingBans) {
     if (!ban.expiresAt) continue;
     if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
-      console.error(`Invalid expiresAt value for ban: ${ban.expiresAt}`);
+      await errorEmbed({
+        client,
+        title: `Invalid expiresAt value for ban: ${ban.expiresAt}`,
+        forward: true,
+      });
       continue;
     }
 

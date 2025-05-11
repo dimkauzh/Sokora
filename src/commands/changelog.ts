@@ -1,3 +1,4 @@
+import { pathToFileURL } from "bun";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -7,13 +8,12 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { join } from "path";
 import { version } from "../../package.json";
 import { genColor, genImageColor } from "../utils/colorGen";
-import { replace } from "../utils/replace";
-import { parseChangelogString } from "../utils/parseChangelog";
-import { pathToFileURL } from "bun";
-import { join } from "path";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
+import { parseChangelogString } from "../utils/parseChangelog";
+import { replace } from "../utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("changelog")

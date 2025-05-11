@@ -10,8 +10,8 @@ import {
 import { genColor } from "../../utils/colorGen";
 import { addNews, listAllQuery } from "../../utils/database/news";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { sendChannelNews } from "../../utils/sendChannelNews";
 import { replaceVariables } from "../../utils/replace";
+import { sendChannelNews } from "../../utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("add")
@@ -53,7 +53,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   await interaction
     .showModal(newsModal)
-    .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
 
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
@@ -74,7 +74,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     addNews(guild.id, title, body, i.user.displayName, i.user.avatarURL()!, null!, id);
 
     await sendChannelNews(guild, id, interaction).catch(
-      async error => await errorEmbed({ error, interaction, forward: true }),
+      async error => await errorEmbed({ interaction, error, forward: true }),
     );
     await i.reply({
       embeds: [new EmbedBuilder().setTitle("News added.").setColor(genColor(100))],

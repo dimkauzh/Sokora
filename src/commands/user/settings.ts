@@ -6,6 +6,7 @@ import {
   SlashCommandSubcommandGroupBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { capitalize } from "../../utils/capitalize";
 import { genColor } from "../../utils/colorGen";
 import {
   getUserSetting,
@@ -13,7 +14,6 @@ import {
   settingsDefinition,
   settingsKeys,
 } from "../../utils/database/userSettings";
-import { capitalize } from "../../utils/capitalize";
 import { humanizeSettings } from "../../utils/humanizeSettings";
 
 export let data = new SlashCommandSubcommandGroupBuilder()
@@ -53,8 +53,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const key = interaction.options.getSubcommand();
   const values = interaction.options.data[0].options![0].options!;
   const settingsDef = settingsDefinition[key];
-  const settingText = (name: string): string => {
-    const setting = getUserSetting(userID, key, name)?.toString();
+  const settingText = async (name: string): Promise<string> => {
+    const setting = (await getUserSetting(userID, key, name))?.toString();
     if (!setting) return "*Undefined.*";
     return setting || "*Not set*";
   };
@@ -65,10 +65,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(
         Object.keys(settingsDef.settings)
           .map(
-            setting =>
+            async setting =>
               `${settingsDef.settings[setting].emoji ? `${settingsDef.settings[setting].emoji} • ` : ""}**${humanizeSettings(
                 capitalize(setting),
-              )}**: ${humanizeSettings(settingText(setting))}`,
+              )}**: ${humanizeSettings(await settingText(setting))}`,
           )
           .join("\n"),
       )
@@ -84,9 +84,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let description = "";
   for (let i = 0; i < values.length; i++) {
     const option = values[i];
-    setUserSetting(userID, key, option.name, option.value as string);
+    await setUserSetting(userID, key, option.name, option.value as string);
     description += `**${humanizeSettings(capitalize(option.name))}:** ${humanizeSettings(
-      settingText(option.name.toString()),
+      await settingText(option.name.toString()),
     )}\n`;
   }
 

@@ -7,6 +7,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { capitalize } from "../utils/capitalize";
 import { genColor } from "../utils/colorGen";
 import {
   getSetting,
@@ -15,7 +16,6 @@ import {
   settingsKeys,
 } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { capitalize } from "../utils/capitalize";
 import { humanizeSettings } from "../utils/humanizeSettings";
 import { mention } from "../utils/mention";
 
@@ -79,19 +79,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const key = interaction.options.getSubcommand();
   const values = interaction.options.data[0].options!;
   const settingsDef = settingsDefinition[key];
-  const settingText = (name: string): string => {
-    const setting = getSetting(guild.id, key, name)?.toString();
+  const settingText = async (name: string): Promise<string> => {
+    const setting = (await getSetting(guild.id, key, name))?.toString();
     if (!setting) return "*Undefined.*";
     let text;
     switch (settingsDef.settings[name].type) {
       case "CHANNEL":
-        text = setting ? mention(setting, "CHANNEL") : "*Not set*";
+        text = setting ? await mention(setting, "CHANNEL") : "*Not set*";
         break;
       case "USER":
-        text = setting ? mention(setting, "USER") : "*Not set*";
+        text = setting ? await mention(setting, "USER") : "*Not set*";
         break;
       case "ROLE":
-        text = setting ? mention(setting, "ROLE") : "*Not set*";
+        text = setting ? await mention(setting, "ROLE") : "*Not set*";
         break;
       default:
         text = setting || "*Not set*";
@@ -106,10 +106,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(
         Object.keys(settingsDef.settings)
           .map(
-            setting =>
+            async setting =>
               `${settingsDef.settings[setting].emoji ? `${settingsDef.settings[setting].emoji} • ` : ""}**${humanizeSettings(
                 capitalize(setting),
-              )}**: ${humanizeSettings(settingText(setting))}`,
+              )}**: ${humanizeSettings(await settingText(setting))}`,
           )
           .join("\n"),
       )
@@ -140,9 +140,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
           "You can either give the **View Channel** permission for the bot or use a channel from the dropdown menu.",
       });
 
-    setSetting(guild.id, key, option.name, option.value as string);
+    await setSetting(guild.id, key, option.name, option.value as string);
     description += `**${humanizeSettings(capitalize(option.name))}:** ${humanizeSettings(
-      settingText(option.name.toString()),
+      await settingText(option.name.toString()),
     )}\n`;
   }
 

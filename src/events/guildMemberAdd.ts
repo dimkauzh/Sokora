@@ -1,20 +1,20 @@
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { genColor, genImageColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { replaceVariables } from "../utils/replace";
 import { Event } from "../utils/types";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
 
 export default (async function run(member) {
   const guildID = member.guild.id;
   const id =
-    (getSetting(guildID, "welcome", "join_channel") as string) ??
-    (getSetting(guildID, "welcome", "leave_channel") as string);
+    ((await getSetting(guildID, "welcome", "join_channel")) as string) ??
+    ((await getSetting(guildID, "welcome", "leave_channel")) as string);
   const user = member.user;
   const avatar = member.displayAvatarURL();
 
   let embed = new EmbedBuilder()
-    .setAuthor({ name: `•  ${user.displayName} has joined.`, iconURL: avatar })
+    .setAuthor({ name: `•  ${user.displayName} has joined`, iconURL: avatar })
     .setFooter({ text: `User ID: ${member.id}` })
     .setThumbnail(avatar)
     .setColor(
@@ -28,7 +28,7 @@ export default (async function run(member) {
 
     embed.setDescription(
       await replaceVariables(
-        getSetting(guildID, "welcome", "join_text") as string,
+        (await getSetting(guildID, "welcome", "join_text")) as string,
         member.guild,
         member.user,
       ),
@@ -36,14 +36,14 @@ export default (async function run(member) {
     await channel.send({ embeds: [embed] });
   }
 
-  if (!getSetting(guildID, "welcome", "join_dm") as boolean) return;
+  if (!(await getSetting(guildID, "welcome", "join_dm")) as boolean) return;
   const dmChannel = await user.createDM().catch(() => null);
   if (!dmChannel) return;
   if (user.bot) return;
 
   embed.setDescription(
     await replaceVariables(
-      getSetting(guildID, "welcome", "dm_text") as string,
+      (await getSetting(guildID, "welcome", "dm_text")) as string,
       member.guild,
       member.user,
     ),
@@ -52,6 +52,6 @@ export default (async function run(member) {
   try {
     await dmChannel.send({ embeds: [embed] }).catch(() => null);
   } catch (error) {
-    return await errorEmbed({ error, client: dmChannel.client, forward: true });
+    return await errorEmbed({ client: member.client, error, forward: true });
   }
 } as Event<"guildMemberAdd">);

@@ -16,7 +16,7 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
 
     errorRateLimit.add(errorKey);
     setTimeout(() => errorRateLimit.delete(errorKey), 10000);
-    await errorEmbed({ error, interaction, forward: true });
+    await errorEmbed({ interaction, error, forward: true });
   };
 
   const handleError = async (error: Error, eventType: string, additionalInfo: string = "") => {
@@ -43,7 +43,7 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
       try {
         return await listener(...args);
       } catch (err) {
-        await handleError(errorType(err), "listenerError", `Event: ${event}`);
+        return await handleError(errorType(err), "listenerError", `Event: ${event}`);
       }
     });
 }

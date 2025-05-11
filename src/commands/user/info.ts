@@ -11,8 +11,8 @@ import { genColor, genImageColor } from "../../utils/colorGen";
 import { getLevel } from "../../utils/database/leveling";
 import { getSetting } from "../../utils/database/settings";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { pluralOrNot } from "../../utils/pluralOrNot";
 import { mention } from "../../utils/mention";
+import { pluralOrNot } from "../../utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("info")
@@ -67,7 +67,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         memberRoles.length,
       )} • ${memberRoles
         .slice(0, 3)
-        .map(role => mention(role[1].id, "ROLE"))
+        .map(async role => await mention(role[1].id, "ROLE"))
         .join(", ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
     );
 
@@ -76,7 +76,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     value: serverInfo.join("\n"),
   });
 
-  const enabled = getSetting(`${guild.id}`, "leveling", "enabled");
+  const enabled = await getSetting(`${guild.id}`, "leveling", "enabled");
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId("general")
@@ -96,7 +96,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
 
   if (!enabled && user.bot) return;
-  const difficulty = getSetting(guild.id, "leveling", "difficulty") as number;
+  const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
   const [level, xp] = getLevel(guild.id, target.id)!;
   const nextLevelXp = Math.floor(
     100 * difficulty * (level + 1) ** 2 - 80 * difficulty * level ** 2,

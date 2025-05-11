@@ -5,8 +5,8 @@ import {
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { mention } from "../../utils/mention";
 import { errorCheck } from "../../utils/embeds/modEmbed";
+import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("lock")
@@ -71,7 +71,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       title: "Locked a channel.",
       body: [
         `**Moderator**: ${interaction.user.displayName}`,
-        `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+        `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
       ],
     },
     guild,

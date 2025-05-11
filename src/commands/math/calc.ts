@@ -1,6 +1,6 @@
 import {
-  SlashCommandSubcommandBuilder,
   EmbedBuilder,
+  SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import * as math from "mathjs";

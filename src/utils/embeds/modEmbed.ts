@@ -1,13 +1,13 @@
 import {
   EmbedBuilder,
-  type PermissionResolvable,
   type ChatInputCommandInteraction,
-  type User,
   type GuildBasedChannel,
+  type PermissionResolvable,
+  type User,
 } from "discord.js";
 import ms from "ms";
 import { genColor } from "../colorGen";
-import { getModeration, addModeration, editModeration, type modType } from "../database/moderation";
+import { addModeration, editModeration, getModeration, type modType } from "../database/moderation";
 import { logChannel } from "../logChannel";
 import { errorEmbed } from "./errorEmbed";
 
@@ -158,7 +158,7 @@ export async function modEmbed(
     try {
       editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
     } catch (error) {
-      console.error(error);
+      return await errorEmbed({ interaction, error, forward: true });
     }
     author = author.concat(`  •  #${previousID}`);
   } else if (!dbAction) return;
@@ -174,7 +174,7 @@ export async function modEmbed(
     );
     author = author.concat(`  •  #${id}`);
   } catch (error) {
-    return await errorEmbed({ error, interaction, forward: true });
+    return await errorEmbed({ interaction, error, forward: true });
   }
 
   const embed = new EmbedBuilder()
@@ -195,7 +195,7 @@ export async function modEmbed(
       embeds: [
         embed
           .setAuthor({
-            name: `•  You got ${action.toLowerCase()} from ${guild.name}.`,
+            name: `•  You got ${action.toLowerCase()} from ${guild.name}`,
             iconURL: guild.icon ? guild.iconURL()! : undefined,
           })
           .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
@@ -203,6 +203,6 @@ export async function modEmbed(
       ],
     });
   } catch (error) {
-    return await errorEmbed({ error, interaction, forward: true });
+    return await errorEmbed({ interaction, error, forward: true });
   }
 }

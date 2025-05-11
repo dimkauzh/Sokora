@@ -7,8 +7,8 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
 import { genColor } from "../../utils/colorGen.ts";
+import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
 import { randomize } from "../../utils/randomize.ts";
 
 type RPSChoice = "rock" | "paper" | "scissors";

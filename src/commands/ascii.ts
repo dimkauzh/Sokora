@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
 import figlet from "figlet";
+import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { randomize } from "../utils/randomize";
 
 export const data = new SlashCommandBuilder()
@@ -22,7 +22,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       font: randomize(["Standard", "Univers", "Train", "Stop", "Roman"]) as "Standard",
     });
   } catch (error) {
-    return await errorEmbed({ error, interaction, forward: true });
+    return await errorEmbed({ interaction, error, forward: true });
   }
 
   if (!ascii)

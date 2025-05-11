@@ -4,8 +4,8 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../../utils/colorGen.ts";
-import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
 import { setSetting, settingsDefinition } from "../../utils/database/settings.ts";
+import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("reset")
@@ -49,17 +49,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   if (!setting) {
-    for (const setting of Object.entries(settingsDefinition[category].settings)) {
-      setSetting(guild.id, category, setting[0], setting[1].val ?? null);
-    }
+    for (const setting of Object.entries(settingsDefinition[category].settings))
+      await setSetting(guild.id, category, setting[0], setting[1].val ?? null);
 
     const embed = new EmbedBuilder()
       .setTitle(`Reset all ${category} settings`)
       .setDescription("All settings from category reset to its default value successfully.")
       .setColor(genColor(0));
 
-    await interaction.reply({ embeds: [embed] });
-    return;
+    return await interaction.reply({ embeds: [embed] });
   }
 
   if (!settingsDefinition[category].settings[setting])
@@ -69,8 +67,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: `There's no **${setting}** setting inside of **${category}**!`,
     });
 
-  setSetting(guild.id, category, setting, null);
-
+  await setSetting(guild.id, category, setting, null);
   const embed = new EmbedBuilder()
     .setTitle(`Reset ${category}.${setting}`)
     .setDescription("Setting reset to its default value successfully.")
