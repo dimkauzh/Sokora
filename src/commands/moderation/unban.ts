@@ -1,6 +1,6 @@
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
-import { errorCheck, modEmbed } from "../../utils/embeds/modEmbed";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { errorCheck, modEmbed } from "../../utils/embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("unban")
@@ -16,8 +16,23 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const id = interaction.options.getString("id")!;
   const reason = interaction.options.getString("reason")!;
-  const guild = interaction.guild!;
-  const target = (await guild.bans.fetch()).get(id)?.user!;
+  const guild = interaction.guild;
+  if (!guild) {
+    return await errorEmbed({
+      interaction,
+      title: "Error unbanning user",
+      reason: "Couldn't find the guild.",
+    });
+  }
+  const member = (await guild.bans.fetch()).get(id);
+  if (!member) {
+    return await errorEmbed({
+      interaction,
+      title: "Error unbanning user",
+      reason: "Couldn't find the user in the ban list.",
+    });
+  }
+  const target = member.user;
 
   if (
     await errorCheck(
@@ -32,5 +47,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
   await modEmbed({ interaction, user: target, action: "Unbanned", dbAction: "UNBAN" }, reason);
   await guild.members
     .unban(id, reason ?? undefined)
-    .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
 }

@@ -7,8 +7,8 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "../colorGen";
-import { reply } from "../reply";
 import { errorType } from "../errorType";
+import { reply } from "../reply";
 
 /**
  * Sends the embed containing an error.
@@ -19,15 +19,20 @@ import { errorType } from "../errorType";
  * @returns Embed with the error description.
  */
 export async function errorEmbed(options: {
-  error?: unknown | Error;
   interaction?: ChatInputCommandInteraction | ButtonInteraction;
   client?: Client;
+  error?: unknown | Error;
   title?: string;
   reason?: string;
   forward?: boolean;
 }) {
   const { interaction, title, reason, forward } = options;
   const client = options.client ? options.client : (interaction ? interaction.client : null);
+  if (!client && !interaction)
+    return console.error(
+      "You need to provide either a client or an interaction for errorEmbed to work.",
+    );
+
   const error = errorType(options.error);
   const stack = error.stack;
   const content = [];

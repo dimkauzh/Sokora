@@ -13,8 +13,8 @@ import { genColor } from "../../utils/colorGen";
 import { get, updateNews } from "../../utils/database/news";
 import { getSetting } from "../../utils/database/settings";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { sendChannelNews } from "../../utils/sendChannelNews";
 import { mention } from "../../utils/mention";
+import { sendChannelNews } from "../../utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("edit")
@@ -63,18 +63,18 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   await interaction
     .showModal(editModal)
-    .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
 
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
 
-    const role = getSetting(guild.id, "news", "role_id") as string;
+    const role = (await getSetting(guild.id, "news", "role_id")) as string;
     let roleToSend: Role | undefined;
     if (role) roleToSend = guild.roles.cache.get(role);
     const title = i.fields.getTextInputValue("title");
     const body = i.fields.getTextInputValue("body");
 
-    if (!getSetting(guild.id, "news", "edit_original_message"))
+    if (!(await getSetting(guild.id, "news", "edit_original_message")))
       await sendChannelNews(guild, id, interaction, title, body);
 
     const embed = new EmbedBuilder()
@@ -85,13 +85,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setFooter({ text: `Edited news from ${guild.name}\nID: ${news.id}` })
       .setColor(genColor(200));
 
-    (
-      guild.channels.cache.get(
-        (getSetting(guild.id, "news", "channel_id") as string) ?? interaction.channel?.id,
-      ) as TextChannel
-    )?.messages.edit(news.messageID, {
+    const channel = guild.channels.cache.get(
+      ((await getSetting(guild.id, "news", "channel_id")) as string) ?? interaction.channel?.id,
+    ) as TextChannel;
+
+    await channel.messages.edit(news.messageID, {
       embeds: [embed],
-      content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
+      content: roleToSend ? await mention(roleToSend.id, "ROLE") : undefined,
     });
 
     updateNews(guild.id, id, title, body);

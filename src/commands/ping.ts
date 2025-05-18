@@ -1,5 +1,5 @@
-import { ChatInputCommandInteraction, SlashCommandBuilder, EmbedBuilder } from "discord.js";
-import { genImageColor, genColor } from "../utils/colorGen";
+import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
+import { genColor, genImageColor } from "../utils/colorGen";
 import { replace } from "../utils/replace";
 
 export const data = new SlashCommandBuilder()

@@ -1,5 +1,7 @@
 import { getDatabase } from ".";
-import { SqlType, TableDefinition, TypeOfDefinition, SingleSettingDefinition } from "./types";
+import { client } from "../../bot";
+import { errorEmbed } from "../embeds/errorEmbed";
+import { SingleSettingDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
   name: "settings",
@@ -305,20 +307,24 @@ const insertQuery = database.query(
   "INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);",
 );
 
-export function getSetting<
+export async function getSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(
   guildID: string,
   key: K,
   setting: S,
-): SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null {
+): Promise<SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null> {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
-    console.error(`Setting ${key}.${setting} does not exist in the database. (invalid)`);
+    await errorEmbed({
+      client,
+      title: `Setting ${key}.${setting} does not exist in the database. Guild: ${guildID}`,
+      forward: true,
+    });
     return null;
   }
 
-  let res = getQuery.all(JSON.stringify(guildID), `${key}.${setting}`) as TypeOfDefinition<
+  const res = getQuery.all(JSON.stringify(guildID), `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];
   const set = settingsDefinition[key].settings[setting];
@@ -340,20 +346,22 @@ export function getSetting<
   }
 }
 
-export function setSetting<
+export async function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S, value: any) {
-  const doInsert = getSetting(guildID, key, setting) == null;
+  const doInsert = (await getSetting(guildID, key, setting)) == null;
   if (!doInsert) deleteQuery.all(JSON.stringify(guildID), `${key}.${setting}`);
   insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, value);
 }
 
-export function listPublicServers(): {
-  guildID: string;
-  showInvite: boolean;
-  inviteChannelId: string | null;
-}[] {
+export function listPublicServers(): Promise<
+  {
+    guildID: string;
+    showInvite: boolean;
+    inviteChannelId: string | null;
+  }[]
+> {
   const publicGuildSet = new Set(
     (listPublicQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(entry =>
       JSON.parse(entry.guildID),
@@ -366,20 +374,22 @@ export function listPublicServers(): {
     ),
   );
 
-  return Array.from(publicGuildSet).map(entry => {
-    const inviteChannel = getSetting(entry, "serverboard", "invite_channel");
-    return {
-      guildID: entry,
-      showInvite: inviteGuildsSet.has(entry),
-      inviteChannelId: inviteChannel ? inviteChannel.toString() : null,
-    };
-  });
+  return Promise.all(
+    Array.from(publicGuildSet).map(async entry => {
+      const inviteChannel = await getSetting(entry, "serverboard", "invite_channel");
+      return {
+        guildID: entry,
+        showInvite: inviteGuildsSet.has(entry),
+        inviteChannelId: inviteChannel ? inviteChannel.toString() : null,
+      };
+    }),
+  );
 }
 
-export function deletePublicServer(guildId: string) {
+export async function deletePublicServer(guildId: string) {
   try {
     deletePublicQuery.all(JSON.stringify(guildId));
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    return await errorEmbed({ client, error, forward: true });
   }
 }

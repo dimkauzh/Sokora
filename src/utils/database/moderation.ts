@@ -44,8 +44,8 @@ export function addModeration(
   reason = "",
   expiresAt?: number | null,
 ) {
-  let id: any = getLastIdQuery.all(guildID);
-  id = parseInt(id.length ? id[0].id : 0) + 1;
+  let id: unknown[] | number = getLastIdQuery.all(guildID);
+  id = parseInt(id.length ? (id[0] as { id: string }).id : "0") + 1;
   addQuery.run(guildID, userID, type, moderator, reason, id, Date.now(), expiresAt ?? null);
   return id;
 }

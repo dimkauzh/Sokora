@@ -109,7 +109,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       title: `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}.`,
       body: [
         `**Moderator**: ${interaction.user.displayName}`,
-        `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+        `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
         targetUser ? `**Target User**: ${targetUser.displayName}` : null,
       ]
         .filter(Boolean)

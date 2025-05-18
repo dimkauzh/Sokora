@@ -1,5 +1,7 @@
 import { getDatabase } from ".";
-import { SqlType, TableDefinition, TypeOfDefinition, SingleSettingDefinition } from "./types";
+import { client } from "../../bot";
+import { errorEmbed } from "../embeds/errorEmbed";
+import { SingleSettingDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
   name: "user_settings",
@@ -49,20 +51,24 @@ const insertQuery = database.query(
   "INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);",
 );
 
-export function getUserSetting<
+export async function getUserSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(
   userID: string,
   key: K,
   setting: S,
-): SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null {
+): Promise<SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null> {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
-    console.error(`Setting ${key}.${setting} does not exist in the database. (invalid)`);
+    await errorEmbed({
+      client,
+      title: `Setting ${key}.${setting} does not exist in the database. User: ${userID}`,
+      forward: true,
+    });
     return null;
   }
 
-  let res = getQuery.all(JSON.stringify(userID), `${key}.${setting}`) as TypeOfDefinition<
+  const res = getQuery.all(JSON.stringify(userID), `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];
   const set = settingsDefinition[key].settings[setting];
@@ -82,11 +88,11 @@ export function getUserSetting<
   }
 }
 
-export function setUserSetting<
+export async function setUserSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(userID: string, key: K, setting: S, value: any) {
-  const doInsert = getUserSetting(userID, key, setting) == null;
+  const doInsert = (await getUserSetting(userID, key, setting)) == null;
   if (!doInsert) deleteQuery.all(JSON.stringify(userID), `${key}.${setting}`);
   insertQuery.run(JSON.stringify(userID), `${key}.${setting}`, value);
 }

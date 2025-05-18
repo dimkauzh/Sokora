@@ -7,29 +7,40 @@ import { getAutomodRules } from "../utils/database/automod";
 import { add, check, remove } from "../utils/database/blocklist";
 import { getLevel, setLevel } from "../utils/database/leveling";
 import { getSetting } from "../utils/database/settings";
+import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
 import { kominator } from "../utils/kominator";
 import { leavePlease } from "../utils/leavePlease";
 import { logChannel } from "../utils/logChannel.ts";
-import { Event } from "../utils/types";
 import { mention } from "../utils/mention.ts";
-import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
+import { Event } from "../utils/types";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {
+  const client = message.client;
   if (message.content.startsWith("!SYSTEM")) {
     if (message.author.id != process.env.OWNER) return;
-    let args = message.content.split(" ");
+    const args = message.content.split(" ");
+    if (!args[2]) return message.reply("ERROR: Expected three arguments.");
+    const username = (await client.users.fetch(args[2])).username;
 
-    if (!args[2]) return message.reply("ERROR: Expected three arguments");
-    const username = (await message.client.users.fetch(args[2])).username;
     switch (args[1]) {
       case "add": {
         add(args[2]);
         await message.reply(`${username} has been blocklisted from Sokora.`);
 
-        const guilds = message.client.guilds.cache;
-        for (const id of guilds.keys())
-          await leavePlease(guilds.get(id)!, await guilds.get(id)?.fetchOwner()!, "No.");
+        const guilds = client.guilds.cache;
+        for (const id of guilds.keys()) {
+          const guild = guilds.get(id);
+          if (!guild) {
+            await errorEmbed({
+              client,
+              title: "Failed to blocklist guild.",
+              reason: `Guild ${id} not found`,
+            });
+            continue;
+          }
+          await leavePlease(guild, await guild.fetchOwner(), "No.");
+        }
         break;
       }
       case "remove":
@@ -50,13 +61,15 @@ export default (async function run(message) {
   if (author.bot) return;
   if (!check(author.id)) return;
   const guild = message.guild!;
+  const member = message.member;
 
-  if (getSetting(guild.id, "moderation", "autokick_enabled")) updateActivity(guild.id, author.id);
-  if (getSetting(guild.id, "moderation", "automod_enabled"))
+  if (await getSetting(guild.id, "moderation", "autokick_enabled"))
+    updateActivity(guild.id, author.id);
+  if (await getSetting(guild.id, "moderation", "automod_enabled"))
     for (const rule of getAutomodRules(guild.id)) {
       const whitelistRoles = JSON.parse(rule.whitelist_roles as string);
       if (JSON.parse(rule.whitelist_channels as string).includes(message.channel.id)) continue;
-      if (message.member?.roles.cache.some(role => whitelistRoles.includes(role.id))) continue;
+      if (member?.roles.cache.some(role => whitelistRoles.includes(role.id))) continue;
 
       try {
         if (new RegExp(rule.pattern as string, "i").test(message.content)) {
@@ -64,23 +77,19 @@ export default (async function run(message) {
             case "delete":
               await message.delete();
               break;
-
             case "timeout":
-              if (message.member?.moderatable)
-                await message.member.timeout(
+              if (member?.moderatable)
+                await member.timeout(
                   ms(rule.action_duration as string),
                   "Automod: Regex filter violation",
                 );
               break;
-
             case "kick":
-              if (message.member?.kickable)
-                await message.member.kick("Automod: Regex filter violation");
+              if (member?.kickable) await member.kick("Automod: Regex filter violation");
               break;
-
             case "ban":
-              if (message.member?.bannable)
-                await message.member.ban({
+              if (member?.bannable)
+                await member.ban({
                   reason: "Automod: Regex filter violation",
                   deleteMessageSeconds: 604800, // 7d
                 });
@@ -89,16 +98,16 @@ export default (async function run(message) {
 
           const embed = new EmbedBuilder()
             .setAuthor({
-              name: "Automod Action",
-              iconURL: message.author.displayAvatarURL(),
+              name: "Automod action",
+              iconURL: author.displayAvatarURL(),
             })
             .setDescription(
               [
-                `**User**: ${message.author.tag}`,
+                `**User**: ${author.tag}`,
                 `**Channel**: <#${message.channel.id}>`,
                 `**Action**: ${rule.action}`,
                 `**Trigger**: \`${rule.pattern}\``,
-                `**Message Content**: ${message.content}`,
+                `**Message content**: ${message.content}`,
               ].join("\n"),
             )
             .setColor(genColor(100))
@@ -107,14 +116,17 @@ export default (async function run(message) {
           return await logChannel(guild, { embeds: [embed] });
         }
       } catch (error) {
-        await errorEmbed({ title: `Error with regex pattern: ${rule.pattern}`, error });
+        return await errorEmbed({
+          client,
+          error,
+          title: `Error with regex pattern: ${rule.pattern}`,
+        });
       }
     }
 
-  if (getSetting(guild.id, "easter", "enabled")) {
-    const enabledEggs = getSetting(guild.id, "easter", "enabled_eggs") as string;
-    const allowedChannels = getSetting(guild.id, "easter", "allowed_channels") as string;
-
+  if (await getSetting(guild.id, "easter", "enabled")) {
+    const enabledEggs = (await getSetting(guild.id, "easter", "enabled_eggs")) as string;
+    const allowedChannels = (await getSetting(guild.id, "easter", "allowed_channels")) as string;
     const isChannelAllowed =
       !allowedChannels ||
       allowedChannels
@@ -131,46 +143,48 @@ export default (async function run(message) {
             .map(egg => egg.trim())
             .includes(easterEgg.name);
 
-        if (shouldRunEgg) {
-          try {
-            if (typeof easterEgg.run !== "function") {
-              await errorEmbed({
-                title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}`,
-                forward: true,
-              });
-              continue;
-            }
-
-            await easterEgg.run(message);
-          } catch (error) {
+        if (!shouldRunEgg) continue;
+        try {
+          if (typeof easterEgg.run != "function") {
             await errorEmbed({
-              title: `Error running easter egg ${easterEgg.name}`,
-              error: error,
+              client,
+              title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}`,
               forward: true,
             });
+            continue;
           }
+
+          await easterEgg.run(message);
+        } catch (error) {
+          return await errorEmbed({
+            client,
+            error,
+            title: `Error running easter egg ${easterEgg.name}`,
+            forward: true,
+          });
         }
       }
     }
   }
-  if (!getSetting(guild.id, "leveling", "enabled")) return;
-  const blockedChannels = getSetting(guild.id, "leveling", "block_channels") as string;
+
+  if (!(await getSetting(guild.id, "leveling", "enabled"))) return;
+  const blockedChannels = (await getSetting(guild.id, "leveling", "block_channels")) as string;
   if (blockedChannels != undefined)
     for (const channelID of kominator(blockedChannels)) if (message.channelId == channelID) return;
 
-  const cooldown = getSetting(guild.id, "leveling", "cooldown") as number;
+  const cooldown = (await getSetting(guild.id, "leveling", "cooldown")) as number;
   if (cooldown > 0) {
     const key = `${guild.id}-${author.id}`;
     const lastExpTime = cooldowns.get(key) || 0;
     const now = Date.now();
 
     if (now - lastExpTime < cooldown * 1000) return;
-    else cooldowns.set(key, now);
+    cooldowns.set(key, now);
   }
 
-  const xpGain = getSetting(guild.id, "leveling", "xp_gain") as number;
-  const levelChannelId = getSetting(guild.id, "leveling", "channel");
-  const difficulty = getSetting(guild.id, "leveling", "difficulty") as number;
+  const xpGain = (await getSetting(guild.id, "leveling", "xp_gain")) as number;
+  const levelChannelId = await getSetting(guild.id, "leveling", "channel");
+  const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
   const [level, xp] = getLevel(guild.id, author.id);
   const newLevelData = { level: level ?? 0, xp: xp + xpGain };
 
@@ -208,8 +222,8 @@ export default (async function run(message) {
     .setColor(genColor(200));
 
   if (levelChannelId)
-    (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
+    await (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
       embeds: [embed],
-      content: mention(author.id, "USER"),
+      content: await mention(author.id, "USER"),
     });
 } as Event<"messageCreate">);

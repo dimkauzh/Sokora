@@ -8,8 +8,8 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
 
-export let commands: { data: SlashCommandBuilder; run: any; autocomplete: any }[] = [];
-export let subCommands: {
+export const commands: { data: SlashCommandBuilder; run: any; autocomplete: any }[] = [];
+export const subCommands: {
   data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;
   run: any;
   autocomplete: any;
@@ -24,7 +24,7 @@ function pushSubCommand(client: Client, run: any[], autocomplete: any[], command
   pushCommand(subCommands, command);
   if (!("autocompleteHandler" in command)) return;
   command.autocompleteHandler(client);
-  autocomplete.push(command.autocomplete);
+  if (command.autocomplete) autocomplete.push(command.autocomplete);
 }
 
 async function createSubCommand(name: string, client: Client) {
@@ -43,9 +43,9 @@ async function createSubCommand(name: string, client: Client) {
         pathToFileURL(join(commandsPath, name, subCommandFile.name)).toString()
       );
 
-      subCommand.data instanceof SlashCommandSubcommandBuilder
-        ? command.addSubcommand(subCommand.data)
-        : command.addSubcommandGroup(subCommand.data);
+      if (subCommand.data instanceof SlashCommandSubcommandBuilder)
+        command.addSubcommand(subCommand.data);
+      else command.addSubcommandGroup(subCommand.data);
 
       pushSubCommand(client, run, autocomplete, subCommand);
       continue;

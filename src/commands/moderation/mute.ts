@@ -51,5 +51,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
   await interaction.guild?.members.cache
     .get(user.id)
     ?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined })
-    .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
 }

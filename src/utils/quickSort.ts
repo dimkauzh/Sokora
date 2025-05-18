@@ -6,16 +6,16 @@ function swap(
   leftIndex: number,
   rightIndex: number,
 ) {
-  let temp = sortItems[leftIndex];
+  const temp = sortItems[leftIndex];
   sortItems[leftIndex] = sortItems[rightIndex];
   sortItems[rightIndex] = temp;
 
   if (!corresponding) return;
   for (let i = 0; i < corresponding.length; i++) {
-    let subArray = corresponding[i];
+    const subArray = corresponding[i];
 
     if (Array.isArray(subArray)) {
-      let tempValue = subArray[leftIndex];
+      const tempValue = subArray[leftIndex];
       subArray[leftIndex] = subArray[rightIndex];
       subArray[rightIndex] = tempValue;
     }
@@ -36,7 +36,7 @@ export function quickSort(
   leftIndex: number,
   rightIndex: number,
 ): [number[], Corresponding] {
-  let pivot = sortItems[Math.floor((rightIndex + leftIndex) / 2)];
+  const pivot = sortItems[Math.floor((rightIndex + leftIndex) / 2)];
   let leftPointer = leftIndex;
   let rightPointer = rightIndex;
 

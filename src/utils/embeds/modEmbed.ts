@@ -1,13 +1,13 @@
 import {
   EmbedBuilder,
-  type PermissionResolvable,
   type ChatInputCommandInteraction,
-  type User,
   type GuildBasedChannel,
+  type PermissionResolvable,
+  type User,
 } from "discord.js";
 import ms from "ms";
 import { genColor } from "../colorGen";
-import { getModeration, addModeration, editModeration, type modType } from "../database/moderation";
+import { addModeration, editModeration, getModeration, type modType } from "../database/moderation";
 import { logChannel } from "../logChannel";
 import { errorEmbed } from "./errorEmbed";
 
@@ -140,11 +140,12 @@ export async function modEmbed(
   const name = user.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
   let author = `•  ${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
-  reason ? generalValues.push(`**Reason**: ${reason}`) : generalValues.push("*No reason provided*");
+  if (reason) generalValues.push(`**Reason**: ${reason}`);
+  else generalValues.push("*No reason provided*");
 
   if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
   if (previousID) {
-    let previousCase = getModeration(guild.id, user.id, `${previousID}`);
+    const previousCase = getModeration(guild.id, user.id, `${previousID}`);
     if (
       (!previousCase.length && previousCase[0].user != user.id) ||
       previousCase[0].type != dbAction
@@ -158,23 +159,30 @@ export async function modEmbed(
     try {
       editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
     } catch (error) {
-      console.error(error);
+      return await errorEmbed({ interaction, error, forward: true });
     }
     author = author.concat(`  •  #${previousID}`);
   } else if (!dbAction) return;
 
   try {
+    const moderator = guild.members.cache.get(interaction.user.id);
+    if (!moderator)
+      return await errorEmbed({
+        interaction,
+        title: `Failed to ${action.toLowerCase()}.`,
+        reason: "Cannot find moderator.",
+      });
     const id = addModeration(
       guild.id,
       user.id,
       dbAction,
-      guild.members.cache.get(interaction.user.id)?.id!,
+      moderator.id,
       reason ?? undefined,
       expiresAt ?? undefined,
     );
     author = author.concat(`  •  #${id}`);
   } catch (error) {
-    return await errorEmbed({ error, interaction, forward: true });
+    return await errorEmbed({ interaction, error, forward: true });
   }
 
   const embed = new EmbedBuilder()
@@ -195,7 +203,7 @@ export async function modEmbed(
       embeds: [
         embed
           .setAuthor({
-            name: `•  You got ${action.toLowerCase()} from ${guild.name}.`,
+            name: `•  You got ${action.toLowerCase()} from ${guild.name}`,
             iconURL: guild.icon ? guild.iconURL()! : undefined,
           })
           .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
@@ -203,6 +211,6 @@ export async function modEmbed(
       ],
     });
   } catch (error) {
-    return await errorEmbed({ error, interaction, forward: true });
+    return await errorEmbed({ interaction, error, forward: true });
   }
 }

@@ -40,7 +40,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const duration = interaction.options.getString("duration") || "1h";
   try {
     new RegExp(pattern);
-  } catch (error) {
+  } catch {
     return await errorEmbed({
       interaction,
       title: "Invalid regex pattern.",
@@ -49,7 +49,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   addAutomodRule(guild.id, pattern, action, duration, [], []);
-  setSetting(guild.id, "moderation", "automod_enabled", "1");
+  await setSetting(guild.id, "moderation", "automod_enabled", "1");
   await modActionEmbed(
     {
       title: "Automod Rule Added",

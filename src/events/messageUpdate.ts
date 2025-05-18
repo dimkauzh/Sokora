@@ -11,7 +11,7 @@ export default (async function run(oldMessage, newMessage) {
   if (author.bot) return;
 
   const guild = oldMessage.guild!;
-  if (!getSetting(guild.id, "moderation", "log_messages")) return;
+  if (!(await getSetting(guild.id, "moderation", "log_messages"))) return;
 
   const oldContent = oldMessage.content!;
   const newContent = newMessage.content!;
@@ -21,7 +21,7 @@ export default (async function run(oldMessage, newMessage) {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${author.displayName} edited a message.`,
+      name: `•  ${author.displayName} edited a message`,
       iconURL: author.displayAvatarURL(),
     })
     .setDescription(

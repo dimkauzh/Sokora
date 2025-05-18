@@ -33,7 +33,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
 
   const newsChannel = (await guild.channels
-    .fetch((getSetting(guild.id, "news", "channel_id") as string) ?? interaction.channel?.id)
+    .fetch(
+      ((await getSetting(guild.id, "news", "channel_id")) as string) ?? interaction.channel?.id,
+    )
     .catch(() => null)) as TextChannel;
 
   if (newsChannel) await newsChannel.messages.delete(news.messageID);

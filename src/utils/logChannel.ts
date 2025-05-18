@@ -18,7 +18,7 @@ export async function logChannel(
   guild: Guild,
   options: string | MessagePayload | MessageCreateOptions,
 ) {
-  const logChannel = getSetting(guild.id, "moderation", "channel");
+  const logChannel = await getSetting(guild.id, "moderation", "channel");
   if (!logChannel) return;
 
   const channel = await guild.channels.cache

@@ -1,6 +1,7 @@
 import { Client, EmbedBuilder } from "discord.js";
 import { genColor } from "./colorGen";
 import { getPendingBans, removeModeration } from "./database/moderation";
+import { errorEmbed } from "./embeds/errorEmbed";
 import { logChannel } from "./logChannel";
 
 export function scheduleUnban(
@@ -17,8 +18,24 @@ export function scheduleUnban(
   const timeout = setTimeout(async () => {
     try {
       const guild = await client.guilds.fetch(guildID);
-      const user = guild.bans.cache.get(userID)?.user!;
-      const moderator = guild.members.cache.get(modID)!;
+      const user = guild.bans.cache.get(userID)?.user;
+      if (!user) {
+        return await errorEmbed({
+          client,
+          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          reason: "User not found in the guild's ban list's cache.",
+          forward: true,
+        });
+      }
+      const moderator = guild.members.cache.get(modID);
+      if (!moderator) {
+        return await errorEmbed({
+          client,
+          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          reason: "Moderator not found in the guild cache.",
+          forward: true,
+        });
+      }
       const embed = new EmbedBuilder()
         .setAuthor({ name: `•  Unbanned ${user.displayName}.`, iconURL: user.displayAvatarURL() })
         .setDescription(
@@ -32,21 +49,30 @@ export function scheduleUnban(
       removeModeration(guildID, userID);
       scheduledUnbans.delete(key);
     } catch (error) {
-      console.error(`Failed to unban user ${userID} in guild ${guildID}:`, error);
+      return await errorEmbed({
+        client,
+        error,
+        title: `Failed to unban user ${userID} in guild ${guildID}`,
+        forward: true,
+      });
     }
   }, delay);
 
   return scheduledUnbans.set(key, timeout);
 }
 
-export function rescheduleUnbans(client: Client) {
+export async function rescheduleUnbans(client: Client) {
   const now = Date.now();
   const pendingBans = getPendingBans(now);
 
   for (const ban of pendingBans) {
     if (!ban.expiresAt) continue;
     if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
-      console.error(`Invalid expiresAt value for ban: ${ban.expiresAt}`);
+      await errorEmbed({
+        client,
+        title: `Invalid expiresAt value for ban: ${ban.expiresAt}`,
+        forward: true,
+      });
       continue;
     }
 

@@ -5,8 +5,8 @@ import {
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { mention } from "../../utils/mention";
 import { errorCheck } from "../../utils/embeds/modEmbed";
+import { mention } from "../../utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("unlock")
@@ -57,14 +57,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
         CreatePublicThreads: null,
         CreatePrivateThreads: null,
       })
-      .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+      .catch(async error => await errorEmbed({ interaction, error, forward: true }));
 
   await modActionEmbed(
     {
       title: "Unlocked a channel.",
       body: [
         `**Moderator**: ${interaction.user.displayName}`,
-        `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
+        `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
       ],
     },
     guild,

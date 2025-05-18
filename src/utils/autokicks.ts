@@ -1,4 +1,5 @@
 import { Client, EmbedBuilder, Guild, GuildMember } from "discord.js";
+import ms from "ms";
 import { genColor } from "../utils/colorGen";
 import { getAllAutokicks } from "../utils/database/autokick";
 import { logChannel } from "../utils/logChannel";
@@ -11,13 +12,17 @@ export async function checkAutokicks(client: Client): Promise<void> {
         const member = await guild.members.fetch(autokick.user as string).catch(() => null);
         if (!member) continue;
 
-        const delay = (autokick.delay as number) * 24 * 60 * 60 * 1000; // Convert days to ms
-        if (Date.now() - new Date(autokick.last_message as string).getTime() >= delay)
+        if (
+          Date.now() - new Date(autokick.last_message as string).getTime() >=
+          ms(`${autokick.delay} days`)
+        )
           await handleAutokick(guild, member, autokick.delay as number);
       } catch (error) {
         await errorEmbed({
-          title: `Error processing autokick for user ${autokick.user} in guild ${guild.id}:`,
+          client,
           error,
+          title: `Error processing autokick for user ${autokick.user} in guild ${guild.id}`,
+          forward: true,
         });
       }
   }
@@ -27,12 +32,12 @@ async function handleAutokick(guild: Guild, member: GuildMember, days: number): 
   try {
     await member.kick(`Inactive for ${days} days`);
     const embed = new EmbedBuilder()
-      .setAuthor({ name: "Member Auto-kicked" })
+      .setAuthor({ name: "Member auto-kicked" })
       .setDescription(
         [
           `**Member**: ${member.user.tag}`,
           `**Reason**: Inactive for ${days} days`,
-          `**Last Active**: <t:${Math.floor(Date.now() / 1000)}:F>`,
+          `**Last active**: <t:${Math.floor(Date.now() / 1000)}:F>`,
         ].join("\n"),
       )
       .setColor(genColor(100));
@@ -40,8 +45,10 @@ async function handleAutokick(guild: Guild, member: GuildMember, days: number): 
     await logChannel(guild, { embeds: [embed] });
   } catch (error) {
     await errorEmbed({
-      title: `Failed to auto-kick member ${member.id} from guild ${guild.id}:`,
+      client: guild.client,
       error,
+      title: `Failed to auto-kick member ${member.id} from guild ${guild.id}`,
+      forward: true,
     });
   }
 }

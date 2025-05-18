@@ -2,9 +2,10 @@ import type { Client, Message } from "discord.js";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
+import { client } from "../bot.ts";
 import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
 
-let events = [];
+const events = [];
 export async function loadEvents(client: Client) {
   const eventsPath = join(process.cwd(), "src", "events");
 
@@ -24,35 +25,27 @@ export interface EasterEgg {
   run: (message: Message) => Promise<void>;
 }
 
-export let easterEggs: EasterEgg[] = [];
+export const easterEggs: EasterEgg[] = [];
 export async function loadEasterEggs() {
   const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
 
   try {
-    const files = readdirSync(eventsPath);
-
-    for (const easterEggFile of files) {
-      if (!easterEggFile.endsWith(".ts")) {
-        continue;
-      }
-
-      const fullPath = join(eventsPath, easterEggFile);
+    for (const easterEggFile of readdirSync(eventsPath)) {
+      if (!easterEggFile.endsWith(".ts")) continue;
 
       try {
-        const eggModule = await import(pathToFileURL(fullPath).toString());
-
+        const eggModule = await import(pathToFileURL(join(eventsPath, easterEggFile)).toString());
         if (typeof eggModule.run !== "function") {
           await errorEmbed({
-            title: `Easter egg ${easterEggFile} does not have a run function, please fix this`,
+            client,
+            title: `Easter egg ${easterEggFile} does not have a run function.`,
             forward: true,
           });
           continue;
         }
 
-        const eggName = easterEggFile.split(".")[0];
-
         const easterEgg: EasterEgg = {
-          name: eggName,
+          name: easterEggFile.split(".")[0],
           run: async (message: Message) => {
             return await eggModule.run(message);
           },
@@ -60,14 +53,15 @@ export async function loadEasterEggs() {
 
         easterEggs.push(easterEgg);
       } catch (error) {
-        await errorEmbed({
+        return await errorEmbed({
+          client,
+          error,
           title: `Error loading easter egg ${easterEggFile}`,
-          error: error,
           forward: true,
         });
       }
     }
   } catch (error) {
-    await errorEmbed({ title: `Error loading easter eggs`, error: error, forward: true });
+    return await errorEmbed({ client, error, title: `Error loading easter eggs`, forward: true });
   }
 }

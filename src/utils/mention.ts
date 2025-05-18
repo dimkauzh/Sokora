@@ -1,3 +1,6 @@
+import { client } from "../bot";
+import { errorEmbed } from "./embeds/errorEmbed";
+
 /**
  * Handles role mentions, channel mentions, timestamps, and more.
  *
@@ -10,7 +13,7 @@
  *     | "DETAILED_TIMESTAMP")} type What to mention?
  * @returns {string} A `<@MENTION>` string.
  */
-export function mention(
+export async function mention(
   who: string | number,
   type:
     | "USER"
@@ -19,7 +22,7 @@ export function mention(
     | "DEFAULT_TIMESTAMP"
     | "SIMPLE_TIMESTAMP"
     | "DETAILED_TIMESTAMP",
-): string {
+): Promise<string> {
   switch (type) {
     case "CHANNEL":
       return `<#${who}>`;
@@ -31,10 +34,12 @@ export function mention(
     case "DETAILED_TIMESTAMP":
     case "SIMPLE_TIMESTAMP": {
       if (typeof who !== "number" || isNaN(Number(who))) {
-        // TODO - if i add errorEmbed here, too much stuff breaks because of async/await
-        console.error(
-          "Asked to format a timestamp but provided a string. You should provide timestamps as a number by using Date.now() (without flooring whatsoever). You were given back the string untouched.",
-        );
+        await errorEmbed({
+          client,
+          title:
+            "Asked to format a timestamp but provided a string. You should provide timestamps as a number by using Date.now() (without flooring). You were given back the string untouched.",
+          forward: true,
+        });
         return who.toString();
       }
       switch (type) {

@@ -20,7 +20,7 @@ export default (async function run(interaction) {
 
   if (!command) return;
   if (interaction.isChatInputCommand()) {
-    if (!check(interaction.member?.user.id!))
+    if (!interaction.member || !check(interaction.member.user.id!))
       return await errorEmbed({
         interaction,
         title: "The bot has experienced an internal error.",

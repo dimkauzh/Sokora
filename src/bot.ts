@@ -4,7 +4,7 @@ import { loadEasterEggs, loadEvents } from "./handlers/events";
 import { leavePlease } from "./utils/leavePlease";
 import { rescheduleUnbans } from "./utils/unbanScheduler";
 
-const client = new Client({
+export const client = new Client({
   presence: {
     activities: [{ name: "your feedback!", type: ActivityType.Listening }],
   },
@@ -23,7 +23,7 @@ const client = new Client({
 client.once("ready", async () => {
   const guilds = client.guilds.cache;
   for (const id of guilds.keys())
-    await leavePlease(guilds.get(id)!, await guilds.get(id)?.fetchOwner()!, "Not like that.");
+    await leavePlease(guilds.get(id)!, await guilds.get(id)!.fetchOwner()!, "Not like that.");
 
   await loadEvents(client);
   await loadEasterEggs();
@@ -33,8 +33,8 @@ client.once("ready", async () => {
   await registerGuildCommands(client);
   // await registerGlobalCommands(client);
 
-  rescheduleUnbans(client);
+  await rescheduleUnbans(client);
   console.log(Math.random() < 0.001 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！");
 });
 
-client.login(process.env.TOKEN);
+await client.login(process.env.TOKEN);

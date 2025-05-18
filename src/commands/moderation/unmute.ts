@@ -37,5 +37,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
   await modEmbed({ interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE" }, reason);
   await target
     ?.edit({ communicationDisabledUntil: null })
-    .catch(async error => await errorEmbed({ error, interaction, forward: true }));
+    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
 }

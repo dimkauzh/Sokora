@@ -2,6 +2,7 @@ import { ChatInputCommandInteraction, EmbedBuilder, Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { logChannel } from "../logChannel";
 import { reply } from "../reply";
+import { errorEmbed } from "./errorEmbed";
 
 type Content = {
   title: string;
@@ -32,9 +33,12 @@ export async function modActionEmbed(
     .setColor(genColor(100));
 
   if (footer) embed.setFooter({ text: footer });
-
-  await logChannel(guild, { embeds: [embed] }).catch(e => console.error(e));
-  await reply(i, { embeds: [embed] }).catch(e => console.error(e));
+  try {
+    await logChannel(guild, { embeds: [embed] });
+    await reply(i, { embeds: [embed] });
+  } catch (error) {
+    await errorEmbed({ client: guild.client, error, forward: true });
+  }
 
   return embed;
 }
