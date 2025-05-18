@@ -12,6 +12,7 @@ const client = new Client({
     "Guilds",
     "GuildMembers",
     "GuildMessages",
+    "GuildModeration",
     "GuildEmojisAndStickers",
     "GuildBans",
     "GuildMessageReactions",
