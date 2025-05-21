@@ -35,7 +35,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   const embed = new EmbedBuilder()
-    .setTitle("Calculation Result")
+    .setAuthor({ name: "Calculation result" })
     .setDescription(`\`${expr}\` = **${result}**`)
     .setColor(genColor(200));
 

@@ -14,7 +14,7 @@ export default (async function run(member) {
   const avatar = member.displayAvatarURL();
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  ${user.displayName} has joined`, iconURL: avatar })
+    .setAuthor({ name: `•  ${user.displayName} joined`, iconURL: avatar })
     .setFooter({ text: `User ID: ${member.id}` })
     .setThumbnail(avatar)
     .setColor(
@@ -33,6 +33,7 @@ export default (async function run(member) {
         member.user,
       ),
     );
+
     await channel.send({ embeds: [embed] });
   }
 

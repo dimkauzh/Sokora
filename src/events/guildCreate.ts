@@ -20,8 +20,8 @@ export default (async function run(guild) {
     .setDescription(
       [
         "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
-        "To manage the bot, use the **/settings** command.\n",
-        "Sokora is in an early stage of development. If you find bugs, please go to our [official server](https://discord.gg/c6C25P4BuY) and report them.",
+        "To configure the bot, use the **/settings** command.\n",
+        "Sokora is in an early stage of development. If you find bugs, please go to our [official server](https://discord.gg/c6C25P4BuY).",
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })

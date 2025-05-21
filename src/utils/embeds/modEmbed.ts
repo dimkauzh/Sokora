@@ -172,6 +172,7 @@ export async function modEmbed(
         title: `Failed to ${action.toLowerCase()}.`,
         reason: "Cannot find moderator.",
       });
+
     const id = addModeration(
       guild.id,
       user.id,
@@ -186,7 +187,7 @@ export async function modEmbed(
   }
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: author, iconURL: user.displayAvatarURL() })
+    .setAuthor({ name: `•  ${author}`, iconURL: user.displayAvatarURL() })
     .setDescription(generalValues.join("\n"))
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(100));

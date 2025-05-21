@@ -204,7 +204,7 @@ export default (async function run(message) {
   if (newLevelData.level == level || newLevelData.level < level) return;
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${author.displayName} has levelled up!`,
+      name: `•  ${author.displayName} leveled up!`,
       iconURL: author.displayAvatarURL(),
     })
     .setDescription(

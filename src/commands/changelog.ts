@@ -13,6 +13,7 @@ import { version } from "../../package.json";
 import { genColor, genImageColor } from "../utils/colorGen";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { parseChangelogString } from "../utils/parseChangelog";
+import { pfpCheck } from "../utils/pfpCheck";
 import { replace } from "../utils/replace";
 
 export const data = new SlashCommandBuilder()
@@ -36,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  Changelog for ${version}`, iconURL: avatar })
+    .setAuthor({ name: `${pfpCheck(avatar)}Changelog for ${version}`, iconURL: avatar })
     .setDescription(
       [
         versions[0].changelog,

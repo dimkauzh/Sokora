@@ -86,9 +86,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let description = "";
   for (let i = 0; i < values.length; i++) {
     const option = values[i];
-    await setUserSetting(userID, key, option.name, option.value as string);
-    description += `**${humanizeSettings(capitalize(option.name))}:** ${humanizeSettings(
-      await settingText(option.name.toString()),
+    const name = option.name;
+    await setUserSetting(userID, key, name, option.value as string);
+    description += `${settingsDef.settings[name].emoji ? `${settingsDef.settings[name].emoji} • ` : ""}**${humanizeSettings(capitalize(option.name))}:** ${humanizeSettings(
+      await settingText(name),
     )}\n`;
   }
 

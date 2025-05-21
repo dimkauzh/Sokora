@@ -89,7 +89,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ctx.stroke();
     const attachment = new AttachmentBuilder(canvas.toBuffer(), { name: "graph.png" });
     const embed = new EmbedBuilder()
-      .setTitle("Function Graph")
+      .setAuthor({ name: "Function graph" })
       .setDescription(`\`f(x) = ${func}\``)
       .setImage("attachment://graph.png")
       .setColor(genColor(200));
@@ -98,8 +98,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   } catch {
     return await errorEmbed({
       interaction,
-      title: "Invalid function",
-      reason: "Please provide a valid mathematical function. Examples: 'x^2', 'sin(x)', '2*x + 1'.",
+      title: "Invalid function.",
+      reason: 'Please provide a valid mathematical function. Examples: "x^2", "sin(x)", "2*x + 1".',
     });
   }
 }

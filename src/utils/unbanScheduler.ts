@@ -19,25 +19,25 @@ export function scheduleUnban(
     try {
       const guild = await client.guilds.fetch(guildID);
       const user = guild.bans.cache.get(userID)?.user;
-      if (!user) {
+      if (!user)
         return await errorEmbed({
           client,
           title: `Failed to unban user ${userID} in guild ${guildID}`,
           reason: "User not found in the guild's ban list's cache.",
           forward: true,
         });
-      }
+
       const moderator = guild.members.cache.get(modID);
-      if (!moderator) {
+      if (!moderator)
         return await errorEmbed({
           client,
           title: `Failed to unban user ${userID} in guild ${guildID}`,
           reason: "Moderator not found in the guild cache.",
           forward: true,
         });
-      }
+
       const embed = new EmbedBuilder()
-        .setAuthor({ name: `•  Unbanned ${user.displayName}.`, iconURL: user.displayAvatarURL() })
+        .setAuthor({ name: `•  Unbanned ${user.displayName}`, iconURL: user.displayAvatarURL() })
         .setDescription(
           [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
         )
@@ -63,9 +63,8 @@ export function scheduleUnban(
 
 export async function rescheduleUnbans(client: Client) {
   const now = Date.now();
-  const pendingBans = getPendingBans(now);
 
-  for (const ban of pendingBans) {
+  for (const ban of getPendingBans(now)) {
     if (!ban.expiresAt) continue;
     if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
       await errorEmbed({

@@ -15,7 +15,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const exampleTwo = `Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
 
   const embed = new EmbedBuilder()
-    .setTitle("Dynamic (variables)")
+    .setAuthor({ name: "Dynamic (variables)" })
     .setDescription(
       "You can write the following variables in some places to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the specific message. Dynamic variables are currently supported for **join messages, leave messages, join DMs, and news.**",
     )

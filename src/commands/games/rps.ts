@@ -48,7 +48,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ),
   );
   const baseEmbed = new EmbedBuilder()
-    .setTitle("Rock Paper Scissors")
+    .setAuthor({ name: "Rock paper scissors" })
     .setDescription(
       opponent
         ? `${interaction.user} has challenged ${opponent} to a game!\n` +
@@ -61,7 +61,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (opponent.bot)
       return await errorEmbed({
         interaction,
-        title: "Invalid opponent",
+        title: "Invalid opponent.",
         reason: `You cannot play against a bot!${
           opponent.id == interaction.client.user.id
             ? " To challenge Sokora itself, run `/games rps` without specifying the opponent."
@@ -94,7 +94,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         return await interaction.editReply({
           embeds: [
             new EmbedBuilder()
-              .setTitle("Game Timed Out")
+              .setAuthor({ name: "Game timed out" })
               .setDescription("The game has been cancelled due to inactivity.")
               .setColor(genColor(0)),
           ],
@@ -107,7 +107,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         const winner = getWinner(p1Choice, p2Choice);
 
         const resultEmbed = new EmbedBuilder()
-          .setTitle("Game Results")
+          .setAuthor({ name: "Game results" })
           .setDescription(
             `${interaction.user}: ${rpsEmojis[p1Choice]}\n` +
               `${opponent}: ${rpsEmojis[p2Choice]}\n\n` +
@@ -122,7 +122,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   const reply = await interaction.reply({ embeds: [baseEmbed], components: [optionsRow] });
-
   const collector = reply.createMessageComponentCollector({
     filter: i => i.user.id == interaction.user.id,
     time: 30000,
@@ -134,7 +133,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const winner = getWinner(playerChoice, botChoice);
 
     const resultEmbed = new EmbedBuilder()
-      .setTitle("Game Results")
+      .setAuthor({ name: "Game results" })
       .setDescription(
         `You: ${rpsEmojis[playerChoice]}\n` +
           `Bot: ${rpsEmojis[botChoice]}\n\n` +
@@ -151,7 +150,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await interaction.editReply({
       embeds: [
         new EmbedBuilder()
-          .setTitle("Game timed out")
+          .setAuthor({ name: "Game timed out" })
           .setDescription("The game was cancelled due to inactivity.")
           .setColor(genColor(0)),
       ],

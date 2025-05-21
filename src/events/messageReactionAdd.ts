@@ -1,4 +1,7 @@
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   EmbedBuilder,
   type MessageReaction,
   type PartialMessageReaction,
@@ -46,17 +49,21 @@ export default (async function run(
   const existingStarred = getStarred(message.guild.id, message.id);
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${message.author.displayName} • ${starCount} ${starEmoji}`,
+      name: `•  ${message.author.displayName}  •  ${starCount} ${starEmoji}`,
       iconURL: message.author.displayAvatarURL(),
     })
     .setDescription(message.content)
-    .addFields({
-      name: "Source",
-      value: `[Jump to message](${message.url})`,
-    })
     .setTimestamp(message.createdAt)
     .setFooter({ text: `Message ID: ${message.id}` })
     .setColor(genColor(80));
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setLabel("• Jump to message")
+      .setURL(message.url)
+      .setEmoji("🔗")
+      .setStyle(ButtonStyle.Link),
+  );
 
   const attachment = message.attachments.first();
   if (attachment?.contentType?.startsWith("image/")) embed.setImage(attachment.url);
@@ -67,14 +74,16 @@ export default (async function run(
         message.id,
         message.channel.id,
         message.author.id,
-        (await starboardChannel.send({ embeds: [embed] })).id,
+        (await starboardChannel.send({ embeds: [embed], components: [row] })).id,
         starCount,
         message.content || "",
         message.createdTimestamp.toString(),
       );
 
     const [channelId, , starMessageId, , ,] = existingStarred;
-    await (await starboardChannel.messages.fetch(starMessageId)).edit({ embeds: [embed] });
+    await (
+      await starboardChannel.messages.fetch(starMessageId)
+    ).edit({ embeds: [embed], components: [row] });
     setStarred(
       message.guild.id,
       message.id,

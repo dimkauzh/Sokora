@@ -26,9 +26,8 @@ export async function modActionEmbed(
   i: ChatInputCommandInteraction,
 ): Promise<EmbedBuilder> {
   const { title, iconURL, body, footer } = content;
-
   const embed = new EmbedBuilder()
-    .setAuthor({ name: title, iconURL: iconURL })
+    .setAuthor({ name: `•  ${title}`, iconURL: iconURL })
     .setDescription(Array.isArray(body) ? body.join("\n") : body)
     .setColor(genColor(100));
 

@@ -1,4 +1,4 @@
-import { EmbedBuilder } from "discord.js";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
@@ -11,7 +11,7 @@ export default (async function run(message) {
   if (!author)
     return await errorEmbed({
       client,
-      title: "Cannot log deleted message.",
+      title: "Cannot log deleted message",
       reason: `Message ${message} lacks an author.`,
     });
 
@@ -20,27 +20,30 @@ export default (async function run(message) {
   if (!guild)
     return await errorEmbed({
       client,
-      title: "Cannot log deleted message.",
+      title: "Cannot log deleted message",
       reason: `Message ${message} lacks the guild.`,
     });
 
   if (!(await getSetting(guild.id, "moderation", "log_messages"))) return;
-  const value = message.content && message.content.length > 0 ? message.content : "*Empty message*";
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${author.displayName}'s message has been deleted`,
+      name: `•  ${author.username}'s message got deleted`,
       iconURL: author.displayAvatarURL(),
     })
     .setDescription(
-      `[Jump to message](${message.url}) • [See ${author.displayName}'s profile](https://discord.com/users/${author.id})`,
+      message.content && message.content.length > 0 ? message.content : "*Empty message*",
     )
     .setTimestamp(new Date())
-    .addFields({
-      name: "🗑️ • Deleted message",
-      value,
-    })
     .setFooter({ text: `User ID: ${author.id}` })
     .setColor(genColor(0));
 
-  await logChannel(guild, { embeds: [embed] });
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setLabel("• Jump to message")
+      .setURL(message.url)
+      .setEmoji("🔗")
+      .setStyle(ButtonStyle.Link),
+  );
+
+  await logChannel(guild, { embeds: [embed], components: [row] });
 } as Event<"messageDelete">);

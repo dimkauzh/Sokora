@@ -6,6 +6,7 @@ import {
 import { genColor } from "../../utils/colorGen";
 import { getModeration, listUserModeration } from "../../utils/database/moderation";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { pfpCheck } from "../../utils/pfpCheck";
 import { randomize } from "../../utils/randomize";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -55,7 +56,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     : listUserModeration(guild.id, user.id);
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  Cases of ${user.displayName}`, iconURL: user.displayAvatarURL() })
+    .setAuthor({
+      name: `${pfpCheck(user.displayAvatarURL())}Cases of ${user.displayName}`,
+      iconURL: user.displayAvatarURL(),
+    })
     .setFields(
       actions.length > 0
         ? actions.map(action => {

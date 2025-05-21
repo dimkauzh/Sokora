@@ -324,6 +324,7 @@ export async function getSetting<
     return null;
   }
 
+  console.log(key);
   const res = getQuery.all(JSON.stringify(guildID), `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];

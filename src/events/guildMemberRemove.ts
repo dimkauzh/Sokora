@@ -10,20 +10,18 @@ export default (async function run(member: GuildMember) {
     ((await getSetting(guildID, "welcome", "leave_channel")) as string) ??
     ((await getSetting(guildID, "welcome", "join_channel")) as string);
   if (!id) return;
-  const user = member.user;
   const avatar = member.displayAvatarURL();
-
   const channel = (await member.guild.channels.cache
     .find(channel => channel.id == id)
     ?.fetch()) as TextChannel;
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  ${member.user.displayName} has left`, iconURL: avatar })
+    .setAuthor({ name: `•  ${member.user.displayName} left`, iconURL: avatar })
     .setDescription(
       await replaceVariables(
         (await getSetting(guildID, "welcome", "leave_text")) as string,
         member.guild,
-        user,
+        member.user,
       ),
     )
     .setFooter({ text: `User ID: ${member.id}` })

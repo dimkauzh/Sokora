@@ -11,7 +11,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const embed = new EmbedBuilder()
-    .setTitle("Coin flip")
+    .setAuthor({ name: "Coin flip" })
     .setDescription(Math.random() >= 0.5 ? "Tails!" : "Heads!")
     .setColor(genColor(110));
 
