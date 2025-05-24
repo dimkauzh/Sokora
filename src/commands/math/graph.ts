@@ -1,4 +1,3 @@
-
 import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
 import {
   AttachmentBuilder,
