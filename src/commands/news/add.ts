@@ -76,6 +76,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await sendChannelNews(guild, id, interaction).catch(
       async error => await errorEmbed({ interaction, error, forward: true }),
     );
+
     await i.reply({
       embeds: [new EmbedBuilder().setTitle("News added.").setColor(genColor(100))],
       flags: "Ephemeral",

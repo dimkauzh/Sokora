@@ -20,7 +20,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!guild)
     return await errorEmbed({
       interaction,
-      title: "Error unbanning user",
+      title: "Error unbanning user.",
       reason: "Couldn't find the guild.",
     });
 
@@ -28,7 +28,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!member)
     return await errorEmbed({
       interaction,
-      title: "Error unbanning user",
+      title: "Error unbanning user.",
       reason: "Couldn't find the user in the ban list.",
     });
 

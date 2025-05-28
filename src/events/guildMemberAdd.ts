@@ -2,6 +2,7 @@ import { EmbedBuilder, type TextChannel } from "discord.js";
 import { genColor, genImageColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
+import { pfpCheck } from "../utils/pfpCheck";
 import { replaceVariables } from "../utils/replace";
 import { Event } from "../utils/types";
 
@@ -11,12 +12,10 @@ export default (async function run(member) {
     ((await getSetting(guildID, "welcome", "join_channel")) as string) ??
     ((await getSetting(guildID, "welcome", "leave_channel")) as string);
   const user = member.user;
-  const avatar = member.displayAvatarURL();
-
+  const avatar = member.user.displayAvatarURL();
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  ${user.displayName} joined`, iconURL: avatar })
+    .setAuthor({ name: `${pfpCheck(avatar)}${user.displayName} joined`, iconURL: avatar })
     .setFooter({ text: `User ID: ${member.id}` })
-    .setThumbnail(avatar)
     .setColor(
       member.user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(200),
     );

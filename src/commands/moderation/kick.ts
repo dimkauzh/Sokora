@@ -25,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!interaction.guild?.members.cache.get(user.id))
     return await errorEmbed({
       interaction,
-      title: `You can't kick ${user.displayName}.`,
+      title: `You can't kick ${user.username}.`,
       reason: "This user is not in the server.",
     });
 

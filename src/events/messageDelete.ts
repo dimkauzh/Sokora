@@ -3,6 +3,7 @@ import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { logChannel } from "../utils/logChannel";
+import { pfpCheck } from "../utils/pfpCheck";
 import type { Event } from "../utils/types";
 
 export default (async function run(message) {
@@ -11,7 +12,7 @@ export default (async function run(message) {
   if (!author)
     return await errorEmbed({
       client,
-      title: "Cannot log deleted message",
+      title: "Cannot log deleted message.",
       reason: `Message ${message} lacks an author.`,
     });
 
@@ -20,15 +21,16 @@ export default (async function run(message) {
   if (!guild)
     return await errorEmbed({
       client,
-      title: "Cannot log deleted message",
+      title: "Cannot log deleted message.",
       reason: `Message ${message} lacks the guild.`,
     });
 
   if (!(await getSetting(guild.id, "moderation", "log_messages"))) return;
+  const avatar = author.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${author.username}'s message got deleted`,
-      iconURL: author.displayAvatarURL(),
+      name: `${pfpCheck(avatar)}${author.username}'s message got deleted`,
+      iconURL: avatar,
     })
     .setDescription(
       message.content && message.content.length > 0 ? message.content : "*Empty message*",
@@ -39,7 +41,7 @@ export default (async function run(message) {
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setLabel("• Jump to message")
+      .setLabel("•  Jump to message")
       .setURL(message.url)
       .setEmoji("🔗")
       .setStyle(ButtonStyle.Link),

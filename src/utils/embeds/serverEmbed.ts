@@ -1,6 +1,7 @@
 import { EmbedBuilder, Invite, type Guild } from "discord.js";
 import { genColor, genImageColor } from "../colorGen";
 import { mention } from "../mention";
+import { pfpCheck } from "../pfpCheck";
 import { pluralOrNot } from "../pluralOrNot";
 
 type Options = {
@@ -57,7 +58,7 @@ export async function serverEmbed(options: Options) {
 
   const statValues: (string | null)[] = [
     `👥 • **${guild.memberCount?.toLocaleString("en-US")}** members`,
-    `🗨️ • **${channelCount}** ${pluralOrNot("channel", channelCount)}: **${channelSizes.text}** text • **${channelSizes.voice}** voice`,
+    `🗨️ • **${channelCount}** ${pluralOrNot("channel", channelCount)}: **${channelSizes.text}** text and **${channelSizes.voice}** voice`,
   ];
 
   if (boostTier)
@@ -82,7 +83,7 @@ export async function serverEmbed(options: Options) {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pages ? `#${page}  •  ` : icon ? "•  " : ""}${guild.name}`,
+      name: `${pages ? `#${page}  •  ` : pfpCheck(icon)}${guild.name}`,
       iconURL: icon,
     })
     .setDescription(guild.description ? `> ${guild.description}` : null)
@@ -90,10 +91,12 @@ export async function serverEmbed(options: Options) {
       {
         name: "📃 • General",
         value: generalValues.join("\n"),
+        inline: true,
       },
       {
         name: "🛡 • Safety setup",
-        value: safetyValues.join(" • "),
+        value: safetyValues.join("\n"),
+        inline: true,
       },
       {
         name: "📈 • Stats",
@@ -101,7 +104,6 @@ export async function serverEmbed(options: Options) {
       },
     )
     .setFooter({ text: `${pages ? `Page ${page}/${pages} • ` : ""}Server ID: ${guild.id}` })
-    .setThumbnail(icon)
     .setColor((await genImageColor(icon)) ?? genColor(200));
 
   if (options.invite?.show) {
@@ -138,7 +140,6 @@ export async function serverEmbed(options: Options) {
     embed.addFields({
       name: `🚪 • Join in!`,
       value: `This server allows you to join from here! ${inviteUrl}`,
-      inline: true,
     });
   }
 

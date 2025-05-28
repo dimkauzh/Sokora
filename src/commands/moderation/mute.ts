@@ -34,7 +34,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!ms(duration) || ms(duration) > ms("28d") || ms(duration) <= 0)
     return await errorEmbed({
       interaction,
-      title: `You can't mute ${user.displayName}.`,
+      title: `You can't mute ${user.username}.`,
       reason: "The duration is invalid or is above the 28 day limit.",
     });
 

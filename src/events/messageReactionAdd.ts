@@ -12,6 +12,7 @@ import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { getStarred, setStarred } from "../utils/database/starboard";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
+import { pfpCheck } from "../utils/pfpCheck";
 import { Event } from "../utils/types";
 
 export default (async function run(
@@ -24,7 +25,7 @@ export default (async function run(
       .fetch()
       .catch(
         async error =>
-          await errorEmbed({ client, error, title: `Error fetching reaction`, forward: true }),
+          await errorEmbed({ client, error, title: `Error fetching reaction.`, forward: true }),
       );
 
   const message = await reaction.message.fetch();
@@ -47,10 +48,11 @@ export default (async function run(
   if (starCount < threshold) return;
 
   const existingStarred = getStarred(message.guild.id, message.id);
+  const avatar = message.author.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${message.author.displayName}  •  ${starCount} ${starEmoji}`,
-      iconURL: message.author.displayAvatarURL(),
+      name: `${pfpCheck(avatar)}${message.author.displayName}  •  ${starCount} ${starEmoji}`,
+      iconURL: avatar,
     })
     .setDescription(message.content)
     .setTimestamp(message.createdAt)
@@ -59,7 +61,7 @@ export default (async function run(
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setLabel("• Jump to message")
+      .setLabel("•  Jump to message")
       .setURL(message.url)
       .setEmoji("🔗")
       .setStyle(ButtonStyle.Link),
@@ -95,6 +97,6 @@ export default (async function run(
       message.createdTimestamp.toString(),
     );
   } catch (error) {
-    await errorEmbed({ client, error, title: "Error handling starboard message", forward: true });
+    await errorEmbed({ client, error, title: "Error handling starboard message.", forward: true });
   }
 } as Event<"messageReactionAdd">);

@@ -65,7 +65,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     {
       title,
       body: [
-        `**Moderator**: ${interaction.user.displayName}`,
+        `**Moderator**: ${interaction.user.username}`,
         reason ? `**Reason**: ${reason}` : "*No reason provided*",
         `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
       ],

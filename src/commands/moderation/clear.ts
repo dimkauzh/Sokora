@@ -4,10 +4,10 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { pluralOrNot } from "../../utils/pluralOrNot";
 import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { mention } from "../../utils/mention";
 import { errorCheck } from "../../utils/embeds/modEmbed";
+import { mention } from "../../utils/mention";
+import { pluralOrNot } from "../../utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("clear")
@@ -108,9 +108,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     {
       title: `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}.`,
       body: [
-        `**Moderator**: ${interaction.user.displayName}`,
+        `**Moderator**: ${interaction.user.username}`,
         `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
-        targetUser ? `**Target User**: ${targetUser.displayName}` : null,
+        targetUser ? `**Target user**: ${targetUser.username}` : null,
       ]
         .filter(Boolean)
         .join("\n"),

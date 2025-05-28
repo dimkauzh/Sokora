@@ -62,7 +62,7 @@ export async function getUserSetting<
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
-      title: `Setting ${key}.${setting} does not exist in the database. User: ${userID}`,
+      title: `Setting ${key}.${setting} does not exist in the database. User: ${userID}.`,
       forward: true,
     });
     return null;

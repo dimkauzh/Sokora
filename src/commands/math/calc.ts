@@ -28,7 +28,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   } catch {
     return await errorEmbed({
       interaction,
-      title: "Invalid expression",
+      title: "Invalid expression.",
       reason:
         "Please provide a valid mathematical expression. Examples: 'sin(pi/4)', '10*2+(6/3)', 'sqrt(25)'",
     });

@@ -1,6 +1,7 @@
 import { ChatInputCommandInteraction, EmbedBuilder, Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { logChannel } from "../logChannel";
+import { pfpCheck } from "../pfpCheck";
 import { reply } from "../reply";
 import { errorEmbed } from "./errorEmbed";
 
@@ -27,7 +28,7 @@ export async function modActionEmbed(
 ): Promise<EmbedBuilder> {
   const { title, iconURL, body, footer } = content;
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  ${title}`, iconURL: iconURL })
+    .setAuthor({ name: `${pfpCheck(iconURL)}${title}`, iconURL: iconURL })
     .setDescription(Array.isArray(body) ? body.join("\n") : body)
     .setColor(genColor(100));
 

@@ -9,6 +9,7 @@ import { genColor } from "./colorGen";
 import { get, updateNews } from "./database/news";
 import { getSetting } from "./database/settings";
 import { mention } from "./mention";
+import { pfpCheck } from "./pfpCheck";
 
 /**
  * Sends news to a channel.
@@ -30,9 +31,9 @@ export async function sendChannelNews(
   const role = (await getSetting(guild.id, "news", "role_id")) as string;
   let roleToSend: Role | undefined;
   if (role) roleToSend = guild.roles.cache.get(role);
-
+  const avatar = news.authorPFP;
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  ${news.author}`, iconURL: news.authorPFP })
+    .setAuthor({ name: `${pfpCheck(avatar)}${news.author}`, iconURL: avatar })
     .setTitle(title ?? news.title)
     .setDescription(body ?? news.body)
     .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)

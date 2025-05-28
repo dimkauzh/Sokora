@@ -3,6 +3,7 @@ import { genColor } from "./colorGen";
 import { getPendingBans, removeModeration } from "./database/moderation";
 import { errorEmbed } from "./embeds/errorEmbed";
 import { logChannel } from "./logChannel";
+import { pfpCheck } from "./pfpCheck";
 
 export function scheduleUnban(
   client: Client,
@@ -22,7 +23,7 @@ export function scheduleUnban(
       if (!user)
         return await errorEmbed({
           client,
-          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          title: `Failed to unban user ${userID} in guild ${guildID}.`,
           reason: "User not found in the guild's ban list's cache.",
           forward: true,
         });
@@ -31,13 +32,14 @@ export function scheduleUnban(
       if (!moderator)
         return await errorEmbed({
           client,
-          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          title: `Failed to unban user ${userID} in guild ${guildID}.`,
           reason: "Moderator not found in the guild cache.",
           forward: true,
         });
 
+      const avatar = user.displayAvatarURL();
       const embed = new EmbedBuilder()
-        .setAuthor({ name: `•  Unbanned ${user.displayName}`, iconURL: user.displayAvatarURL() })
+        .setAuthor({ name: `${pfpCheck(avatar)}Unbanned ${user.displayName}`, iconURL: avatar })
         .setDescription(
           [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
         )
@@ -69,7 +71,7 @@ export async function rescheduleUnbans(client: Client) {
     if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
       await errorEmbed({
         client,
-        title: `Invalid expiresAt value for ban: ${ban.expiresAt}`,
+        title: `Invalid expiresAt value for ban: ${ban.expiresAt}.`,
         forward: true,
       });
       continue;

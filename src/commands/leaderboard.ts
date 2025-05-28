@@ -41,7 +41,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const start = (page - 1) * 6;
     const end = start + 6;
     const pageData = leaderboardData.slice(start, end);
-
     const embed = new EmbedBuilder()
       .setAuthor({ name: "Leaderboard" })
       .setColor(genColor(200))
@@ -70,10 +69,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(ButtonStyle.Primary),
   );
 
+  // todo: prevent unknown error when deleting
   const reply = await interaction.reply({
     embeds: [await generateEmbed()],
     components: totalPages > 1 ? [row] : [],
-    fetchReply: true,
   });
 
   if (totalPages <= 1) return;

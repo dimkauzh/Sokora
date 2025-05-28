@@ -10,6 +10,7 @@ import {
 import { genColor } from "../../utils/colorGen";
 import { listAllNews } from "../../utils/database/news";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { pfpCheck } from "../../utils/pfpCheck";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("view")
@@ -23,7 +24,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!interaction.guild)
     return await errorEmbed({
       interaction,
-      title: "Error viewing news",
+      title: "Error viewing news.",
       reason: "This command can only be used in a server.",
     });
 
@@ -42,8 +43,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   function getEmbed() {
     const currentNews = sortedNews[page - 1];
+    const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
-      .setAuthor({ name: `•  ${currentNews.author}`, iconURL: currentNews.authorPFP })
+      .setAuthor({ name: `${pfpCheck(avatar)}${currentNews.author}`, iconURL: avatar })
       .setTitle(currentNews.title)
       .setDescription(currentNews.body)
       .setImage(currentNews.imageURL || null)
@@ -63,6 +65,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(ButtonStyle.Primary),
   );
 
+  // todo: prevent unknown error when deleting
   const reply = await interaction.reply({
     embeds: [getEmbed()],
     components: page >= 1 ? [row] : [],

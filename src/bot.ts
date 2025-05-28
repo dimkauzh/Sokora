@@ -1,9 +1,9 @@
+import { Chart, registerables } from "chart.js";
 import { ActivityType, Client } from "discord.js";
 import { registerGuildCommands } from "./handlers/commands";
 import { loadEasterEggs, loadEvents } from "./handlers/events";
 import { leavePlease } from "./utils/leavePlease";
 import { rescheduleUnbans } from "./utils/unbanScheduler";
-import { Chart, registerables } from 'chart.js';
 
 export const client = new Client({
   presence: {
@@ -34,9 +34,7 @@ client.once("ready", async () => {
   await registerGuildCommands(client);
   // await registerGlobalCommands(client);
 
-  // needed for chart.js
   Chart.register(...registerables);
-
   await rescheduleUnbans(client);
   console.log(Math.random() < 0.001 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！");
 });

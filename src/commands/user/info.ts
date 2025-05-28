@@ -12,6 +12,7 @@ import { getLevel } from "../../utils/database/leveling";
 import { getSetting } from "../../utils/database/settings";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { mention } from "../../utils/mention";
+import { pfpCheck } from "../../utils/pfpCheck";
 import { pluralOrNot } from "../../utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -31,7 +32,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${avatar ? "•  " : ""}${target?.nickname ?? user.displayName}`,
+      name: `${pfpCheck(avatar)}${target?.nickname ?? user.displayName}`,
       iconURL: avatar,
     })
     .setFields({
@@ -45,7 +46,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ].join("\n"),
     })
     .setFooter({ text: `User ID: ${user.id}` })
-    .setThumbnail(avatar)
     .setColor(embedColor);
 
   await interaction.reply({ embeds: [embed] });
@@ -65,11 +65,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
       `**${guildRoles.filter(role => target.roles.cache.has(role.id)).size! - 1}** ${pluralOrNot(
         "role",
         memberRoles.length,
-      )} • ${(
+      )}: ${(
         await Promise.all(
           memberRoles.slice(0, 3).map(async role => await mention(role[1].id, "ROLE")),
         )
-      ).join(", ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
+      ).join("  •  ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
     );
 
   embed.addFields({
@@ -91,6 +91,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(ButtonStyle.Primary),
   );
   row.components[0].setDisabled(true);
+  // todo: prevent unknown error when deleting
   const reply = await interaction.editReply({
     embeds: [embed],
     components: !user.bot ? (enabled ? [row] : []) : [],
@@ -102,6 +103,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const nextLevelXp = Math.floor(
     100 * difficulty * (level + 1) ** 2 - 80 * difficulty * level ** 2,
   )?.toLocaleString("en-US");
+  const levelAvatar = target.displayAvatarURL();
 
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
@@ -124,8 +126,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     const levelEmbed = new EmbedBuilder()
       .setAuthor({
-        name: `•  ${target.nickname ?? user.displayName}`,
-        iconURL: target.displayAvatarURL(),
+        name: `${pfpCheck(levelAvatar)}${target.nickname ?? user.displayName}`,
+        iconURL: levelAvatar,
       })
       .setFields({
         name: `⚡ • Level ${level}`,
@@ -135,7 +137,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ].join("\n"),
       })
       .setFooter({ text: `User ID: ${target.id}` })
-      .setThumbnail(target.displayAvatarURL())
       .setColor(embedColor);
 
     switch (i.customId) {

@@ -14,6 +14,7 @@ import { get, updateNews } from "../../utils/database/news";
 import { getSetting } from "../../utils/database/settings";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
 import { mention } from "../../utils/mention";
+import { pfpCheck } from "../../utils/pfpCheck";
 import { sendChannelNews } from "../../utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -73,12 +74,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (role) roleToSend = guild.roles.cache.get(role);
     const title = i.fields.getTextInputValue("title");
     const body = i.fields.getTextInputValue("body");
+    const avatar = news.authorPFP;
 
     if (!(await getSetting(guild.id, "news", "edit_original_message")))
       await sendChannelNews(guild, id, interaction, title, body);
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: `•  ${news.author}`, iconURL: news.authorPFP })
+      .setAuthor({ name: `${pfpCheck(avatar)}${news.author}`, iconURL: avatar })
       .setTitle(title)
       .setDescription(body)
       .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)

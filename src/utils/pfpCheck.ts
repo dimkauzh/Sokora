@@ -1,4 +1,4 @@
-export function pfpCheck(pfp: string) {
+export function pfpCheck(pfp: string | undefined) {
   if (pfp) return "•  ";
   return "";
 }

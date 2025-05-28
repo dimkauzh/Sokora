@@ -56,16 +56,6 @@ export const settingsDefinition: Record<
         emoji: "⚙️",
         val: 2,
       },
-      rewards: {
-        type: "TEXT",
-        desc: "Role rewards for levels (format: roleID:level,roleID:level)",
-        emoji: "🎁",
-      },
-      multipliers: {
-        type: "TEXT",
-        desc: "XP multipliers for roles/channels (format: multiplier:ID1,ID2)",
-        emoji: "🔢",
-      },
       xp_per_chars: {
         type: "TEXT",
         desc: "XP per character count (format: xp:chars)",
@@ -99,38 +89,10 @@ export const settingsDefinition: Record<
         desc: "Role used for muting members (separate from timeout).",
         emoji: "🤐",
       },
-      automod_enabled: {
-        type: "BOOL",
-        desc: "Enable/disable the automod system.",
-        emoji: "🤖",
-        val: false,
-      },
-      role_autokick: {
-        type: "TEXT",
-        desc: "Role autokick settings (format: roleID:days,roleID:days)",
-        emoji: "🚷",
-      },
       auto_slowdown: {
         type: "BOOL",
         desc: "Enable automatic channel slowdown during high activity.",
         emoji: "🐢",
-        val: false,
-      },
-      regex_filters: {
-        type: "TEXT",
-        desc: "Custom regex patterns for automod (format: pattern:action)",
-        emoji: "🔍",
-      },
-      autokick_delay: {
-        type: "TEXT",
-        desc: "Role autokick delay settings",
-        emoji: "⏱️",
-        val: "0",
-      },
-      autokick_enabled: {
-        type: "BOOL",
-        desc: "Delay before autokicking is triggered",
-        emoji: "🚨",
         val: false,
       },
     },
@@ -318,13 +280,12 @@ export async function getSetting<
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
-      title: `Setting ${key}.${setting} does not exist in the database. Guild: ${guildID}`,
+      title: `Setting ${key}.${setting} does not exist in the database. Guild: ${guildID}.`,
       forward: true,
     });
     return null;
   }
 
-  console.log(key);
   const res = getQuery.all(JSON.stringify(guildID), `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];

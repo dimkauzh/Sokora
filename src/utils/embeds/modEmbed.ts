@@ -9,6 +9,7 @@ import ms from "ms";
 import { genColor } from "../colorGen";
 import { addModeration, editModeration, getModeration, type modType } from "../database/moderation";
 import { logChannel } from "../logChannel";
+import { pfpCheck } from "../pfpCheck";
 import { errorEmbed } from "./errorEmbed";
 
 type Options = {
@@ -139,7 +140,8 @@ export async function modEmbed(
   const guild = interaction.guild!;
   const name = user.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
-  let author = `•  ${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
+  const avatar = user.displayAvatarURL();
+  let author = `${pfpCheck(avatar)}${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
   if (reason) generalValues.push(`**Reason**: ${reason}`);
   else generalValues.push("*No reason provided*");
 
@@ -187,7 +189,7 @@ export async function modEmbed(
   }
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `•  ${author}`, iconURL: user.displayAvatarURL() })
+    .setAuthor({ name: author, iconURL: avatar })
     .setDescription(generalValues.join("\n"))
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(100));
@@ -200,12 +202,13 @@ export async function modEmbed(
   const dmChannel = await user.createDM().catch(() => null);
   if (!dmChannel || !guild.members.cache.get(user.id) || user.bot) return;
   try {
+    const serverAvatar = guild.icon ? guild.iconURL()! : undefined;
     await dmChannel.send({
       embeds: [
         embed
           .setAuthor({
-            name: `•  You got ${action.toLowerCase()} from ${guild.name}`,
-            iconURL: guild.icon ? guild.iconURL()! : undefined,
+            name: `${pfpCheck(serverAvatar)}You got ${action.toLowerCase()} from ${guild.name}`,
+            iconURL: serverAvatar,
           })
           .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
           .setColor(genColor(0)),

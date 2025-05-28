@@ -24,7 +24,7 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const guild = interaction.guild!;
-  const name = user.displayName;
+  const name = user.username;
   const id = interaction.options.getNumber("id");
   const warns = listUserModeration(guild.id, user.id, "WARN");
   const newWarns = warns.filter(warn => warn.id != `${id}`);
@@ -55,7 +55,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     {
       title: `•  Removed a warning from ${name}`,
       iconURL: user.displayAvatarURL(),
-      body: `**Moderator**: ${interaction.user.displayName}`,
+      body: `**Moderator**: ${interaction.user.username}`,
       footer: `User ID: ${user.id}`,
     },
     guild,

@@ -23,7 +23,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setThumbnail(avatar)
     .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
 
   await interaction.reply({ embeds: [embed] });

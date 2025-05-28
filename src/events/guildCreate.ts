@@ -4,6 +4,7 @@ import { genColor } from "../utils/colorGen";
 import { check } from "../utils/database/blocklist";
 import { errorEmbed } from "../utils/embeds/errorEmbed";
 import { leavePlease } from "../utils/leavePlease";
+import { pfpCheck } from "../utils/pfpCheck";
 import { replace } from "../utils/replace";
 import type { Event } from "../utils/types";
 
@@ -12,10 +13,11 @@ export default (async function run(guild) {
   if (!check(owner.id)) return await leavePlease(guild, owner, "No.");
 
   const client = guild.client;
+  const avatar = client.user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `Welcome to ${client.user.username}!`,
-      iconURL: client.user.displayAvatarURL(),
+      name: `${pfpCheck(avatar)}Welcome to ${client.user.username}!`,
+      iconURL: avatar,
     })
     .setDescription(
       [
@@ -25,7 +27,6 @@ export default (async function run(guild) {
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setThumbnail(client.user.displayAvatarURL())
     .setColor(genColor(200));
 
   await guild.commands.set(commands.map(command => command.data));

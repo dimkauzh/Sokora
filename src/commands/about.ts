@@ -54,17 +54,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
       },
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setThumbnail(avatar)
     .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setLabel("• Vote")
+      .setLabel("•  Vote")
       .setURL(`https://top.gg/bot/${user.id}/vote`)
       .setEmoji("🗳️")
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
-      .setLabel("• Donate")
+      .setLabel("•  Donate")
       .setURL("https://paypal.me/SokoraTheBot")
       .setEmoji("⭐")
       .setStyle(ButtonStyle.Link),

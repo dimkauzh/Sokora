@@ -8,6 +8,7 @@ import {
 import { genColor } from "../utils/colorGen";
 import { getSetting } from "../utils/database/settings";
 import { logChannel } from "../utils/logChannel";
+import { pfpCheck } from "../utils/pfpCheck";
 import type { Event } from "../utils/types";
 
 const MESSAGE_LENGTH_CAP = 1024;
@@ -24,11 +25,11 @@ export default (async function run(oldMessage, newMessage) {
   if (oldContent == newContent) return;
   const oldLength = oldContent.length;
   const newLength = newContent.length;
-
+  const avatar = author.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${author.username} edited a message`,
-      iconURL: author.displayAvatarURL(),
+      name: `${pfpCheck(avatar)}${author.username} edited a message`,
+      iconURL: avatar,
     })
     .setTimestamp(new Date())
     .addFields(

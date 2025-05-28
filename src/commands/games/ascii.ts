@@ -1,9 +1,9 @@
-import { SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import figlet from "figlet";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { randomize } from "../utils/randomize";
+import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { randomize } from "../../utils/randomize";
 
-export const data = new SlashCommandBuilder()
+export const data = new SlashCommandSubcommandBuilder()
   .setName("ascii")
   .setDescription("Converts text you send into ASCII art.")
   .addStringOption(option =>
@@ -28,7 +28,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!ascii)
     return await errorEmbed({
       interaction,
-      title: `You can't create ASCII art from \`${text}\`!`,
+      title: `You can't create ASCII art from \`${text}\`.`,
       reason: "This text is either empty or only contains invalid characters.",
     });
 

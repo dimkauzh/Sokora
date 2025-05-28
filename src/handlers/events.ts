@@ -62,6 +62,6 @@ export async function loadEasterEggs() {
       }
     }
   } catch (error) {
-    return await errorEmbed({ client, error, title: `Error loading easter eggs`, forward: true });
+    return await errorEmbed({ client, error, title: `Error loading easter eggs.`, forward: true });
   }
 }

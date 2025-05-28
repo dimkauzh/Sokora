@@ -1,5 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import { genColor, genImageColor } from "../utils/colorGen";
+import { pfpCheck } from "../utils/pfpCheck";
 import { replace } from "../utils/replace";
 
 export const data = new SlashCommandBuilder()
@@ -10,9 +11,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const client = interaction.client;
   const user = client.user;
   const avatar = user.displayAvatarURL();
-
   const embed = new EmbedBuilder()
-    .setAuthor({ name: "•  Pong!", iconURL: avatar })
+    .setAuthor({ name: `${pfpCheck(avatar)}Pong!`, iconURL: avatar })
     .setDescription(
       [
         `\`Latency\` **${Date.now() - interaction.createdTimestamp}ms**.`,
@@ -21,7 +21,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setThumbnail(avatar)
     .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
 
   await interaction.reply({ embeds: [embed] });

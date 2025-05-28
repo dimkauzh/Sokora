@@ -13,7 +13,6 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const example = `Welcome to (servername), **(name)**!`;
   const exampleTwo = `Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
-
   const embed = new EmbedBuilder()
     .setAuthor({ name: "Dynamic (variables)" })
     .setDescription(

@@ -1,4 +1,5 @@
-import { ChartJSNodeCanvas } from 'chartjs-node-canvas';
+import { ChartConfiguration } from "chart.js";
+import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import {
   AttachmentBuilder,
   EmbedBuilder,
@@ -8,7 +9,6 @@ import {
 import * as math from "mathjs";
 import { genColor } from "../../utils/colorGen";
 import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { ChartConfiguration } from 'chart.js';
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("graph")
@@ -35,13 +35,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const compiled = math.compile(func);
     compiled.evaluate({ x: 0 });
 
-    const width = 800;
-    const height = 600;
-
     const chartJSNodeCanvas = new ChartJSNodeCanvas({
-      width,
-      height,
-      backgroundColour: '#151515'
+      width: 800,
+      height: 600,
+      backgroundColour: "#151515",
     });
 
     const points = 1000;
@@ -49,71 +46,72 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     for (let i = 0; i <= points; i++) {
       const x = xmin + (i * (xmax - xmin)) / points;
-
       try {
         const y = compiled.evaluate({ x });
-        if (typeof y === 'number' && isFinite(y)) {
-          data.push({ x, y });
-        }
+        if (typeof y == "number" && isFinite(y)) data.push({ x, y });
       } catch {
         continue;
       }
     }
 
     const configuration: ChartConfiguration = {
-      type: 'line',
+      type: "line",
       data: {
-        datasets: [{
-          label: `f(x) = ${func}`,
-          data: data,
-          borderColor: '#ff0000',
-          borderWidth: 4,
-          pointRadius: 0,
-          fill: false,
-          tension: 0
-        }]
+        datasets: [
+          {
+            label: `f(x) = ${func}`,
+            data: data,
+            borderColor: "#ff0000",
+            borderWidth: 4,
+            pointRadius: 0,
+            fill: false,
+            tension: 0,
+          },
+        ],
       },
       options: {
         responsive: true,
         scales: {
           x: {
-            type: 'linear' as const,
-            position: 'center' as const,
+            type: "linear" as const,
+            position: "center" as const,
             min: xmin,
             max: xmax,
             grid: {
-              color: '#ffffff',
-              lineWidth: 2
+              color: "#ffffff",
+              lineWidth: 2,
             },
             ticks: {
-              color: '#ffffff'
-            }
+              color: "#ffffff",
+            },
           },
           y: {
-            type: 'linear' as const,
-            position: 'center' as const,
+            type: "linear" as const,
+            position: "center" as const,
             min: ymin,
             max: ymax,
             grid: {
-              color: '#ffffff',
-              lineWidth: 2
+              color: "#ffffff",
+              lineWidth: 2,
             },
             ticks: {
-              color: '#ffffff'
-            }
-          }
+              color: "#ffffff",
+            },
+          },
         },
         plugins: {
           legend: {
-            display: false
-          }
-        }
-      }
+            display: false,
+          },
+        },
+      },
     };
 
-    const buffer = await chartJSNodeCanvas.renderToBuffer(configuration);
+    const attachment = new AttachmentBuilder(
+      await chartJSNodeCanvas.renderToBuffer(configuration),
+      { name: "graph.png" },
+    );
 
-    const attachment = new AttachmentBuilder(buffer, { name: "graph.png" });
     const embed = new EmbedBuilder()
       .setAuthor({ name: "Function graph" })
       .setDescription(`\`f(x) = ${func}\``)

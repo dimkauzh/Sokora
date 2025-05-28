@@ -70,7 +70,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     {
       title: "Locked a channel.",
       body: [
-        `**Moderator**: ${interaction.user.displayName}`,
+        `**Moderator**: ${interaction.user.username}`,
         `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
       ],
     },

@@ -55,10 +55,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ? getModeration(guild.id, user.id, actionID)
     : listUserModeration(guild.id, user.id);
 
+  const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(user.displayAvatarURL())}Cases of ${user.displayName}`,
-      iconURL: user.displayAvatarURL(),
+      name: `${pfpCheck(avatar)}Cases of ${user.username}`,
+      iconURL: avatar,
     })
     .setFields(
       actions.length > 0

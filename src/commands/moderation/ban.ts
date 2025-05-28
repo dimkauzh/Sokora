@@ -33,7 +33,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if ((await guild.bans.fetch()).get(user.id))
     return await errorEmbed({
       interaction,
-      title: `You can't ban ${user.displayName}.`,
+      title: `You can't ban ${user.username}.`,
       reason: "This user is already banned.",
     });
 
@@ -43,7 +43,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (!durationMs || durationMs <= 0)
       return await errorEmbed({
         interaction,
-        title: `You can't ban ${user.displayName} temporarily.`,
+        title: `You can't ban ${user.username} temporarily.`,
         reason: "The duration is invalid.",
       });
 

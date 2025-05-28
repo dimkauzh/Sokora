@@ -1,17 +1,14 @@
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import ms from "ms";
 import { easterEggs } from "../handlers/events.ts";
 import { genColor } from "../utils/colorGen";
-import { updateActivity } from "../utils/database/autokick";
-import { getAutomodRules } from "../utils/database/automod";
 import { add, check, remove } from "../utils/database/blocklist";
 import { getLevel, setLevel } from "../utils/database/leveling";
 import { getSetting } from "../utils/database/settings";
 import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
 import { kominator } from "../utils/kominator";
 import { leavePlease } from "../utils/leavePlease";
-import { logChannel } from "../utils/logChannel.ts";
 import { mention } from "../utils/mention.ts";
+import { pfpCheck } from "../utils/pfpCheck.ts";
 import { Event } from "../utils/types";
 
 const cooldowns = new Map<string, number>();
@@ -61,68 +58,7 @@ export default (async function run(message) {
   if (author.bot) return;
   if (!check(author.id)) return;
   const guild = message.guild!;
-  const member = message.member;
-
-  if (await getSetting(guild.id, "moderation", "autokick_enabled"))
-    updateActivity(guild.id, author.id);
-  if (await getSetting(guild.id, "moderation", "automod_enabled"))
-    for (const rule of getAutomodRules(guild.id)) {
-      const whitelistRoles = JSON.parse(rule.whitelist_roles as string);
-      if (JSON.parse(rule.whitelist_channels as string).includes(message.channel.id)) continue;
-      if (member?.roles.cache.some(role => whitelistRoles.includes(role.id))) continue;
-
-      try {
-        if (new RegExp(rule.pattern as string, "i").test(message.content)) {
-          switch (rule.action) {
-            case "delete":
-              await message.delete();
-              break;
-            case "timeout":
-              if (member?.moderatable)
-                await member.timeout(
-                  ms(rule.action_duration as string),
-                  "Automod: Regex filter violation",
-                );
-              break;
-            case "kick":
-              if (member?.kickable) await member.kick("Automod: Regex filter violation");
-              break;
-            case "ban":
-              if (member?.bannable)
-                await member.ban({
-                  reason: "Automod: Regex filter violation",
-                  deleteMessageSeconds: 604800, // 7d
-                });
-              break;
-          }
-
-          const embed = new EmbedBuilder()
-            .setAuthor({
-              name: "Automod action",
-              iconURL: author.displayAvatarURL(),
-            })
-            .setDescription(
-              [
-                `**User**: ${author.tag}`,
-                `**Channel**: <#${message.channel.id}>`,
-                `**Action**: ${rule.action}`,
-                `**Trigger**: \`${rule.pattern}\``,
-                `**Message content**: ${message.content}`,
-              ].join("\n"),
-            )
-            .setColor(genColor(100))
-            .setTimestamp();
-
-          return await logChannel(guild, { embeds: [embed] });
-        }
-      } catch (error) {
-        return await errorEmbed({
-          client,
-          error,
-          title: `Error with regex pattern: ${rule.pattern}`,
-        });
-      }
-    }
+  const avatar = author.displayAvatarURL();
 
   if (await getSetting(guild.id, "easter", "enabled")) {
     const enabledEggs = (await getSetting(guild.id, "easter", "enabled_eggs")) as string;
@@ -148,7 +84,7 @@ export default (async function run(message) {
           if (typeof easterEgg.run != "function") {
             await errorEmbed({
               client,
-              title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}`,
+              title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}.`,
               forward: true,
             });
             continue;
@@ -204,8 +140,8 @@ export default (async function run(message) {
   if (newLevelData.level == level || newLevelData.level < level) return;
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${author.displayName} leveled up!`,
-      iconURL: author.displayAvatarURL(),
+      name: `${pfpCheck(avatar)}${author.displayName} leveled up!`,
+      iconURL: avatar,
     })
     .setDescription(
       [
@@ -217,7 +153,6 @@ export default (async function run(message) {
         } XP to level up again.`,
       ].join("\n"),
     )
-    .setThumbnail(author.displayAvatarURL())
     .setTimestamp()
     .setColor(genColor(200));
 

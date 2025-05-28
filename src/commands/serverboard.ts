@@ -72,6 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(ButtonStyle.Primary),
   );
 
+  // todo: prevent unknown error when deleting
   const reply = await interaction.reply({
     embeds: [await getEmbed()],
     components: pages != 1 ? [row] : [],
