@@ -7,6 +7,7 @@ import { pfpCheck } from "../utils/pfpCheck";
 import type { Event } from "../utils/types";
 
 export default (async function run(message) {
+  // console.log("event: ", Date.now());
   const author = message.author;
   const client = message.client;
   if (!author)

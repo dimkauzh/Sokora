@@ -1,7 +1,7 @@
 import { Chart, registerables } from "chart.js";
 import { ActivityType, Client } from "discord.js";
 import { registerGuildCommands } from "./handlers/commands";
-import { loadEasterEggs, loadEvents } from "./handlers/events";
+import { loadEasterEggs, loadAuditEvents, loadEvents } from "./handlers/events";
 import { leavePlease } from "./utils/leavePlease";
 import { rescheduleUnbans } from "./utils/unbanScheduler";
 
@@ -28,6 +28,7 @@ client.once("ready", async () => {
 
   await loadEvents(client);
   await loadEasterEggs();
+  await loadAuditEvents(client);
   // uncomment if you want to remove guild/global commands or register guild/global commands
   // await removeGuildCommands(client);
   // await removeGlobalCommands(client);
