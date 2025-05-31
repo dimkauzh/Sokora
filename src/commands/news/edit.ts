@@ -1,3 +1,5 @@
+import { get, updateNews } from "database/news";
+import { getSetting } from "database/settings";
 import {
   ActionRowBuilder,
   EmbedBuilder,
@@ -9,13 +11,11 @@ import {
   type Role,
   type TextChannel,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
-import { get, updateNews } from "../../utils/database/news";
-import { getSetting } from "../../utils/database/settings";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { mention } from "../../utils/mention";
-import { pfpCheck } from "../../utils/pfpCheck";
-import { sendChannelNews } from "../../utils/sendChannelNews";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
+import { mention } from "utils/mention";
+import { pfpCheck } from "utils/pfpCheck";
+import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("edit")

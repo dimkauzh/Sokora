@@ -8,13 +8,13 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import { version } from "package";
 import { join } from "path";
-import { version } from "../../package.json";
-import { genColor, genImageColor } from "../utils/colorGen";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { parseChangelogString } from "../utils/parseChangelog";
-import { pfpCheck } from "../utils/pfpCheck";
-import { replace } from "../utils/replace";
+import { genColor, genImageColor } from "utils/colorGen";
+import { parseChangelogString } from "utils/parseChangelog";
+import { pfpCheck } from "utils/pfpCheck";
+import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("changelog")

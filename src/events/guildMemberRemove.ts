@@ -1,9 +1,9 @@
+import { getSetting } from "database/settings";
 import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
-import { genColor, genImageColor } from "../utils/colorGen";
-import { getSetting } from "../utils/database/settings";
-import { pfpCheck } from "../utils/pfpCheck";
-import { replaceVariables } from "../utils/replace";
-import { Event } from "../utils/types";
+import { genColor, genImageColor } from "utils/colorGen";
+import { pfpCheck } from "utils/pfpCheck";
+import { replaceVariables } from "utils/replace";
+import { Event } from "utils/types";
 
 export default (async function run(member: GuildMember) {
   const guildID = member.guild.id;

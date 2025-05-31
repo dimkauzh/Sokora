@@ -1,5 +1,5 @@
 import type { Message, TextChannel } from "discord.js";
-import { multiReact } from "../../utils/multiReact";
+import { multiReact } from "utils/multiReact";
 
 export async function run(message: Message) {
   if (!message.content.trim().toLowerCase().includes("bread")) return;

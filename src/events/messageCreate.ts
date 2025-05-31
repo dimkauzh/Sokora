@@ -1,15 +1,15 @@
+import { add, check, remove } from "database/blocklist";
+import { getLevel, setLevel } from "database/leveling";
+import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import { easterEggs } from "../handlers/events.ts";
-import { genColor } from "../utils/colorGen";
-import { add, check, remove } from "../utils/database/blocklist";
-import { getLevel, setLevel } from "../utils/database/leveling";
-import { getSetting } from "../utils/database/settings";
-import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
-import { kominator } from "../utils/kominator";
-import { leavePlease } from "../utils/leavePlease";
-import { mention } from "../utils/mention.ts";
-import { pfpCheck } from "../utils/pfpCheck.ts";
-import { Event } from "../utils/types";
+import { errorEmbed } from "embeds/errorEmbed.ts";
+import { easterEggs } from "handlers/events.ts";
+import { genColor } from "utils/colorGen";
+import { kominator } from "utils/kominator";
+import { leavePlease } from "utils/leavePlease";
+import { mention } from "utils/mention.ts";
+import { pfpCheck } from "utils/pfpCheck.ts";
+import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {
@@ -85,6 +85,7 @@ export default (async function run(message) {
             await errorEmbed({
               client,
               title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}.`,
+              log: true,
               forward: true,
             });
             continue;
@@ -96,6 +97,7 @@ export default (async function run(message) {
             client,
             error,
             title: `Error running easter egg ${easterEgg.name}`,
+            log: true,
             forward: true,
           });
         }

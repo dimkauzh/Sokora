@@ -1,7 +1,7 @@
+import { getPendingBans, removeModeration } from "database/moderation";
 import { Client, EmbedBuilder } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "./colorGen";
-import { getPendingBans, removeModeration } from "./database/moderation";
-import { errorEmbed } from "./embeds/errorEmbed";
 import { logChannel } from "./logChannel";
 import { pfpCheck } from "./pfpCheck";
 
@@ -25,6 +25,7 @@ export function scheduleUnban(
           client,
           title: `Failed to unban user ${userID} in guild ${guildID}.`,
           reason: "User not found in the guild's ban list's cache.",
+          log: true,
           forward: true,
         });
 
@@ -34,6 +35,7 @@ export function scheduleUnban(
           client,
           title: `Failed to unban user ${userID} in guild ${guildID}.`,
           reason: "Moderator not found in the guild cache.",
+          log: true,
           forward: true,
         });
 
@@ -55,6 +57,7 @@ export function scheduleUnban(
         client,
         error,
         title: `Failed to unban user ${userID} in guild ${guildID}`,
+        log: true,
         forward: true,
       });
     }
@@ -72,6 +75,7 @@ export async function rescheduleUnbans(client: Client) {
       await errorEmbed({
         client,
         title: `Invalid expiresAt value for ban: ${ban.expiresAt}.`,
+        log: true,
         forward: true,
       });
       continue;

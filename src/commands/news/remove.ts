@@ -1,13 +1,13 @@
+import { deleteNews, get } from "database/news";
+import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   TextChannel,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
-import { deleteNews, get } from "../../utils/database/news";
-import { getSetting } from "../../utils/database/settings";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("remove")

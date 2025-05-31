@@ -1,3 +1,4 @@
+import { addNews, listAllQuery } from "database/news";
 import {
   ActionRowBuilder,
   EmbedBuilder,
@@ -7,11 +8,10 @@ import {
   TextInputStyle,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
-import { addNews, listAllQuery } from "../../utils/database/news";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { replaceVariables } from "../../utils/replace";
-import { sendChannelNews } from "../../utils/sendChannelNews";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
+import { replaceVariables } from "utils/replace";
+import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("add")

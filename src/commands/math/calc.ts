@@ -3,9 +3,9 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
 import * as math from "mathjs";
-import { genColor } from "../../utils/colorGen";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("calc")

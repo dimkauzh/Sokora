@@ -3,10 +3,10 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { errorCheck } from "../../utils/embeds/modEmbed";
-import { mention } from "../../utils/mention";
+import { errorEmbed } from "embeds/errorEmbed";
+import { modActionEmbed } from "embeds/modActionEmbed";
+import { errorCheck } from "embeds/modEmbed";
+import { mention } from "utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("unlock")
@@ -20,6 +20,7 @@ export const data = new SlashCommandSubcommandBuilder()
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
         ChannelType.GuildVoice,
+        ChannelType.GuildStageVoice,
       ),
   );
 
@@ -45,11 +46,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   if (
-    channel.type == ChannelType.GuildText &&
-    ChannelType.PublicThread &&
-    ChannelType.PrivateThread &&
-    ChannelType.GuildVoice
+    !(
+      channel.type == ChannelType.GuildText &&
+      ChannelType.PublicThread &&
+      ChannelType.PrivateThread &&
+      ChannelType.GuildVoice &&
+      ChannelType.GuildStageVoice
+    )
   )
+    return await errorEmbed({
+      interaction,
+      title: "You have provided a channel that can't be locked in the first place.",
+    });
+
+  await Promise.all([
     channel.permissionOverwrites
       .create(guild.id, {
         SendMessages: null,
@@ -57,17 +67,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
         CreatePublicThreads: null,
         CreatePrivateThreads: null,
       })
-      .catch(async error => await errorEmbed({ interaction, error, forward: true }));
-
-  await modActionEmbed(
-    {
-      title: "Unlocked a channel.",
-      body: [
-        `**Moderator**: ${interaction.user.username}`,
-        `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
-      ],
-    },
-    guild,
-    interaction,
-  );
+      .catch(async error => await errorEmbed({ interaction, error, forward: true })),
+    modActionEmbed(
+      {
+        title: "Unlocked a channel.",
+        body: [
+          `**Moderator**: ${interaction.user.username}`,
+          `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
+        ],
+      },
+      guild,
+      interaction,
+    ),
+  ]);
 }

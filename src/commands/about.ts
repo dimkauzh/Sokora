@@ -6,11 +6,11 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { version } from "../../package.json";
-import { genColor, genImageColor } from "../utils/colorGen";
-import { pfpCheck } from "../utils/pfpCheck";
-import { pluralOrNot } from "../utils/pluralOrNot";
-import { replace } from "../utils/replace";
+import { version } from "package";
+import { genColor, genImageColor } from "utils/colorGen";
+import { pfpCheck } from "utils/pfpCheck";
+import { pluralOrNot } from "utils/pluralOrNot";
+import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("about")

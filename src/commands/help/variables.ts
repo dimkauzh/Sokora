@@ -3,8 +3,8 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
-import { replaceVariables } from "../../utils/replace";
+import { genColor } from "utils/colorGen";
+import { replaceVariables } from "utils/replace";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("variables")
@@ -23,16 +23,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
       {
         name: "Simple example",
         value: [
-          `A simple example: \`${example}\` will result in:`,
-          "",
+          `A simple example: \`${example}\` will result in:\n`,
           `> ${await replaceVariables(example, interaction.guild!, interaction.user)}`,
         ].join("\n"),
       },
       {
         name: "Another example",
         value: [
-          `Adding more stuff: \`${exampleTwo}\` will result in:`,
-          "",
+          `Adding more stuff: \`${exampleTwo}\` will result in:\n`,
           `> ${await replaceVariables(exampleTwo, interaction.guild!, interaction.user)}`,
         ].join("\n"),
       },
@@ -53,10 +51,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           `\`(currentdate, detailed)\` - current date in the 'July 10, 2025, at 1:11 PM' format`,
         ].join("\n"),
       },
-    ])
-    .setFooter({
-      text: "Sokora /help variables",
-    });
+    ]);
 
   await interaction.reply({ embeds: [embed] });
 }

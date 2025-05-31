@@ -1,11 +1,11 @@
+import { setSetting, settingsDefinition } from "database/settings.ts";
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen.ts";
-import { setSetting, settingsDefinition } from "../../utils/database/settings.ts";
-import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
+import { errorEmbed } from "embeds/errorEmbed.ts";
+import { genColor } from "utils/colorGen.ts";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("reset")

@@ -3,11 +3,11 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { errorCheck } from "../../utils/embeds/modEmbed";
-import { mention } from "../../utils/mention";
-import { pluralOrNot } from "../../utils/pluralOrNot";
+import { errorEmbed } from "embeds/errorEmbed";
+import { modActionEmbed } from "embeds/modActionEmbed";
+import { errorCheck } from "embeds/modEmbed";
+import { mention } from "utils/mention";
+import { pluralOrNot } from "utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("clear")
@@ -27,6 +27,7 @@ export const data = new SlashCommandSubcommandBuilder()
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
         ChannelType.GuildVoice,
+        ChannelType.GuildStageVoice,
       ),
   )
   .addUserOption(user =>
@@ -68,7 +69,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       channel.type == ChannelType.GuildStageVoice
     )
   )
-    return;
+    return await errorEmbed({
+      interaction,
+      title: "You have provided a channel that can't have messages to clear.",
+    });
 
   try {
     if (targetUser) {

@@ -1,6 +1,6 @@
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { errorCheck, modEmbed } from "../../utils/embeds/modEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
+import { errorCheck, modEmbed } from "embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("unmute")
@@ -34,8 +34,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "The user was never muted.",
     });
 
-  await modEmbed({ interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE" }, reason);
-  await target
-    ?.edit({ communicationDisabledUntil: null })
-    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
+  await Promise.all([
+    modEmbed({ interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE" }, reason),
+    target
+      ?.edit({ communicationDisabledUntil: null })
+      .catch(async error => await errorEmbed({ interaction, error, forward: true })),
+  ]);
 }

@@ -1,8 +1,8 @@
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import { errorCheck, modEmbed } from "embeds/modEmbed";
 import ms from "ms";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { errorCheck, modEmbed } from "../../utils/embeds/modEmbed";
-import { scheduleUnban } from "../../utils/unbanScheduler";
+import { scheduleUnban } from "utils/unbanScheduler";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("ban")
@@ -52,11 +52,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   try {
-    await modEmbed(
-      { interaction, user, action: "Banned", duration, dm: true, dbAction: "BAN", expiresAt },
-      reason,
-    );
-    await guild.members.ban(user.id, { reason: reason ?? undefined });
+    // todo: do this in most of the places that have lots of await functions and where order of things done doesn't matter
+    await Promise.all([
+      modEmbed(
+        { interaction, user, action: "Banned", duration, dm: true, dbAction: "BAN", expiresAt },
+        reason,
+      ),
+      guild.members.ban(user.id, { reason: reason ?? undefined }),
+    ]);
   } catch (error) {
     return await errorEmbed({ interaction, error, forward: true });
   }

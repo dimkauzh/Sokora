@@ -1,5 +1,5 @@
 import type { ChatInputCommandInteraction } from "discord.js";
-import { errorEmbed } from "./embeds/errorEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
 import { errorType } from "./errorType";
 
 const errorRateLimit = new Set<string>();
@@ -16,11 +16,10 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
 
     errorRateLimit.add(errorKey);
     setTimeout(() => errorRateLimit.delete(errorKey), 10000);
-    await errorEmbed({ interaction, error, forward: true });
+    await errorEmbed({ interaction, error, log: true, forward: true });
   };
 
   const handleError = async (error: Error, eventType: string, additionalInfo: string = "") => {
-    console.log(error);
     return await sendErrorMessage(error, eventType, additionalInfo);
   };
 

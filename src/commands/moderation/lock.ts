@@ -3,10 +3,10 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { errorCheck } from "../../utils/embeds/modEmbed";
-import { mention } from "../../utils/mention";
+import { errorEmbed } from "embeds/errorEmbed";
+import { modActionEmbed } from "embeds/modActionEmbed";
+import { errorCheck } from "embeds/modEmbed";
+import { mention } from "utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("lock")
@@ -20,6 +20,7 @@ export const data = new SlashCommandSubcommandBuilder()
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
         ChannelType.GuildVoice,
+        ChannelType.GuildStageVoice,
       ),
   );
 
@@ -45,11 +46,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   if (
-    channel.type == ChannelType.GuildText &&
-    ChannelType.PublicThread &&
-    ChannelType.PrivateThread &&
-    ChannelType.GuildVoice
+    !(
+      channel.type == ChannelType.GuildText &&
+      ChannelType.PublicThread &&
+      ChannelType.PrivateThread &&
+      ChannelType.GuildVoice &&
+      ChannelType.GuildStageVoice
+    )
   )
+    return await errorEmbed({
+      interaction,
+      title: "You have provided a channel that can't be locked.",
+    });
+
+  await Promise.all([
     channel.permissionOverwrites
       .create(guild.id, {
         SendMessages: false,
@@ -64,17 +74,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
             error,
             forward: true,
           }),
-      );
-
-  await modActionEmbed(
-    {
-      title: "Locked a channel.",
-      body: [
-        `**Moderator**: ${interaction.user.username}`,
-        `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
-      ],
-    },
-    guild,
-    interaction,
-  );
+      ),
+    modActionEmbed(
+      {
+        title: "Locked a channel.",
+        body: [
+          `**Moderator**: ${interaction.user.username}`,
+          `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
+        ],
+      },
+      guild,
+      interaction,
+    ),
+  ]);
 }

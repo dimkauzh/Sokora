@@ -21,7 +21,6 @@ export type TypeOfDefinition<T extends TableDefinition> = {
 export type SingleSettingDefinition = {
   type: FieldData;
   desc: string;
-  emoji?: string;
   val?: any;
   settings?: Record<
     string,

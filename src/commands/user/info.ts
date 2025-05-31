@@ -1,3 +1,5 @@
+import { getLevel } from "database/leveling";
+import { getSetting } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -7,13 +9,11 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor, genImageColor } from "../../utils/colorGen";
-import { getLevel } from "../../utils/database/leveling";
-import { getSetting } from "../../utils/database/settings";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { mention } from "../../utils/mention";
-import { pfpCheck } from "../../utils/pfpCheck";
-import { pluralOrNot } from "../../utils/pluralOrNot";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor, genImageColor } from "utils/colorGen";
+import { mention } from "utils/mention";
+import { pfpCheck } from "utils/pfpCheck";
+import { pluralOrNot } from "utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("info")
@@ -65,7 +65,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       `**${guildRoles.filter(role => target.roles.cache.has(role.id)).size! - 1}** ${pluralOrNot(
         "role",
         memberRoles.length,
-      )}: ${(
+      )} • ${(
         await Promise.all(
           memberRoles.slice(0, 3).map(async role => await mention(role[1].id, "ROLE")),
         )

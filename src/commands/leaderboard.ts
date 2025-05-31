@@ -1,3 +1,4 @@
+import { getGuildLeaderboard } from "database/leveling";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -7,9 +8,8 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../utils/colorGen";
-import { getGuildLeaderboard } from "../utils/database/leveling";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
 
 export const data = new SlashCommandBuilder()
   .setName("leaderboard")

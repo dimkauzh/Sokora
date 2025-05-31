@@ -1,10 +1,10 @@
+import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import { genColor, genImageColor } from "../utils/colorGen";
-import { getSetting } from "../utils/database/settings";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { pfpCheck } from "../utils/pfpCheck";
-import { replaceVariables } from "../utils/replace";
-import { Event } from "../utils/types";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor, genImageColor } from "utils/colorGen";
+import { pfpCheck } from "utils/pfpCheck";
+import { replaceVariables } from "utils/replace";
+import { Event } from "utils/types";
 
 export default (async function run(member) {
   const guildID = member.guild.id;
@@ -52,6 +52,6 @@ export default (async function run(member) {
   try {
     await dmChannel.send({ embeds: [embed] }).catch(() => null);
   } catch (error) {
-    return await errorEmbed({ client: member.client, error, forward: true });
+    return await errorEmbed({ client: member.client, error, log: true, forward: true });
   }
 } as Event<"guildMemberAdd">);

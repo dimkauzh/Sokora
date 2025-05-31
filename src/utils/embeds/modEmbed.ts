@@ -1,3 +1,4 @@
+import { addModeration, editModeration, getModeration, type modType } from "database/moderation";
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
@@ -6,8 +7,8 @@ import {
   type User,
 } from "discord.js";
 import ms from "ms";
+import { reply } from "utils/reply";
 import { genColor } from "../colorGen";
-import { addModeration, editModeration, getModeration, type modType } from "../database/moderation";
 import { logChannel } from "../logChannel";
 import { pfpCheck } from "../pfpCheck";
 import { errorEmbed } from "./errorEmbed";
@@ -161,7 +162,7 @@ export async function modEmbed(
     try {
       editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
     } catch (error) {
-      return await errorEmbed({ interaction, error, forward: true });
+      return await errorEmbed({ interaction, error, log: true, forward: true });
     }
     author = author.concat(`  •  #${previousID}`);
   } else if (!dbAction) return;
@@ -185,7 +186,7 @@ export async function modEmbed(
     );
     author = author.concat(`  •  #${id}`);
   } catch (error) {
-    return await errorEmbed({ interaction, error, forward: true });
+    return await errorEmbed({ interaction, error, log: true, forward: true });
   }
 
   const embed = new EmbedBuilder()
@@ -194,9 +195,10 @@ export async function modEmbed(
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(100));
 
-  await logChannel(guild, { embeds: [embed] });
-  if (interaction.replied) await interaction.followUp({ embeds: [embed] });
-  else await interaction.reply({ embeds: [embed] });
+  await Promise.all([
+    logChannel(guild, { embeds: [embed] }),
+    reply(interaction, { embeds: [embed] }),
+  ]);
 
   if (!dm) return;
   const dmChannel = await user.createDM().catch(() => null);
@@ -215,6 +217,6 @@ export async function modEmbed(
       ],
     });
   } catch (error) {
-    return await errorEmbed({ interaction, error, forward: true });
+    return await errorEmbed({ interaction, error, log: true, forward: true });
   }
 }

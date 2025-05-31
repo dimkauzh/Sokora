@@ -1,3 +1,4 @@
+import { getSetting, setSetting, settingsDefinition, settingsKeys } from "database/settings";
 import {
   AutocompleteInteraction,
   EmbedBuilder,
@@ -7,17 +8,12 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { capitalize } from "../utils/capitalize";
-import { genColor } from "../utils/colorGen";
-import {
-  getSetting,
-  setSetting,
-  settingsDefinition,
-  settingsKeys,
-} from "../utils/database/settings";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { humanizeSettings } from "../utils/humanizeSettings";
-import { mention } from "../utils/mention";
+import { errorEmbed } from "embeds/errorEmbed";
+import { capitalize } from "utils/capitalize";
+import { genColor } from "utils/colorGen";
+import { humanizeSettings } from "utils/humanizeSettings";
+import { mention } from "utils/mention";
+import { pfpCheck } from "utils/pfpCheck";
 
 export const data = new SlashCommandBuilder()
   .setName("settings")
@@ -81,7 +77,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const settingsDef = settingsDefinition[key];
   const settingText = async (name: string): Promise<string> => {
     const setting = (await getSetting(guild.id, key, name))?.toString();
-    if (!setting) return "*Undefined.*";
+    if (!setting) return "*Undefined*";
     let text;
     switch (settingsDef.settings[name].type) {
       case "CHANNEL":
@@ -100,19 +96,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return text;
   };
 
+  const avatar = interaction.guild!.iconURL()!;
   if (!values.length || !values.filter(value => value.type != 1)[0]) {
     const embed = new EmbedBuilder()
-      .setAuthor({ name: `${capitalize(key)} settings` })
+      .setAuthor({ name: `${pfpCheck(avatar)}${capitalize(key)} settings`, iconURL: avatar })
       .setDescription(
         (
           await Promise.all(
-            Object.keys(settingsDef.settings).map(async setting => {
-              const def = settingsDef.settings[setting];
-              const emoji = def.emoji ? `${def.emoji} • ` : "";
-              const title = humanizeSettings(capitalize(setting));
-              const value = humanizeSettings(await settingText(setting));
-              return `${emoji}**${title}**: ${value}`;
-            }),
+            Object.keys(settingsDef.settings).map(
+              async setting =>
+                `**${humanizeSettings(capitalize(setting))}**: ${humanizeSettings(await settingText(setting))}`,
+            ),
           )
         ).join("\n"),
       )
@@ -122,7 +116,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${capitalize(key)} settings changed` })
+    .setAuthor({ name: `${pfpCheck(avatar)}${capitalize(key)} settings changed`, iconURL: avatar })
     .setColor(genColor(100));
 
   let description = "";

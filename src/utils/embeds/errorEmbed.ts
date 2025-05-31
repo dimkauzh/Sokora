@@ -24,10 +24,11 @@ export async function errorEmbed(options: {
   error?: unknown | Error;
   title?: string;
   reason?: string;
+  log?: boolean;
   forward?: boolean;
 }) {
-  const { interaction, title, reason, forward } = options;
-  const client = options.client ? options.client : (interaction ? interaction.client : null);
+  const { interaction, title, reason, log, forward } = options;
+  const client = options.client ? options.client : interaction ? interaction.client : null;
   if (!client && !interaction)
     return console.error(
       "You need to provide either a client or an interaction for errorEmbed to work.",
@@ -74,6 +75,7 @@ export async function errorEmbed(options: {
     await channel.send({ embeds: [embed], files: files });
   }
 
+  if (log) console.error(error);
   if (interaction)
     return await reply(interaction, { embeds: [embed], files: files, flags: "Ephemeral" });
 }

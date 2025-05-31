@@ -1,6 +1,6 @@
+import { errorEmbed } from "embeds/errorEmbed";
+import { client } from "src/bot";
 import { getDatabase } from ".";
-import { client } from "../../bot";
-import { errorEmbed } from "../embeds/errorEmbed";
 import { SingleSettingDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
@@ -25,7 +25,6 @@ export const settingsDefinition: Record<
       remind: {
         type: "BOOL",
         desc: "Whether or not should the bot remind you about when you can vote in Top.gg again.",
-        emoji: "🗳️",
         val: false,
       },
     },
@@ -36,7 +35,6 @@ export const settingsDefinition: Record<
       opt_out: {
         type: "BOOL",
         desc: "Whether or not should you appear on leaderboard, etc.",
-        emoji: "❓",
         val: false,
       },
     },
@@ -63,6 +61,7 @@ export async function getUserSetting<
     await errorEmbed({
       client,
       title: `Setting ${key}.${setting} does not exist in the database. User: ${userID}.`,
+      log: true,
       forward: true,
     });
     return null;

@@ -1,12 +1,12 @@
+import { check } from "database/blocklist";
 import { EmbedBuilder } from "discord.js";
-import { commands } from "../handlers/commands";
-import { genColor } from "../utils/colorGen";
-import { check } from "../utils/database/blocklist";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { leavePlease } from "../utils/leavePlease";
-import { pfpCheck } from "../utils/pfpCheck";
-import { replace } from "../utils/replace";
-import type { Event } from "../utils/types";
+import { errorEmbed } from "embeds/errorEmbed";
+import { commands } from "handlers/commands";
+import { genColor } from "utils/colorGen";
+import { leavePlease } from "utils/leavePlease";
+import { pfpCheck } from "utils/pfpCheck";
+import { replace } from "utils/replace";
+import type { Event } from "utils/types";
 
 export default (async function run(guild) {
   const owner = await guild.fetchOwner();
@@ -36,6 +36,6 @@ export default (async function run(guild) {
     if (!welcomeChannel.permissionsFor(guild.client.user)?.has("SendMessages")) return;
     await welcomeChannel.send({ embeds: [embed] });
   } catch (error) {
-    return await errorEmbed({ client, error, forward: true });
+    return await errorEmbed({ client, error, log: true, forward: true });
   }
 } as Event<"guildCreate">);

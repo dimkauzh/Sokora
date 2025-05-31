@@ -1,11 +1,11 @@
 import type { Client, GuildAuditLogsEntry, Message } from "discord.js";
 import { Events } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed.ts";
+import createAuditLogHandler from "events/guildAuditLogEntryCreate.ts";
 import { readdirSync } from "fs";
 import { join } from "path";
+import { client } from "src/bot";
 import { pathToFileURL } from "url";
-import { client } from "../bot.ts";
-import { errorEmbed } from "../utils/embeds/errorEmbed.ts";
-import createAuditLogHandler from "../events/guildAuditLogEntryCreate.ts";
 
 const events = [];
 export async function loadEvents(client: Client) {
@@ -15,12 +15,11 @@ export async function loadEvents(client: Client) {
     if (!eventFile.endsWith("ts")) continue;
 
     const eventName = eventFile.split(".ts")[0];
-
-    if (eventName === "guildAuditLogEntryCreate") {
-      const event = createAuditLogHandler(client);
-      const clientEvent = client.on(Events.GuildAuditLogEntryCreate, event);
-
-      events.push({ name: eventName, event: clientEvent });
+    if (eventName == "guildAuditLogEntryCreate") {
+      events.push({
+        name: eventName,
+        event: client.on(Events.GuildAuditLogEntryCreate, createAuditLogHandler(client)),
+      });
       continue;
     }
 
@@ -46,10 +45,11 @@ export async function loadEasterEggs() {
 
       try {
         const eggModule = await import(pathToFileURL(join(eventsPath, easterEggFile)).toString());
-        if (typeof eggModule.run !== "function") {
+        if (typeof eggModule.run != "function") {
           await errorEmbed({
             client,
             title: `Easter egg ${easterEggFile} does not have a run function.`,
+            log: true,
             forward: true,
           });
           continue;
@@ -68,64 +68,73 @@ export async function loadEasterEggs() {
           client,
           error,
           title: `Error loading easter egg ${easterEggFile}`,
+          log: true,
           forward: true,
         });
       }
     }
   } catch (error) {
-    return await errorEmbed({ client, error, title: `Error loading easter eggs.`, forward: true });
+    return await errorEmbed({
+      client,
+      error,
+      title: `Error loading easter eggs.`,
+      log: true,
+      forward: true,
+    });
   }
 }
-
 
 export interface AuditEvent {
   name: string;
   run: (auditEntry: GuildAuditLogsEntry, client: Client) => Promise<void>;
 }
 
-export let auditEvents: AuditEvent[] = [];
+export const auditEvents: AuditEvent[] = [];
 export async function loadAuditEvents(client: Client) {
   const eventsPath = join(process.cwd(), "src", "events", "auditLogs");
-  try {
-    const files = readdirSync(eventsPath);
-    for (const auditEventFile of files) {
-      if (!auditEventFile.endsWith(".ts")) {
-        continue;
-      }
 
+  try {
+    for (const auditEventFile of readdirSync(eventsPath)) {
+      if (!auditEventFile.endsWith(".ts")) continue;
       const fullPath = join(eventsPath, auditEventFile);
+
       try {
         const auditEventModule = await import(pathToFileURL(fullPath).toString());
-
-        if (typeof auditEventModule.run !== "function") {
+        if (typeof auditEventModule.run != "function") {
           await errorEmbed({
-            title: `Audit log event ${auditEventFile} does not have a run function, please fix this`,
+            client,
+            title: `Audit log event ${auditEventFile} does not have a run function.`,
+            log: true,
             forward: true,
-            client: client,
           });
           continue;
         }
 
-        const auditEventName = auditEventFile.split(".")[0];
-
         const auditEvent: AuditEvent = {
-          name: auditEventName,
+          name: auditEventFile.split(".")[0],
           run: async (auditEntry: GuildAuditLogsEntry, client: Client) => {
             return await auditEventModule.run(auditEntry, client);
           },
         };
-        
+
         auditEvents.push(auditEvent);
       } catch (error) {
-        await errorEmbed({
-          title: `Error loading audit log event ${auditEventFile}`,
-          error: error,
+        return await errorEmbed({
+          client,
+          error,
+          title: `Error loading audit log event ${auditEventFile}.`,
+          log: true,
           forward: true,
-          client: client,
         });
       }
     }
   } catch (error) {
-    await errorEmbed({ title: `Error loading audit log events`, error: error, forward: true, client: client });
+    return await errorEmbed({
+      client,
+      error,
+      title: `Error loading audit log events.`,
+      log: true,
+      forward: true,
+    });
   }
 }

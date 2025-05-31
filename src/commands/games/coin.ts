@@ -3,8 +3,8 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen.ts";
-import { pfpCheck } from "../../utils/pfpCheck.ts";
+import { genColor } from "utils/colorGen.ts";
+import { pfpCheck } from "utils/pfpCheck.ts";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("coin")

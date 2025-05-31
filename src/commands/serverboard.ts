@@ -1,3 +1,4 @@
+import { deletePublicServer, listPublicServers } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -7,9 +8,8 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { deletePublicServer, listPublicServers } from "../utils/database/settings";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { serverEmbed } from "../utils/embeds/serverEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
+import { serverEmbed } from "embeds/serverEmbed";
 
 export const data = new SlashCommandBuilder()
   .setName("serverboard")
@@ -33,7 +33,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       }),
     )
   )
-    .filter(entry => entry !== null)
+    .filter(entry => entry != null)
     .sort((a, b) => b.guild.memberCount - a.guild.memberCount);
 
   const pages = guildList.length;

@@ -1,6 +1,6 @@
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { errorCheck, modEmbed } from "../../utils/embeds/modEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
+import { errorCheck, modEmbed } from "embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("kick")
@@ -30,16 +30,18 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const reason = interaction.options.getString("reason");
-  await modEmbed({ interaction, user, action: "Kicked", dm: true, dbAction: "KICK" }, reason);
-  await interaction.guild?.members.cache
-    .get(user.id)
-    ?.kick(reason ?? undefined)
-    .catch(
-      async error =>
-        await errorEmbed({
-          interaction,
-          error,
-          forward: true,
-        }),
-    );
+  await Promise.all([
+    modEmbed({ interaction, user, action: "Kicked", dm: true, dbAction: "KICK" }, reason),
+    interaction.guild?.members.cache
+      .get(user.id)
+      ?.kick(reason ?? undefined)
+      .catch(
+        async error =>
+          await errorEmbed({
+            interaction,
+            error,
+            forward: true,
+          }),
+      ),
+  ]);
 }

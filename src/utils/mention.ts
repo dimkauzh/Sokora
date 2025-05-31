@@ -1,5 +1,5 @@
-import { client } from "../bot";
-import { errorEmbed } from "./embeds/errorEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
+import { client } from "src/bot";
 
 /**
  * Handles role mentions, channel mentions, timestamps, and more.
@@ -33,11 +33,12 @@ export async function mention(
     case "DEFAULT_TIMESTAMP":
     case "DETAILED_TIMESTAMP":
     case "SIMPLE_TIMESTAMP": {
-      if (typeof who !== "number" || isNaN(Number(who))) {
+      if (typeof who != "number" || isNaN(Number(who))) {
         await errorEmbed({
           client,
           title:
             "Asked to format a timestamp but provided a string. You should provide timestamps as a number by using Date.now() (without flooring). You were given back the string untouched.",
+          log: true,
           forward: true,
         });
         return who.toString();

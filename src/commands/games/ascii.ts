@@ -1,7 +1,7 @@
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
 import figlet from "figlet";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { randomize } from "../../utils/randomize";
+import { randomize } from "utils/randomize";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("ascii")

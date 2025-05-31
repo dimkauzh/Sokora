@@ -1,50 +1,29 @@
-import { AuditLogEvent, Client, GuildAuditLogsEntry } from "discord.js";
-// import { genColor } from "../../utils/colorGen";
-// import { getSetting } from "../../utils/database/settings";
-// import { logChannel } from "../../utils/logChannel";
-// import { errorEmbed } from "../../utils/embeds/errorEmbed";
+import { getSetting } from "database/settings";
+import { AuditLogEvent, Client, GuildAuditLogsEntry, User } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import { guild } from "events/messageDelete";
 
-export async function run(auditEntry: GuildAuditLogsEntry<AuditLogEvent.MessageDelete>, client: Client) {
-  // console.log("audit: ", Date.now());
-  const author = await client.users.fetch(auditEntry.targetId!).catch(() => null);
-  const executor = await client.users.fetch(auditEntry.executorId!).catch(() => null);
-  console.log(author?.displayName, executor?.displayName);
+// todo: somehow make this work with messagedelete
+export let executor: Promise<User | null>;
+export async function run(
+  auditEntry: GuildAuditLogsEntry<AuditLogEvent.MessageDelete>,
+  client: Client,
+) {
+  try {
+    /*
+    console.log("hey");
+    console.log(auditEntry.targetId);
+    console.log(auditEntry.executorId);
+    */
 
-  /*
-  if (!author)
-    return await errorEmbed({
-      title: "Cannot log deleted message.",
-      reason: `Message ${message} lacks an author.`,
-      client,
-    });
+    if (!(await getSetting(guild!.id, "moderation", "log_messages"))) return;
+    const target = await client.users.fetch(auditEntry.targetId!);
+    executor = client.users.fetch(auditEntry.executorId!);
 
-  if (author.bot) return;
-  const guild = message.guild;
-  if (!guild)
-    return await errorEmbed({
-      title: "Cannot log deleted message.",
-      reason: `Message ${message} lacks the guild.`,
-      client,
-    });
-
-  if (!getSetting(guild.id, "moderation", "log_messages")) return;
-  const value = message.content && message.content.length > 0 ? message.content : "*Empty message*";
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `•  ${author.displayName}'s message has been deleted.`,
-      iconURL: author.displayAvatarURL(),
-    })
-    .setDescription(
-      `[Jump to message](${message.url}) • [See ${author.displayName}'s profile](https://discord.com/users/${author.id})`,
-    )
-    .setTimestamp(new Date())
-    .addFields({
-      name: "🗑️ • Deleted message",
-      value,
-    })
-    .setFooter({ text: `User ID: ${author.id}` })
-    .setColor(genColor(0));
-
-  await logChannel(guild, { embeds: [embed] });
-  */
-};
+    if (target?.bot) return;
+    if (target?.id == (await executor)?.id) return;
+    // console.log(target?.displayName, executor?.displayName);
+  } catch (error) {
+    return await errorEmbed({ client, error, log: true, forward: true });
+  }
+}

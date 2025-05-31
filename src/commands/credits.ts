@@ -1,7 +1,7 @@
 import { EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
-import { genColor, genImageColor } from "../utils/colorGen";
-import { pfpCheck } from "../utils/pfpCheck";
-import { replace } from "../utils/replace";
+import { genColor, genImageColor } from "utils/colorGen";
+import { pfpCheck } from "utils/pfpCheck";
+import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("credits")

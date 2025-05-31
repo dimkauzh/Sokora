@@ -1,9 +1,9 @@
+import { check } from "database/blocklist";
 import { SlashCommandSubcommandBuilder } from "discord.js";
-import { commands, subCommands } from "../handlers/commands";
-import { check } from "../utils/database/blocklist";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { noErrorsPlease } from "../utils/noErrorsPlease";
-import type { Event } from "../utils/types";
+import { errorEmbed } from "embeds/errorEmbed";
+import { commands, subCommands } from "handlers/commands";
+import { noErrorsPlease } from "utils/noErrorsPlease";
+import type { Event } from "utils/types";
 
 export default (async function run(interaction) {
   if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;

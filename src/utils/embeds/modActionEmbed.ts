@@ -1,3 +1,4 @@
+// todo: merge this into modEmbed
 import { ChatInputCommandInteraction, EmbedBuilder, Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { logChannel } from "../logChannel";
@@ -34,10 +35,9 @@ export async function modActionEmbed(
 
   if (footer) embed.setFooter({ text: footer });
   try {
-    await logChannel(guild, { embeds: [embed] });
-    await reply(i, { embeds: [embed] });
+    await Promise.all([logChannel(guild, { embeds: [embed] }), reply(i, { embeds: [embed] })]);
   } catch (error) {
-    await errorEmbed({ client: guild.client, error, forward: true });
+    await errorEmbed({ client: guild.client, error, log: true, forward: true });
   }
 
   return embed;

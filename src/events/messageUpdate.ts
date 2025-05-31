@@ -1,3 +1,4 @@
+import { getSetting } from "database/settings";
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -5,14 +6,12 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
-import { genColor } from "../utils/colorGen";
-import { getSetting } from "../utils/database/settings";
-import { logChannel } from "../utils/logChannel";
-import { pfpCheck } from "../utils/pfpCheck";
-import type { Event } from "../utils/types";
+import { genColor } from "utils/colorGen";
+import { logChannel } from "utils/logChannel";
+import { pfpCheck } from "utils/pfpCheck";
+import type { Event } from "utils/types";
 
 const MESSAGE_LENGTH_CAP = 1024;
-
 export default (async function run(oldMessage, newMessage) {
   const author = oldMessage.author!;
   if (author.bot) return;

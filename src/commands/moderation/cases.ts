@@ -1,13 +1,13 @@
+import { getModeration, listUserModeration } from "database/moderation";
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
-import { getModeration, listUserModeration } from "../../utils/database/moderation";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { pfpCheck } from "../../utils/pfpCheck";
-import { randomize } from "../../utils/randomize";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
+import { pfpCheck } from "utils/pfpCheck";
+import { randomize } from "utils/randomize";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
@@ -26,14 +26,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     KICK: "📤",
     BAN: "🔨",
     UNBAN: "🔓",
-    NOTE: "📝",
   };
 
   const nothingMsg = [
     "Nothing to see here...",
     "Ayay, no cases on this horizon cap'n!",
     "Clean as a whistle!",
-    "0+0=?",
+    "0 + 0 = ?",
   ];
 
   const guild = interaction.guild!;
@@ -67,7 +66,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             const actionValues = [
               `**Moderator**: <@${action.moderator}>`,
               action.reason ? `**Reason**: ${action.reason}` : "*No reason provided*",
-              `-# **Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
+              `**Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
             ];
 
             return {

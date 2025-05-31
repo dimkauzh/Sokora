@@ -1,3 +1,4 @@
+import { listAllNews } from "database/news";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -7,10 +8,9 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen";
-import { listAllNews } from "../../utils/database/news";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { pfpCheck } from "../../utils/pfpCheck";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
+import { pfpCheck } from "utils/pfpCheck";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("view")

@@ -1,12 +1,12 @@
+import { listUserModeration, removeModeration } from "database/moderation";
 import {
   DMChannel,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { listUserModeration, removeModeration } from "../../utils/database/moderation";
-import { errorEmbed } from "../../utils/embeds/errorEmbed";
-import { modActionEmbed } from "../../utils/embeds/modActionEmbed";
-import { errorCheck } from "../../utils/embeds/modEmbed";
+import { errorEmbed } from "embeds/errorEmbed";
+import { modActionEmbed } from "embeds/modActionEmbed";
+import { errorCheck } from "embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("delwarn")

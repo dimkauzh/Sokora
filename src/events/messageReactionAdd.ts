@@ -1,33 +1,37 @@
-import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
-  EmbedBuilder,
-  type MessageReaction,
-  type PartialMessageReaction,
-  type PartialUser,
-  type User,
-} from "discord.js";
-import { genColor } from "../utils/colorGen";
-import { getSetting } from "../utils/database/settings";
-import { getStarred, setStarred } from "../utils/database/starboard";
-import { errorEmbed } from "../utils/embeds/errorEmbed";
-import { pfpCheck } from "../utils/pfpCheck";
-import { Event } from "../utils/types";
+import { getSetting } from "database/settings";
+import { getStarred, setStarred } from "database/starboard";
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
+import { pfpCheck } from "utils/pfpCheck";
+import { Event } from "utils/types";
 
-export default (async function run(
-  reaction: MessageReaction | PartialMessageReaction,
-  user: User | PartialUser,
-) {
-  const client = user.client;
+export default (async function run(reaction, user) {
   if (reaction.partial)
-    await reaction
-      .fetch()
-      .catch(
-        async error =>
-          await errorEmbed({ client, error, title: `Error fetching reaction.`, forward: true }),
-      );
+    await reaction.fetch().catch(
+      async error =>
+        await errorEmbed({
+          client,
+          error,
+          title: `Error fetching reaction.`,
+          log: true,
+          forward: true,
+        }),
+    );
 
+  if (user.partial)
+    await user.fetch().catch(
+      async error =>
+        await errorEmbed({
+          client,
+          error,
+          title: `Error fetching user.`,
+          log: true,
+          forward: true,
+        }),
+    );
+
+  const client = user.client;
   const message = await reaction.message.fetch();
   if (!message.guild) return;
 
@@ -97,6 +101,12 @@ export default (async function run(
       message.createdTimestamp.toString(),
     );
   } catch (error) {
-    await errorEmbed({ client, error, title: "Error handling starboard message.", forward: true });
+    await errorEmbed({
+      client,
+      error,
+      title: "Error handling starboard message.",
+      log: true,
+      forward: true,
+    });
   }
 } as Event<"messageReactionAdd">);

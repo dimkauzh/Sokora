@@ -7,10 +7,10 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../../utils/colorGen.ts";
-import { errorEmbed } from "../../utils/embeds/errorEmbed.ts";
-import { pfpCheck } from "../../utils/pfpCheck.ts";
-import { randomize } from "../../utils/randomize.ts";
+import { errorEmbed } from "embeds/errorEmbed.ts";
+import { genColor } from "utils/colorGen.ts";
+import { pfpCheck } from "utils/pfpCheck.ts";
+import { randomize } from "utils/randomize.ts";
 
 type RPSChoice = "rock" | "paper" | "scissors";
 const rpsChoices: RPSChoice[] = ["rock", "paper", "scissors"];

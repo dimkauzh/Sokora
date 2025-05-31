@@ -1,3 +1,5 @@
+import { get, updateNews } from "database/news";
+import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
@@ -6,8 +8,6 @@ import {
   type TextChannel,
 } from "discord.js";
 import { genColor } from "./colorGen";
-import { get, updateNews } from "./database/news";
-import { getSetting } from "./database/settings";
 import { mention } from "./mention";
 import { pfpCheck } from "./pfpCheck";
 
