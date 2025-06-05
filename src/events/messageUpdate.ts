@@ -11,8 +11,10 @@ import { logChannel } from "utils/logChannel";
 import { pfpCheck } from "utils/pfpCheck";
 import type { Event } from "utils/types";
 
+// todo: make links work
 const MESSAGE_LENGTH_CAP = 1024;
 export default (async function run(oldMessage, newMessage) {
+  if (oldMessage.partial) return;
   const author = oldMessage.author!;
   if (author.bot) return;
 

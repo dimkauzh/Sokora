@@ -1,4 +1,12 @@
-export type FieldData = "TEXT" | "INTEGER" | "BOOL" | "TIMESTAMP" | "CHANNEL" | "USER" | "ROLE";
+export type FieldData =
+  | "TEXT"
+  | "INTEGER"
+  | "BOOL"
+  | "TIMESTAMP"
+  | "CHANNEL"
+  | "USER"
+  | "ROLE"
+  | "LOG";
 export type TableDefinition = {
   name: string;
   definition: Record<string, FieldData>;
@@ -12,6 +20,7 @@ export type SqlType<T extends FieldData> = {
   CHANNEL: string;
   USER: string;
   ROLE: string;
+  LOG: string[];
 }[T];
 
 export type TypeOfDefinition<T extends TableDefinition> = {

@@ -84,6 +84,10 @@ export const settingsDefinition: Record<
         desc: "Whether or not should the bot log different actions.",
         val: false,
       },
+      events: {
+        type: "LOG",
+        desc: "Select what logs you want to see in your log channel.",
+      },
       channel: {
         type: "CHANNEL",
         desc: "The channel where the logs should be sent. Forum channels supported.",
