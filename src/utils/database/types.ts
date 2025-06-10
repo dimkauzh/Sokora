@@ -7,6 +7,7 @@ export type FieldData =
   | "USER"
   | "ROLE"
   | "LOG";
+
 export type TableDefinition = {
   name: string;
   definition: Record<string, FieldData>;
@@ -20,7 +21,7 @@ export type SqlType<T extends FieldData> = {
   CHANNEL: string;
   USER: string;
   ROLE: string;
-  LOG: string[];
+  LOG: string;
 }[T];
 
 export type TypeOfDefinition<T extends TableDefinition> = {
@@ -31,8 +32,6 @@ export type SingleSettingDefinition = {
   type: FieldData;
   desc: string;
   val?: any;
-  settings?: Record<
-    string,
-    SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
-  >;
+  iterable?: boolean;
+  settings?: Record<string, SingleSettingDefinition>;
 };

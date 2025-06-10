@@ -34,6 +34,7 @@ export const settingsDefinition: Record<
       block_channels: {
         type: "CHANNEL",
         desc: "ID(s) of the channels where messages aren't counted, comma separated.",
+        iterable: true,
       },
       xp_gain: {
         type: "INTEGER",
@@ -271,15 +272,17 @@ export async function getSetting<
     return set.val;
   }
 
-  if (res[0].value == "null" || !res[0].value) return set.val;
-
+  // todo: make iterables work
+  const value = res[0].value;
+  if (value == "null" || !value) return set.val;
+  // if (set.iterable) res[0].value = kominator(res[0].value)
   switch (set.type) {
     case "BOOL":
-      return (res[0].value == "1" ? true : false) as SqlType<typeof set.type>;
+      return (value == "1" ? true : false) as SqlType<typeof set.type>;
     case "INTEGER":
-      return parseInt(res[0].value) as SqlType<typeof set.type>;
+      return parseInt(value) as SqlType<typeof set.type>;
     default:
-      return res[0].value as SqlType<typeof set.type>;
+      return value as SqlType<typeof set.type>;
   }
 }
 

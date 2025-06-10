@@ -29,16 +29,6 @@ export const settingsDefinition: Record<
       },
     },
   },
-  data: {
-    description: "Manage the data collected by Sokora.",
-    settings: {
-      opt_out: {
-        type: "BOOL",
-        desc: "Whether or not should you appear on leaderboard, etc.",
-        val: false,
-      },
-    },
-  },
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
@@ -70,6 +60,7 @@ export async function getUserSetting<
   const res = getQuery.all(JSON.stringify(userID), `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];
+  const value = res[0].value;
   const set = settingsDefinition[key].settings[setting];
 
   if (!res.length) {
@@ -79,11 +70,11 @@ export async function getUserSetting<
 
   switch (set.type) {
     case "BOOL":
-      return (res[0].value == "1" ? true : false) as SqlType<typeof set.type>;
+      return (value == "1" ? true : false) as SqlType<typeof set.type>;
     case "INTEGER":
-      return parseInt(res[0].value) as SqlType<typeof set.type>;
+      return parseInt(value) as SqlType<typeof set.type>;
     default:
-      return res[0].value as SqlType<typeof set.type>;
+      return value as SqlType<typeof set.type>;
   }
 }
 
