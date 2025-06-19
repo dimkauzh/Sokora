@@ -90,6 +90,7 @@ export interface AuditEvent {
 }
 
 export const auditEvents: AuditEvent[] = [];
+export const auditEventNames: string[] = [];
 export async function loadAuditEvents(client: Client) {
   const eventsPath = join(process.cwd(), "src", "events", "auditLogs");
 
@@ -99,6 +100,7 @@ export async function loadAuditEvents(client: Client) {
       const fullPath = join(eventsPath, auditEventFile);
 
       try {
+        const auditEventName = auditEventFile.split(".")[0];
         const auditEventModule = await import(pathToFileURL(fullPath).toString());
         if (typeof auditEventModule.run != "function") {
           await errorEmbed({
@@ -111,13 +113,14 @@ export async function loadAuditEvents(client: Client) {
         }
 
         const auditEvent: AuditEvent = {
-          name: auditEventFile.split(".")[0],
+          name: auditEventName,
           run: async (auditEntry: GuildAuditLogsEntry, client: Client) => {
             return await auditEventModule.run(auditEntry, client);
           },
         };
 
         auditEvents.push(auditEvent);
+        auditEventNames.push(auditEventName);
       } catch (error) {
         return await errorEmbed({
           client,

@@ -9,6 +9,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
+import { auditEventNames } from "handlers/events";
 import { capitalize } from "utils/capitalize";
 import { genColor } from "utils/colorGen";
 import { humanizeSettings } from "utils/humanizeSettings";
@@ -35,7 +36,7 @@ settingsKeys.forEach(key => {
         break;
       case "INTEGER":
         subcommand.addIntegerOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false),
+          option.setName(sub).setDescription(setting.desc).setRequired(false).setAutocomplete(true),
         );
         break;
       case "CHANNEL":
@@ -55,7 +56,7 @@ settingsKeys.forEach(key => {
         break;
       default:
         subcommand.addStringOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false),
+          option.setName(sub).setDescription(setting.desc).setRequired(false).setAutocomplete(true),
         );
         break;
     }
@@ -149,10 +150,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
 export async function autocomplete(interaction: AutocompleteInteraction) {
   if (interaction.type != InteractionType.ApplicationCommandAutocomplete) return;
-  switch (Object.keys(settingsDefinition[interaction.options.getSubcommand()])[0]) {
-    case "BOOL":
+  switch (
+    settingsDefinition[interaction.options.getSubcommand()].settings[
+      interaction.options.getFocused(true).name
+    ].type
+  ) {
+    case "LOG":
       await interaction.respond(
-        ["true", "false"].map(choice => ({
+        auditEventNames.map(choice => ({
           name: choice,
           value: choice,
         })),

@@ -1,7 +1,7 @@
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { getDatabase } from ".";
-import { SingleSettingDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
   name: "user_settings",
@@ -12,13 +12,7 @@ const tableDefinition = {
   },
 } satisfies TableDefinition;
 
-export const settingsDefinition: Record<
-  string,
-  {
-    description: string;
-    settings: Record<string, SingleSettingDefinition>;
-  }
-> = {
+export const settingsDefinition: SettingsDefinition = {
   topgg: {
     description: "Change settings about Top.gg.",
     settings: {

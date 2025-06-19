@@ -1,7 +1,8 @@
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
+import { kominator } from "utils/kominator";
 import { getDatabase } from ".";
-import { SingleSettingDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
   name: "settings",
@@ -12,13 +13,7 @@ const tableDefinition = {
   },
 } satisfies TableDefinition;
 
-export const settingsDefinition: Record<
-  string,
-  {
-    description: string;
-    settings: Record<string, SingleSettingDefinition>;
-  }
-> = {
+export const settingsDefinition: SettingsDefinition = {
   leveling: {
     description: "Customize the behavior of the leveling system.",
     settings: {
@@ -88,6 +83,7 @@ export const settingsDefinition: Record<
       events: {
         type: "LOG",
         desc: "Select what logs you want to see in your log channel.",
+        iterable: true,
       },
       channel: {
         type: "CHANNEL",
@@ -251,7 +247,7 @@ export async function getSetting<
   guildID: string,
   key: K,
   setting: S,
-): Promise<SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null> {
+): Promise<SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null | undefined> {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
@@ -273,17 +269,23 @@ export async function getSetting<
   }
 
   // todo: make iterables work
-  const value = res[0].value;
+  let value: string | string[] = res[0].value;
   if (value == "null" || !value) return set.val;
-  // if (set.iterable) res[0].value = kominator(res[0].value)
-  switch (set.type) {
-    case "BOOL":
-      return (value == "1" ? true : false) as SqlType<typeof set.type>;
-    case "INTEGER":
-      return parseInt(value) as SqlType<typeof set.type>;
-    default:
-      return value as SqlType<typeof set.type>;
+  if (set.iterable) value = kominator(value);
+
+  function switchTypes(value: string) {
+    switch (set.type) {
+      case "BOOL":
+        return (value == "1" ? true : false) as SqlType<typeof set.type>;
+      case "INTEGER":
+        return parseInt(value) as SqlType<typeof set.type>;
+      default:
+        return value as SqlType<typeof set.type>;
+    }
   }
+
+  if (typeof value == "string") return switchTypes(value);
+  for (const setting of value) return switchTypes(setting);
 }
 
 export async function setSetting<
