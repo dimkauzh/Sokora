@@ -28,10 +28,43 @@ export const settingsDefinition: SettingsDefinition = {
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 const database = getDatabase(tableDefinition);
 const getQuery = database.query("SELECT * FROM user_settings WHERE userID = $1 AND key = $2;");
+const getByKeyQuery = database.query("SELECT * FROM user_settings WHERE key = $1;");
 const deleteQuery = database.query("DELETE FROM user_settings WHERE userID = $1 AND key = $2;");
 const insertQuery = database.query(
   "INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);",
 );
+
+export async function getUserSettingsTable<
+  K extends keyof typeof settingsDefinition,
+  S extends keyof (typeof settingsDefinition)[K]["settings"],
+>(
+  key: K,
+  setting: S,
+): Promise<
+  | TypeOfDefinition<{
+      name: string;
+      definition: {
+        userID: "TEXT";
+        key: "TEXT";
+        value: "TEXT";
+      };
+    }>[]
+  | null
+> {
+  if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
+    await errorEmbed({
+      client,
+      title: `Setting ${key}.${setting} does not exist in the database at all.`,
+      log: true,
+      forward: true,
+    });
+    return null;
+  }
+
+  const res = getByKeyQuery.all(`${key}.${setting}`) as TypeOfDefinition<typeof tableDefinition>[];
+
+  return res;
+}
 
 export async function getUserSetting<
   K extends keyof typeof settingsDefinition,

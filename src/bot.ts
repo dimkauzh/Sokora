@@ -1,32 +1,11 @@
 import { Api } from "@top-gg/sdk";
 import { Chart, registerables } from "chart.js";
-import { getUserSetting } from "database/userSettings";
+import { getUserSetting, getUserSettingsTable } from "database/userSettings";
 import { ActivityType, Client, Partials } from "discord.js";
 import { registerGuildCommands } from "handlers/commands";
 import { loadAuditEvents, loadEasterEggs, loadEvents } from "handlers/events";
 import { leavePlease } from "utils/leavePlease";
 import { rescheduleUnbans } from "utils/unbanScheduler";
-
-async function getAllUsers() {
-  // get all users
-  const allUsers = new Set<string>();
-
-  // uhh this seems a bit computationally expensive, BUT it works
-  // AND it should only run once (per restart)
-  for (const [guildId, guild] of client.guilds.cache) {
-    try {
-      // fetch all members of the guild
-      const members = await guild.members.fetch();
-      members.forEach(member => {
-        allUsers.add(member.user.id); // add user ID to Set
-      });
-    } catch (error) {
-      console.error(`Failed to fetch members for guild ${guildId}:`, error);
-    }
-  }
-
-  return allUsers;
-}
 
 export const client = new Client({
   presence: {
@@ -74,31 +53,33 @@ client.once("ready", async () => {
   for (const id of guilds.keys())
     await leavePlease(guilds.get(id)!, await guilds.get(id)!.fetchOwner()!, "Not like that.");
 
-  // this is a bit computationally expensive, but it should only run once (per restart)
-  const allUsers = await getAllUsers();
+  // get all currently subscribed users (once per restart)
+  const subscribedUsers = new Set(
+    (await getUserSettingsTable("topgg", "remind"))?.filter(i => i.value == "1").map(i => i.userID),
+  );
 
-  // and NOW, instead of running that thing again,
-  // we just listen to events and update the Set
+  // instead of running getUserSettingsTable() again,
+  // we just listen to new  and update the Set
   // and HOPEFULLY this will work
-  client.on("guildMemberAdd", async user => {
-    allUsers.add(user.id);
+  client.on("interactionCreate", async i => {
+    if (!i.isChatInputCommand()) return;
+    if (await getUserSetting(i.user.id, "topgg", "remind")) subscribedUsers.add(i.user.id);
   });
 
   client.on("guildMemberRemove", async user => {
-    allUsers.delete(user.id);
+    subscribedUsers.delete(user.id);
   });
 
   setInterval(async () => {
-    for (const user of allUsers) {
-      if (!(await getUserSetting(user, "topgg", "remind"))) continue;
+    for (const user of subscribedUsers) {
       if (await topgg.hasVoted(user)) continue;
       console.debug(`reminding ${user} to vote on top.gg`);
       await client.users.send(
-        user,
+        JSON.parse(user),
         "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
       );
     }
-  }, 3600000);
+  }, 3600000); // 1h
 
   await Promise.all([
     loadEvents(client),
