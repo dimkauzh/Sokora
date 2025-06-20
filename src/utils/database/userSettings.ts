@@ -54,13 +54,14 @@ export async function getUserSetting<
   const res = getQuery.all(JSON.stringify(userID), `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];
-  const value = res[0].value;
   const set = settingsDefinition[key].settings[setting];
 
   if (!res.length) {
     if (!set) return null;
     return set.val;
   }
+
+  const value = res[0].value;
 
   switch (set.type) {
     case "BOOL":
