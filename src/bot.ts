@@ -76,7 +76,7 @@ client.once("ready", async () => {
       console.debug(`reminding ${user} to vote on top.gg`);
       await client.users.send(
         JSON.parse(user),
-        "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
+        `Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/${client.user.id}/vote) - go vote!!`,
       );
     }
   }, 3600000); // 1h
