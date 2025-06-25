@@ -1,12 +1,17 @@
 import { check } from "database/blocklist";
+import { getUserSetting } from "database/userSettings";
 import { SlashCommandSubcommandBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { commands, subCommands } from "handlers/commands";
+import { subscribedUsers } from "src/bot";
 import { noErrorsPlease } from "utils/noErrorsPlease";
 import type { Event } from "utils/types";
 
 export default (async function run(interaction) {
   if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
+  if (await getUserSetting(interaction.user.id, "topgg", "remind"))
+    subscribedUsers.add(interaction.user.id);
+
   let command;
   const subCommand = subCommands.filter(subCommand =>
     subCommand.data instanceof SlashCommandSubcommandBuilder

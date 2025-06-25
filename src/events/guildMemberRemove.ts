@@ -1,15 +1,18 @@
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
+import { subscribedUsers } from "src/bot";
 import { genColor, genImageColor } from "utils/colorGen";
 import { pfpCheck } from "utils/pfpCheck";
 import { replaceVariables } from "utils/replace";
 import { Event } from "utils/types";
 
 export default (async function run(member: GuildMember) {
+  subscribedUsers.delete(member.id);
   const guildID = member.guild.id;
   const id =
     ((await getSetting(guildID, "welcome", "leave_channel")) as string) ??
     ((await getSetting(guildID, "welcome", "join_channel")) as string);
+
   if (!id) return;
   const avatar = member.user.displayAvatarURL();
   const channel = (await member.guild.channels.cache

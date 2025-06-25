@@ -36,6 +36,7 @@ export interface EasterEgg {
 }
 
 export const easterEggs: EasterEgg[] = [];
+export const easterEggNames: string[] = [];
 export async function loadEasterEggs() {
   const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
 
@@ -44,6 +45,7 @@ export async function loadEasterEggs() {
       if (!easterEggFile.endsWith(".ts")) continue;
 
       try {
+        const easterEggName = easterEggFile.split(".")[0];
         const eggModule = await import(pathToFileURL(join(eventsPath, easterEggFile)).toString());
         if (typeof eggModule.run != "function") {
           await errorEmbed({
@@ -56,13 +58,14 @@ export async function loadEasterEggs() {
         }
 
         const easterEgg: EasterEgg = {
-          name: easterEggFile.split(".")[0],
+          name: easterEggName,
           run: async (message: Message) => {
             return await eggModule.run(message);
           },
         };
 
         easterEggs.push(easterEgg);
+        easterEggNames.push(easterEggName);
       } catch (error) {
         return await errorEmbed({
           client,

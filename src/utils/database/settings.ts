@@ -28,7 +28,7 @@ export const settingsDefinition: SettingsDefinition = {
       },
       block_channels: {
         type: "CHANNEL",
-        desc: "ID(s) of the channels where messages aren't counted, comma separated.",
+        desc: "IDs of the channels where messages aren't counted.",
         iterable: true,
       },
       xp_gain: {
@@ -48,7 +48,7 @@ export const settingsDefinition: SettingsDefinition = {
       },
       xp_per_chars: {
         type: "TEXT",
-        desc: "XP per character count (format: xp:chars)",
+        desc: "XP per character count (format: xp:chars).",
         val: "1:50",
       },
     },
@@ -100,16 +100,13 @@ export const settingsDefinition: SettingsDefinition = {
       },
       role_id: {
         type: "ROLE",
-        desc: "ID of the roles that should be pinged when a news message is sent.",
+        desc: "IDs of the roles that should be pinged when a news message is sent.",
+        iterable: true,
       },
       edit_original_message: {
         type: "BOOL",
         desc: "Whether or not the original message should be edited when a news message is updated.",
         val: true,
-      },
-      categories: {
-        type: "TEXT",
-        desc: "News categories and their roles (format: name:roleID)",
       },
       dm_enabled: {
         type: "BOOL",
@@ -157,7 +154,7 @@ export const settingsDefinition: SettingsDefinition = {
       },
       invite_channel: {
         type: "CHANNEL",
-        desc: "Channel for the invite. If unset, if a rules channel exists uses it, hides the invite otherwise.",
+        desc: "Channel for the invite. If not set, if a rules channel exists uses it, hides the invite otherwise.",
       },
     },
   },
@@ -189,17 +186,13 @@ export const settingsDefinition: SettingsDefinition = {
       },
       dm_text: {
         type: "TEXT",
-        desc: "Text sent in the user's DM when they join the server. Same syntax as join_text.",
+        desc: "Text sent in the user's DM when they join the server. Use (variables) to add dynamic info, run /help variables for info.",
         val: "Welcome to (servername), (name)! Interestingly, you just helped us reach (count) members. Have a nice day!",
       },
-      role_retain: {
-        type: "BOOL",
-        desc: "Keep user roles when they rejoin.",
-        val: false,
-      },
-      role_retain_except: {
-        type: "TEXT",
-        desc: "Roles to exclude from retention (comma-separated IDs)",
+      roles: {
+        type: "ROLE",
+        desc: "The roles that should be given to the user when they join.",
+        iterable: true,
       },
     },
   },
@@ -208,16 +201,18 @@ export const settingsDefinition: SettingsDefinition = {
     settings: {
       enabled: {
         type: "BOOL",
-        desc: "Whether or not the bot should reply to certain messages with 'easter egg' messages.",
+        desc: 'Whether or not the bot should reply to certain messages with "easter egg" messages.',
         val: false,
       },
       enabled_eggs: {
-        type: "TEXT",
-        desc: "Specific easter eggs to enable (comma-separated). If empty, all easter eggs are enabled.",
+        type: "EGG",
+        desc: "Specific easter eggs to enable. If none are selected, all easter eggs are enabled.",
+        iterable: true,
       },
       allowed_channels: {
-        type: "TEXT",
-        desc: "Channel IDs where easter eggs are allowed (comma-separated).",
+        type: "ROLE",
+        desc: "Channels where easter eggs are allowed.",
+        iterable: true,
       },
     },
   },
@@ -268,7 +263,6 @@ export async function getSetting<
     return set.val;
   }
 
-  // todo: make iterables work
   let value: string | string[] = res[0].value;
   if (value == "null" || !value) return set.val;
   if (set.iterable) value = kominator(value);

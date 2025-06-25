@@ -1,68 +1,42 @@
-import { getSetting, setSetting, settingsDefinition, settingsKeys } from "database/settings";
+import { getSetting, settingsDefinition, settingsKeys } from "database/settings";
 import {
-  AutocompleteInteraction,
-  EmbedBuilder,
-  InteractionType,
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  ChannelSelectMenuBuilder,
+  ChannelType,
+  ContainerBuilder,
+  MessageActionRowComponentBuilder,
   PermissionsBitField,
+  RoleSelectMenuBuilder,
+  SectionBuilder,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
+  StringSelectMenuBuilder,
+  StringSelectMenuOptionBuilder,
+  TextDisplayBuilder,
+  UserSelectMenuBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { auditEventNames } from "handlers/events";
+import { auditEventNames, easterEggNames } from "handlers/events";
 import { capitalize } from "utils/capitalize";
-import { genColor } from "utils/colorGen";
+import { genColorCV2 } from "utils/colorGen";
 import { humanizeSettings } from "utils/humanizeSettings";
-import { mention } from "utils/mention";
-import { pfpCheck } from "utils/pfpCheck";
+import { newline } from "utils/newline";
 
 export const data = new SlashCommandBuilder()
   .setName("settings")
   .setDescription("Configure Sokora to your liking.")
   .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator);
 
-settingsKeys.forEach(key => {
-  const subcommand = new SlashCommandSubcommandBuilder()
-    .setName(key)
-    .setDescription(settingsDefinition[key].description);
-
-  Object.keys(settingsDefinition[key].settings).forEach(sub => {
-    const setting = settingsDefinition[key].settings[sub];
-    switch (setting.type) {
-      case "BOOL":
-        subcommand.addBooleanOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false),
-        );
-        break;
-      case "INTEGER":
-        subcommand.addIntegerOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false).setAutocomplete(true),
-        );
-        break;
-      case "CHANNEL":
-        subcommand.addChannelOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false),
-        );
-        break;
-      case "USER":
-        subcommand.addUserOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false),
-        );
-        break;
-      case "ROLE":
-        subcommand.addRoleOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false),
-        );
-        break;
-      default:
-        subcommand.addStringOption(option =>
-          option.setName(sub).setDescription(setting.desc).setRequired(false).setAutocomplete(true),
-        );
-        break;
-    }
-  });
-  data.addSubcommand(subcommand);
-});
+settingsKeys.forEach(key =>
+  data.addSubcommand(
+    new SlashCommandSubcommandBuilder()
+      .setName(key)
+      .setDescription(settingsDefinition[key].description),
+  ),
+);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
@@ -74,96 +48,103 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const key = interaction.options.getSubcommand();
-  const values = interaction.options.data[0].options!;
   const settingsDef = settingsDefinition[key];
-  const settingText = async (name: string): Promise<string> => {
-    const setting = (await getSetting(guild.id, key, name))?.toString();
-    if (!setting) return "*Undefined*";
-    let text;
-    switch (settingsDef.settings[name].type) {
+  const settingsObj = settingsDef.settings;
+  const settingComponent = async (name: string): Promise<{ text: string; component: any }> => {
+    const setting = await getSetting(guild.id, key, name);
+    const settingObject = settingsObj[name];
+    const maxValues = settingObject.iterable ? 25 : 1;
+    let component:
+      | ButtonBuilder
+      | ChannelSelectMenuBuilder
+      | UserSelectMenuBuilder
+      | RoleSelectMenuBuilder
+      | StringSelectMenuBuilder;
+
+    switch (settingObject.type) {
+      case "BOOL":
+        component = new ButtonBuilder()
+          .setCustomId(`bool${name}`)
+          .setLabel(humanizeSettings(capitalize(setting?.toString() ?? "Not set")))
+          .setStyle(setting ? ButtonStyle.Success : ButtonStyle.Danger);
+
+        break;
       case "CHANNEL":
-        text = setting ? await mention(setting, "CHANNEL") : "*Not set*";
+        component = new ChannelSelectMenuBuilder()
+          .setCustomId(`channel${name}`)
+          .setMaxValues(maxValues)
+          .setChannelTypes([
+            ChannelType.GuildAnnouncement,
+            ChannelType.GuildForum,
+            ChannelType.GuildStageVoice,
+            ChannelType.GuildText,
+            ChannelType.GuildVoice,
+            ChannelType.PublicThread,
+            ChannelType.PrivateThread,
+          ]);
         break;
       case "USER":
-        text = setting ? await mention(setting, "USER") : "*Not set*";
+        component = new UserSelectMenuBuilder().setCustomId(`user${name}`).setMaxValues(maxValues);
         break;
       case "ROLE":
-        text = setting ? await mention(setting, "ROLE") : "*Not set*";
+        component = new RoleSelectMenuBuilder().setCustomId(`role${name}`).setMaxValues(maxValues);
+        break;
+      case "LOG":
+        component = new StringSelectMenuBuilder()
+          .setCustomId(`log${name}`)
+          .setMaxValues(auditEventNames.length)
+          .setOptions(
+            auditEventNames.map(option =>
+              new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
+            ),
+          );
+        break;
+      case "EGG":
+        component = new StringSelectMenuBuilder()
+          .setCustomId(`log${name}`)
+          .setMaxValues(easterEggNames.length)
+          .setOptions(
+            easterEggNames.map(option =>
+              new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
+            ),
+          );
         break;
       default:
-        text = setting || "*Not set*";
+        component = new ButtonBuilder()
+          .setCustomId(`edit${name}`)
+          .setLabel("Edit")
+          .setStyle(ButtonStyle.Secondary);
+
         break;
     }
-    return text;
+
+    return {
+      text: `${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`,
+      component,
+    };
   };
 
-  const avatar = interaction.guild!.iconURL()!;
-  if (!values.length || !values.filter(value => value.type != 1)[0]) {
-    const embed = new EmbedBuilder()
-      .setAuthor({ name: `${pfpCheck(avatar)}${capitalize(key)} settings`, iconURL: avatar })
-      .setDescription(
-        (
-          await Promise.all(
-            Object.keys(settingsDef.settings).map(
-              async setting =>
-                `**${humanizeSettings(capitalize(setting))}**: ${humanizeSettings(await settingText(setting))}`,
-            ),
-          )
-        ).join("\n"),
-      )
-      .setColor(genColor(100));
+  // const avatar = interaction.guild!.iconURL()!;
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingsDef.description))
+    .setAccentColor(genColorCV2(200)!);
 
-    return await interaction.reply({ embeds: [embed] });
-  }
-
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(avatar)}${capitalize(key)} settings changed`, iconURL: avatar })
-    .setColor(genColor(100));
-
-  let description = "";
-  for (let i = 0; i < values.length; i++) {
-    const option = values[i];
-
-    if (
-      option.type == 7 &&
-      !guild.channels.cache
-        .get(option.value as string)
-        ?.permissionsFor(interaction.client.user)
-        ?.has("ViewChannel")
-    )
-      return await errorEmbed({
-        interaction,
-        title: "The bot can't view this channel.",
-        reason:
-          "You can either give the **View Channel** permission for the bot or use a channel from the dropdown menu.",
-      });
-
-    await setSetting(guild.id, key, option.name, option.value as string);
-    description += `**${humanizeSettings(capitalize(option.name))}:** ${humanizeSettings(
-      await settingText(option.name.toString()),
-    )}\n`;
-  }
-
-  embed.setDescription(description);
-  await interaction.reply({ embeds: [embed] });
-}
-
-export async function autocomplete(interaction: AutocompleteInteraction) {
-  if (interaction.type != InteractionType.ApplicationCommandAutocomplete) return;
-  switch (
-    settingsDefinition[interaction.options.getSubcommand()].settings[
-      interaction.options.getFocused(true).name
-    ].type
-  ) {
-    case "LOG":
-      await interaction.respond(
-        auditEventNames.map(choice => ({
-          name: choice,
-          value: choice,
-        })),
+  for (const setting of Object.keys(settingsObj)) {
+    const object = await settingComponent(setting);
+    const component = object.component;
+    if (component instanceof ButtonBuilder)
+      container.addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+          .setButtonAccessory(component),
       );
-      break;
-    default:
-      await interaction.respond([]);
+    else
+      container
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+        .addActionRowComponents(
+          new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
+        );
   }
+
+  await interaction.reply({ components: [container], flags: "IsComponentsV2" });
 }

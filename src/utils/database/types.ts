@@ -6,7 +6,8 @@ export type FieldData =
   | "CHANNEL"
   | "USER"
   | "ROLE"
-  | "LOG";
+  | "LOG"
+  | "EGG";
 
 export type TableDefinition = {
   name: string;
@@ -22,6 +23,7 @@ export type SqlType<T extends FieldData> = {
   USER: string;
   ROLE: string;
   LOG: string;
+  EGG: string;
 }[T];
 
 export type TypeOfDefinition<T extends TableDefinition> = {
@@ -39,6 +41,7 @@ export type SettingsDefinition = Record<
         desc: string;
         val?: any;
         iterable?: boolean;
+        selectMenu?: boolean;
       }
     >;
   }

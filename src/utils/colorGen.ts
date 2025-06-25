@@ -16,6 +16,18 @@ export function genColor(hue: number): ColorResolvable {
 }
 
 /**
+ * Randomizes a color and outputs RGB for the accent color of CV2 containers.
+ * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
+ * @returns Color in RGB.
+ */
+export function genColorCV2(hue: number) {
+  return Bun.color(
+    `hsl(${hue + 15 * Math.random()}, ${80 + 20 * Math.random()}%, ${60 + 15 * Math.random()}%)`,
+    "[rgb]",
+  );
+}
+
+/**
  * Outputs the most vibrant color from the image.
  * @param {?string} guildURL Guild image URL.
  * @param {?string} memberURL Member image URL.
