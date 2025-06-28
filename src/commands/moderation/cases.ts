@@ -1,4 +1,4 @@
-import { getModeration, listUserModeration } from "database/moderation";
+import { getModeration, listGuildModeration, listUserModeration } from "database/moderation";
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
@@ -12,9 +12,7 @@ import { randomize } from "utils/randomize";
 export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
   .setDescription("Moderation cases in a server.")
-  .addUserOption(user =>
-    user.setName("user").setDescription("The user that you want to see.").setRequired(true),
-  )
+  .addUserOption(user => user.setName("user").setDescription("The user that you want to see."))
   .addStringOption(string =>
     string.setName("id").setDescription("The ID of a specific moderation case you want to see."),
   );
@@ -43,16 +41,58 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Moderate Members** permission.",
     });
 
-  const user = interaction.options.getUser("user")!;
-  // const warns = listUserModeration(guild.id, user.id, "WARN");
-  // const mutes = listUserModeration(guild.id, user.id, "MUTE");
-  // const kicks = listUserModeration(guild.id, user.id, "KICK");
-  // const bans = listUserModeration(guild.id, user.id, "BAN");
+  const user = interaction.options.getUser("user");
   let actionID = interaction.options.getString("id");
   if (actionID && actionID?.startsWith("#")) actionID = actionID.slice(1);
+  if (actionID && !user)
+    return await errorEmbed({
+      interaction,
+      client: interaction.client,
+      title: "No user specified!",
+      reason: `Sokora cannot look for "case ${actionID} of *no user*". Please, specify a user.`,
+    });
+  if (!user) {
+    const cases = listGuildModeration(guild.id);
+    if (cases.length === 0) {
+      await interaction.reply({
+        embeds: [
+          new EmbedBuilder()
+            .setAuthor({ name: "All moderation cases server-wide" })
+            .setColor(genColor(120))
+            .setFields([
+              {
+                name: `💨 • ${randomize(nothingMsg)}`,
+                value: "*No actions were taken in the entire server. How clean!*",
+              },
+            ]),
+        ],
+      });
+      return;
+    }
+    // TODO:
+    // 1. do whatever to group cases per user id
+    // 2. perhaps add pagination, this could grow large
+    const fields = cases.map(c => {
+      return {
+        name: `**Case**`,
+        value: [
+          `\`Case ${c.id} for user\` <@${c.user}>`,
+          `**Moderator**: <@${c.moderator}>`,
+          c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
+          `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
+        ].join("\n"),
+      };
+    });
+    const embed = new EmbedBuilder()
+      .setAuthor({ name: "All moderation cases server-wide" })
+      .setFields(fields)
+      .setColor(genColor(0));
+    await interaction.reply({ embeds: [embed] });
+    return;
+  }
   const actions = actionID
-    ? getModeration(guild.id, user.id, actionID)
-    : listUserModeration(guild.id, user.id);
+    ? getModeration(guild.id, user!.id, actionID)
+    : listUserModeration(guild.id, user!.id);
 
   const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()

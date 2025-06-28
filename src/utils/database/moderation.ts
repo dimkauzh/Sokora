@@ -20,6 +20,10 @@ const database = getDatabase(definition);
 const addQuery = database.query(
   "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
 );
+const listGuildQuery = database.query("SELECT * FROM moderation WHERE guild = $1;");
+const listGuildTypeQuery = database.query(
+  "SELECT * FROM moderation WHERE guild = $1 AND type = $2;",
+);
 const listUserQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND user = $2;");
 const listUserTypeQuery = database.query(
   "SELECT * FROM moderation WHERE guild = $1 AND user = $2 AND type = $3;",
@@ -48,6 +52,12 @@ export function addModeration(
   id = parseInt(id.length ? (id[0] as { id: string }).id : "0") + 1;
   addQuery.run(guildID, userID, type, moderator, reason, id, Date.now(), expiresAt ?? null);
   return id;
+}
+
+export function listGuildModeration(guildID: number | string, type?: modType) {
+  if (type) return listGuildTypeQuery.all(guildID, type) as TypeOfDefinition<typeof definition>[];
+
+  return listGuildQuery.all(guildID) as TypeOfDefinition<typeof definition>[];
 }
 
 export function listUserModeration(
