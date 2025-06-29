@@ -13,6 +13,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
+  User,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -20,6 +21,94 @@ import { capitalize } from "utils/capitalize";
 import { genColor } from "utils/colorGen";
 import { pfpCheck } from "utils/pfpCheck";
 import { randomize } from "utils/randomize";
+
+const MAX_PER_PAGE = 5;
+
+async function generateEmbed(params: {
+  providedCases: TypeOfDefinition<ModerationCase>[];
+  page: number;
+  type: modType | null;
+  guildId: string;
+  totalPages: number;
+  avatar: string | undefined;
+  user: User | null;
+}) {
+  const { type, page, providedCases, totalPages, guildId, avatar, user } = params;
+
+  const actionsEmojis: { [key in modType]: string } = {
+    WARN: "⚠️",
+    MUTE: "🔇",
+    KICK: "📤",
+    BAN: "🔨",
+    UNBAN: "🔓",
+    UNMUTE: "🔊",
+  };
+
+  const start = (page - 1) * MAX_PER_PAGE;
+  const end = start + MAX_PER_PAGE;
+  const displayedCases = providedCases
+    .sort((a, b) => Number(b.id) - Number(a.id))
+    .slice(start, end);
+  const guildEmbed = new EmbedBuilder()
+    .setAuthor({ name: `All ${type ? type.toLowerCase() : "moderation"} cases server-wide` })
+    .setFields(
+      displayedCases.map(c => {
+        return {
+          name: `**Case ${c.id} • ${c.type}**`,
+          value: [
+            `**User**: <@${c.user}>`,
+            `**Moderator**: <@${c.moderator}>`,
+            c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
+            `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
+          ]
+            .filter(Boolean)
+            .join("\n"),
+        };
+      }),
+    )
+    .setColor(genColor(0))
+    .setFooter({ text: `Page ${page}/${totalPages} • Server ID: ${guildId}` });
+
+  if (!user) return guildEmbed;
+
+  const userEmbed = new EmbedBuilder()
+    .setAuthor({
+      name: `${pfpCheck(avatar)}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
+      iconURL: avatar,
+    })
+    .setFields(
+      displayedCases.map(action => {
+        const actionValues = [
+          `**Moderator**: <@${action.moderator}>`,
+          action.reason ? `**Reason**: ${action.reason}` : "*No reason provided*",
+          `**Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
+        ];
+
+        return {
+          name: `${actionsEmojis[action.type as modType]} • ${action.type} #${action.id}`, // Include durations ? needs to add a db column
+          value: actionValues.join("\n"),
+        };
+      }),
+    )
+    .setColor(genColor(200))
+    .setFooter({
+      text: `Page ${page}/${totalPages} • User ID: ${user.id} • Server ID: ${guildId}`,
+    });
+
+  return userEmbed;
+}
+
+const generateRow = () =>
+  new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId("left")
+      .setEmoji("1298708251256291379")
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId("right")
+      .setEmoji("1298708281493160029")
+      .setStyle(ButtonStyle.Primary),
+  );
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
@@ -66,15 +155,6 @@ export const data = new SlashCommandSubcommandBuilder()
   .addNumberOption(option => option.setName("page").setDescription("Page number to display."));
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const actionsEmojis: { [key in modType]: string } = {
-    WARN: "⚠️",
-    MUTE: "🔇",
-    KICK: "📤",
-    BAN: "🔨",
-    UNBAN: "🔓",
-    UNMUTE: "🔊",
-  };
-
   const nothingMsg = [
     "Nothing to see here...",
     "Ayay, no cases on this horizon cap'n!",
@@ -102,8 +182,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: `Sokora cannot look for "case ${actionID} of *no user*". Please, specify a user.`,
     });
 
-  const MAX_PER_PAGE = 5;
-
   if (!user) {
     const cases = type
       ? listGuildModeration(guild.id, type as modType)
@@ -117,7 +195,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
             .setFields([
               {
                 name: `💨 • ${randomize(nothingMsg)}`,
-                value: "*No actions were taken in the entire server. How clean!*",
+                value: type
+                  ? `*No ${type.toLowerCase()} were made in the entire server!*`
+                  : "*No actions were taken in the entire server. How clean!*",
               },
             ])
             .setFooter({ text: `Server ID: ${guild.id}` }),
@@ -129,48 +209,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const totalPages = Math.ceil(cases.length / MAX_PER_PAGE);
     let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
 
-    const generateEmbed = async (providedCases: TypeOfDefinition<ModerationCase>[]) => {
-      const start = (page - 1) * MAX_PER_PAGE;
-      const end = start + MAX_PER_PAGE;
-      const displayedCases = providedCases
-        .sort((a, b) => Number(b.id) - Number(a.id))
-        .slice(start, end);
-      const embed = new EmbedBuilder()
-        .setAuthor({ name: `All ${type ? type.toLowerCase() : "moderation"} cases server-wide` })
-        .setFields(
-          displayedCases.map(c => {
-            return {
-              name: `**Case ${c.id} • ${c.type}**`,
-              value: [
-                `**User**: <@${c.user}>`,
-                `**Moderator**: <@${c.moderator}>`,
-                c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
-                `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
-              ]
-                .filter(Boolean)
-                .join("\n"),
-            };
-          }),
-        )
-        .setColor(genColor(0))
-        .setFooter({ text: `Page ${page}/${totalPages} • Server ID: ${guild.id}` });
-
-      return embed;
-    };
-
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setCustomId("left")
-        .setEmoji("1298708251256291379")
-        .setStyle(ButtonStyle.Primary),
-      new ButtonBuilder()
-        .setCustomId("right")
-        .setEmoji("1298708281493160029")
-        .setStyle(ButtonStyle.Primary),
-    );
+    const row = generateRow();
 
     const reply = await interaction.reply({
-      embeds: [await generateEmbed(cases)],
+      embeds: [
+        await generateEmbed({
+          providedCases: cases,
+          page,
+          totalPages,
+          guildId: guild.id,
+          type: type as modType | null,
+          user,
+          avatar: undefined,
+        }),
+      ],
       components: totalPages > 1 ? [row] : [],
     });
     if (totalPages <= 1) return;
@@ -195,7 +247,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
       else page = page < totalPages ? page + 1 : 1;
 
       await i.update({
-        embeds: [await generateEmbed(cases)],
+        embeds: [
+          await generateEmbed({
+            providedCases: cases,
+            page,
+            totalPages,
+            guildId: guild.id,
+            type: type as modType | null,
+            user,
+            avatar: undefined,
+          }),
+        ],
         components: [row],
       });
     });
@@ -236,52 +298,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const totalPages = Math.ceil(actions.length / MAX_PER_PAGE);
   let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
 
-  const generateEmbed = async (providedCases: TypeOfDefinition<ModerationCase>[]) => {
-    const start = (page - 1) * MAX_PER_PAGE;
-    const end = start + MAX_PER_PAGE;
-    const displayedCases = providedCases
-      .sort((a, b) => Number(b.id) - Number(a.id))
-      .slice(start, end);
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: `${pfpCheck(avatar)}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
-        iconURL: avatar,
-      })
-      .setFields(
-        displayedCases.map(action => {
-          const actionValues = [
-            `**Moderator**: <@${action.moderator}>`,
-            action.reason ? `**Reason**: ${action.reason}` : "*No reason provided*",
-            `**Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
-          ];
-
-          return {
-            name: `${actionsEmojis[action.type as modType]} • ${action.type} #${action.id}`, // Include durations ? needs to add a db column
-            value: actionValues.join("\n"),
-          };
-        }),
-      )
-      .setColor(genColor(200))
-      .setFooter({
-        text: `Page ${page}/${totalPages} • User ID: ${user.id} • Server ID: ${guild.id}`,
-      });
-
-    return embed;
-  };
-
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId("left")
-      .setEmoji("1298708251256291379")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("right")
-      .setEmoji("1298708281493160029")
-      .setStyle(ButtonStyle.Primary),
-  );
+  const row = generateRow();
 
   const reply = await interaction.reply({
-    embeds: [await generateEmbed(actions)],
+    embeds: [
+      await generateEmbed({
+        providedCases: actions,
+        page,
+        totalPages,
+        guildId: guild.id,
+        type: type as modType | null,
+        user,
+        avatar,
+      }),
+    ],
     components: totalPages > 1 ? [row] : [],
   });
   if (totalPages <= 1) return;
@@ -306,7 +336,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
     else page = page < totalPages ? page + 1 : 1;
 
     await i.update({
-      embeds: [await generateEmbed(actions)],
+      embeds: [
+        await generateEmbed({
+          providedCases: actions,
+          page,
+          totalPages,
+          guildId: guild.id,
+          type: type as modType | null,
+          user,
+          avatar,
+        }),
+      ],
       components: [row],
     });
   });
