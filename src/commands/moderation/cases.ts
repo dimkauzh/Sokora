@@ -2,9 +2,15 @@ import {
   getModeration,
   listGuildModeration,
   listUserModeration,
+  ModerationCase,
   modType,
 } from "database/moderation";
+import { TypeOfDefinition } from "database/types";
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonInteraction,
+  ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
@@ -56,15 +62,17 @@ export const data = new SlashCommandSubcommandBuilder()
           value: "NOTE",
         },
       ),
-  );
+  )
+  .addNumberOption(option => option.setName("page").setDescription("Page number to display."));
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const actionsEmojis: { [key: string]: string } = {
+  const actionsEmojis: { [key in modType]: string } = {
     WARN: "⚠️",
     MUTE: "🔇",
     KICK: "📤",
     BAN: "🔨",
     UNBAN: "🔓",
+    UNMUTE: "🔊",
   };
 
   const nothingMsg = [
@@ -93,6 +101,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       title: "No user specified!",
       reason: `Sokora cannot look for "case ${actionID} of *no user*". Please, specify a user.`,
     });
+
+  const MAX_PER_PAGE = 5;
+
   if (!user) {
     const cases = type
       ? listGuildModeration(guild.id, type as modType)
@@ -108,33 +119,87 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 name: `💨 • ${randomize(nothingMsg)}`,
                 value: "*No actions were taken in the entire server. How clean!*",
               },
-            ]),
+            ])
+            .setFooter({ text: `Server ID: ${guild.id}` }),
         ],
       });
       return;
     }
-    // TODO:
-    // 1. do whatever to group cases per user id
-    // 2. perhaps add pagination, this could grow large
-    const fields = cases.map(c => {
-      return {
-        name: `**Case**`,
-        value: [
-          `\`Case ${c.id} for user\` <@${c.user}>`,
-          `**Moderator**: <@${c.moderator}>`,
-          type ? "" : `**Action**: ${c.type}`,
-          c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
-          `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
-        ]
-          .filter(Boolean)
-          .join("\n"),
-      };
+
+    const totalPages = Math.ceil(cases.length / MAX_PER_PAGE);
+    let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
+
+    const generateEmbed = async (providedCases: TypeOfDefinition<ModerationCase>[]) => {
+      const start = (page - 1) * MAX_PER_PAGE;
+      const end = start + MAX_PER_PAGE;
+      const displayedCases = providedCases
+        .sort((a, b) => Number(b.id) - Number(a.id))
+        .slice(start, end);
+      const embed = new EmbedBuilder()
+        .setAuthor({ name: `All ${type ? type.toLowerCase() : "moderation"} cases server-wide` })
+        .setFields(
+          displayedCases.map(c => {
+            return {
+              name: `**Case ${c.id} • ${c.type}**`,
+              value: [
+                `**User**: <@${c.user}>`,
+                `**Moderator**: <@${c.moderator}>`,
+                c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
+                `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
+              ]
+                .filter(Boolean)
+                .join("\n"),
+            };
+          }),
+        )
+        .setColor(genColor(0))
+        .setFooter({ text: `Page ${page}/${totalPages} • Server ID: ${guild.id}` });
+
+      return embed;
+    };
+
+    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId("left")
+        .setEmoji("1298708251256291379")
+        .setStyle(ButtonStyle.Primary),
+      new ButtonBuilder()
+        .setCustomId("right")
+        .setEmoji("1298708281493160029")
+        .setStyle(ButtonStyle.Primary),
+    );
+
+    const reply = await interaction.reply({
+      embeds: [await generateEmbed(cases)],
+      components: totalPages > 1 ? [row] : [],
     });
-    const embed = new EmbedBuilder()
-      .setAuthor({ name: `All ${type ? type.toLowerCase() : "moderation"} cases server-wide` })
-      .setFields(fields)
-      .setColor(genColor(0));
-    await interaction.reply({ embeds: [embed] });
+    if (totalPages <= 1) return;
+    const collector = reply.createMessageComponentCollector({ time: 30000 });
+
+    collector.on("collect", async (i: ButtonInteraction) => {
+      if (i.message.id != (await reply.fetch()).id)
+        return await errorEmbed({
+          interaction: i,
+          title:
+            "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
+        });
+
+      if (i.user.id != interaction.user.id)
+        return await errorEmbed({
+          interaction: i,
+          title: "You are not the person who executed this command.",
+        });
+
+      collector.resetTimer({ time: 30000 });
+      if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;
+      else page = page < totalPages ? page + 1 : 1;
+
+      await i.update({
+        embeds: [await generateEmbed(cases)],
+        components: [row],
+      });
+    });
+
     return;
   }
   const actions = actionID
@@ -144,34 +209,105 @@ export async function run(interaction: ChatInputCommandInteraction) {
       : listUserModeration(guild.id, user!.id);
 
   const avatar = user.displayAvatarURL();
+
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${pfpCheck(avatar)}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
       iconURL: avatar,
     })
-    .setFields(
-      actions.length > 0
-        ? actions.map(action => {
-            const actionValues = [
-              `**Moderator**: <@${action.moderator}>`,
-              action.reason ? `**Reason**: ${action.reason}` : "*No reason provided*",
-              `**Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
-            ];
 
-            return {
-              name: `${actionsEmojis[action.type]} • ${action.type} #${action.id}`, // Include durations ? needs to add a db column
-              value: actionValues.join("\n"),
-            };
-          })
-        : [
-            {
-              name: `💨 • ${randomize(nothingMsg)}`,
-              value: "*No actions have been taken on this user*",
-            },
-          ],
-    )
-    .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(200));
+  if (actions.length === 0) {
+    embed
+      .setFields([
+        {
+          name: `💨 • ${randomize(nothingMsg)}`,
+          value: "*No actions have been taken on this user*",
+        },
+      ])
+      .setFooter({
+        text: `User ID: ${user.id} • Server ID: ${guild.id}`,
+      });
 
-  await interaction.reply({ embeds: [embed] });
+    await interaction.reply({ embeds: [embed] });
+    return;
+  }
+
+  const totalPages = Math.ceil(actions.length / MAX_PER_PAGE);
+  let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
+
+  const generateEmbed = async (providedCases: TypeOfDefinition<ModerationCase>[]) => {
+    const start = (page - 1) * MAX_PER_PAGE;
+    const end = start + MAX_PER_PAGE;
+    const displayedCases = providedCases
+      .sort((a, b) => Number(b.id) - Number(a.id))
+      .slice(start, end);
+    const embed = new EmbedBuilder()
+      .setAuthor({
+        name: `${pfpCheck(avatar)}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
+        iconURL: avatar,
+      })
+      .setFields(
+        displayedCases.map(action => {
+          const actionValues = [
+            `**Moderator**: <@${action.moderator}>`,
+            action.reason ? `**Reason**: ${action.reason}` : "*No reason provided*",
+            `**Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
+          ];
+
+          return {
+            name: `${actionsEmojis[action.type as modType]} • ${action.type} #${action.id}`, // Include durations ? needs to add a db column
+            value: actionValues.join("\n"),
+          };
+        }),
+      )
+      .setColor(genColor(200))
+      .setFooter({
+        text: `Page ${page}/${totalPages} • User ID: ${user.id} • Server ID: ${guild.id}`,
+      });
+
+    return embed;
+  };
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId("left")
+      .setEmoji("1298708251256291379")
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId("right")
+      .setEmoji("1298708281493160029")
+      .setStyle(ButtonStyle.Primary),
+  );
+
+  const reply = await interaction.reply({
+    embeds: [await generateEmbed(actions)],
+    components: totalPages > 1 ? [row] : [],
+  });
+  if (totalPages <= 1) return;
+  const collector = reply.createMessageComponentCollector({ time: 30000 });
+
+  collector.on("collect", async (i: ButtonInteraction) => {
+    if (i.message.id != (await reply.fetch()).id)
+      return await errorEmbed({
+        interaction: i,
+        title:
+          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
+      });
+
+    if (i.user.id != interaction.user.id)
+      return await errorEmbed({
+        interaction: i,
+        title: "You are not the person who executed this command.",
+      });
+
+    collector.resetTimer({ time: 30000 });
+    if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;
+    else page = page < totalPages ? page + 1 : 1;
+
+    await i.update({
+      embeds: [await generateEmbed(actions)],
+      components: [row],
+    });
+  });
 }

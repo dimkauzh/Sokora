@@ -35,8 +35,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
 
   const totalPages = Math.ceil(leaderboardData.length / 6);
-  let page = interaction.options.getNumber("page") || 1;
-  page = Math.max(1, Math.min(page, totalPages));
+  let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
   const generateEmbed = async () => {
     const start = (page - 1) * 6;
     const end = start + 6;

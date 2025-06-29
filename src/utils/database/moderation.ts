@@ -15,6 +15,8 @@ const definition = {
   },
 } satisfies TableDefinition;
 
+export type ModerationCase = typeof definition;
+
 export type modType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
 const database = getDatabase(definition);
 const addQuery = database.query(
