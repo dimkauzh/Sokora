@@ -54,7 +54,7 @@ async function generateEmbed(params: {
     .setFields(
       displayedCases.map(c => {
         return {
-          name: `**Case ${c.id} • ${c.type}**`,
+          name: `**Case ${c.id} • ${capitalize(c.type.toLowerCase())}**`,
           value: [
             `**User**: <@${c.user}>`,
             `**Moderator**: <@${c.moderator}>`,
@@ -85,7 +85,7 @@ async function generateEmbed(params: {
         ];
 
         return {
-          name: `${actionsEmojis[action.type as modType]} • ${action.type} #${action.id}`, // Include durations ? needs to add a db column
+          name: `${actionsEmojis[action.type as modType]} • ${capitalize(action.type.toLowerCase())} #${action.id}`, // Include durations ? needs to add a db column
           value: actionValues.join("\n"),
         };
       }),
