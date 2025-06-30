@@ -2,6 +2,7 @@ import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor, genImageColor } from "utils/colorGen";
+import { kominator } from "utils/kominator";
 import { pfpCheck } from "utils/pfpCheck";
 import { replaceVariables } from "utils/replace";
 import { Event } from "utils/types";
@@ -11,6 +12,7 @@ export default (async function run(member) {
   const id =
     ((await getSetting(guildID, "welcome", "join_channel")) as string) ??
     ((await getSetting(guildID, "welcome", "leave_channel")) as string);
+  const roles = await getSetting(guildID, "welcome", "roles");
   const user = member.user;
   const avatar = member.user.displayAvatarURL();
   const embed = new EmbedBuilder()
@@ -35,6 +37,8 @@ export default (async function run(member) {
 
     await channel.send({ embeds: [embed] });
   }
+
+  if (roles) await member.roles.add([...kominator(roles as string)]);
 
   if (!(await getSetting(guildID, "welcome", "join_dm")) as boolean) return;
   const dmChannel = await user.createDM().catch(() => null);
