@@ -1,11 +1,44 @@
 import { setSetting, settingsDefinition } from "database/settings.ts";
 import {
+  AutocompleteInteraction,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed.ts";
 import { genColor } from "utils/colorGen.ts";
+
+export async function autocomplete(i: AutocompleteInteraction) {
+  const category = i.options.getString("category");
+  const valid = Object.keys(settingsDefinition).map(o => o);
+
+  // none of these three should actually happen (because discord gives you fixed options for the category)
+  // they're here just for the typescript compiler to shut up
+  if (!category) return;
+  if (!category) {
+    return await errorEmbed({
+      client: i.client,
+      title: "Autocompletion error",
+      reason: "Category isn't defined. (This shouldn't ever happen?)",
+    });
+  }
+  if (!valid.includes(category)) {
+    return await errorEmbed({
+      client: i.client,
+      title: "Autocompletion error",
+      reason: "Category isn't valid. (This shouldn't ever happen?)",
+    });
+  }
+
+  await i.respond(
+    Object.keys(settingsDefinition[category].settings).map(k => {
+      return {
+        name: k,
+        value: k,
+      };
+    }),
+  );
+}
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("reset")
@@ -21,12 +54,12 @@ export const data = new SlashCommandSubcommandBuilder()
         }),
       ),
   )
-  // TODO - autocomplete
   .addStringOption(o =>
     o
       .setName("setting")
       .setDescription("Setting itself to change ('join_text', 'enabled', etc...)")
-      .setRequired(false),
+      .setRequired(false)
+      .setAutocomplete(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
