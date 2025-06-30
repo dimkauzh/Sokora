@@ -1,4 +1,4 @@
-import { getSetting, settingsDefinition, settingsKeys } from "database/settings";
+import { getSetting, setSetting, settingsDefinition, settingsKeys } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -18,7 +18,6 @@ import {
   UserSelectMenuBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
 import { auditEventNames, easterEggNames } from "handlers/events";
 import { capitalize } from "utils/capitalize";
 import { genColorCV2 } from "utils/colorGen";
@@ -40,20 +39,26 @@ settingsKeys.forEach(key =>
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!guild.members.cache?.get(interaction.user.id)?.permissions.has("Administrator"))
-    return await errorEmbed({
-      interaction,
-      title: "You can't execute this command.",
-      reason: "You need the **Administrator** permission.",
-    });
-
   const key = interaction.options.getSubcommand();
   const settingsDef = settingsDefinition[key];
   const settingsObj = settingsDef.settings;
-  const settingComponent = async (name: string): Promise<{ text: string; component: any }> => {
+  const settingComponent = async (
+    name: string,
+  ): Promise<{
+    text: string;
+    data: { type: string; id: string };
+    component:
+      | ButtonBuilder
+      | ChannelSelectMenuBuilder
+      | UserSelectMenuBuilder
+      | RoleSelectMenuBuilder
+      | StringSelectMenuBuilder;
+  }> => {
     const setting = await getSetting(guild.id, key, name);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
+    const text = `${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`;
+    let data: { type: string; id: string };
     let component:
       | ButtonBuilder
       | ChannelSelectMenuBuilder
@@ -61,17 +66,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
       | RoleSelectMenuBuilder
       | StringSelectMenuBuilder;
 
+    // todo: set default values based on setting value
     switch (settingObject.type) {
       case "BOOL":
+        data = { type: "bool", id: name };
         component = new ButtonBuilder()
-          .setCustomId(`bool${name}`)
+          .setCustomId(data.id)
           .setLabel(humanizeSettings(capitalize(setting?.toString() ?? "Not set")))
           .setStyle(setting ? ButtonStyle.Success : ButtonStyle.Danger);
 
         break;
       case "CHANNEL":
+        data = { type: "channel", id: name };
         component = new ChannelSelectMenuBuilder()
-          .setCustomId(`channel${name}`)
+          .setCustomId(data.id)
           .setMaxValues(maxValues)
           .setChannelTypes([
             ChannelType.GuildAnnouncement,
@@ -82,46 +90,56 @@ export async function run(interaction: ChatInputCommandInteraction) {
             ChannelType.PublicThread,
             ChannelType.PrivateThread,
           ]);
+        // .setDefaultChannels(setting as unknown as string[]);
+
         break;
       case "USER":
-        component = new UserSelectMenuBuilder().setCustomId(`user${name}`).setMaxValues(maxValues);
+        data = { type: "user", id: name };
+        component = new UserSelectMenuBuilder().setCustomId(data.id).setMaxValues(maxValues);
+        // .setDefaultUsers(setting as unknown as string[]);
+
         break;
       case "ROLE":
-        component = new RoleSelectMenuBuilder().setCustomId(`role${name}`).setMaxValues(maxValues);
+        data = { type: "role", id: name };
+        component = new RoleSelectMenuBuilder().setCustomId(data.id).setMaxValues(maxValues);
+        // .setDefaultRoles(setting as unknown as string[]);
+
         break;
       case "LOG":
+        data = { type: "log", id: name };
         component = new StringSelectMenuBuilder()
-          .setCustomId(`log${name}`)
+          .setCustomId(data.id)
           .setMaxValues(auditEventNames.length)
           .setOptions(
-            auditEventNames.map(option =>
-              new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
+            auditEventNames.map(
+              option => new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
+              // .setDefault((setting as unknown as string[]).includes(option)),
             ),
           );
         break;
       case "EGG":
+        data = { type: "egg", id: name };
         component = new StringSelectMenuBuilder()
-          .setCustomId(`log${name}`)
+          .setCustomId(data.id)
           .setMaxValues(easterEggNames.length)
           .setOptions(
-            easterEggNames.map(option =>
-              new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
+            easterEggNames.map(
+              option => new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
+              // .setDefault((setting as unknown as string[]).includes(option)),
             ),
           );
         break;
       default:
+        data = { type: "other", id: name };
         component = new ButtonBuilder()
-          .setCustomId(`edit${name}`)
+          .setCustomId(data.id)
           .setLabel("Edit")
           .setStyle(ButtonStyle.Secondary);
 
         break;
     }
 
-    return {
-      text: `${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`,
-      component,
-    };
+    return { text, data, component };
   };
 
   // const avatar = interaction.guild!.iconURL()!;
@@ -146,5 +164,22 @@ export async function run(interaction: ChatInputCommandInteraction) {
         );
   }
 
-  await interaction.reply({ components: [container], flags: "IsComponentsV2" });
+  const reply = await interaction.reply({ components: [container], flags: "IsComponentsV2" });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
+  collector.on("collect", async i => {
+    const setting = await settingComponent(i.customId);
+    const actualSetting = await getSetting(guild.id, key, i.customId);
+    switch (setting.data.type) {
+      case "bool":
+        (setting.component as ButtonBuilder)
+          .setLabel(humanizeSettings(capitalize((!actualSetting)?.toString() ?? "Not set")))
+          .setStyle(setting ? ButtonStyle.Success : ButtonStyle.Danger);
+
+        console.log(setting.component);
+        await setSetting(guild.id, key, i.customId, !actualSetting);
+        break;
+    }
+
+    await i.update({ components: [container], flags: "IsComponentsV2" });
+  });
 }
