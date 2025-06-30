@@ -1,3 +1,4 @@
+import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -13,6 +14,9 @@ export const data = new SlashCommandSubcommandBuilder()
   .addStringOption(string => string.setName("reason").setDescription("The reason for the ban."))
   .addStringOption(string =>
     string.setName("duration").setDescription("The duration of the ban (e.g 2mo, 1y)."),
+  )
+  .addBooleanOption(bool =>
+    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -24,18 +28,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await errorCheck(
       "BanMembers",
       { interaction, user, action: "Ban" },
-      { allErrors: true, botError: true, ownerError: true },
+      { allErrors: true, outsideError: true, botError: true, ownerError: true },
       "Ban Members",
     )
   )
     return;
-
-  if ((await guild.bans.fetch()).get(user.id))
-    return await errorEmbed({
-      interaction,
-      title: `You can't ban ${user.username}.`,
-      reason: "This user is already banned.",
-    });
 
   let expiresAt: number | undefined;
   if (duration) {
@@ -51,11 +48,24 @@ export async function run(interaction: ChatInputCommandInteraction) {
     scheduleUnban(interaction.client, guild.id, user.id, interaction.member!.user.id, durationMs);
   }
 
+  const silent =
+    interaction.options.getBoolean("silent") ||
+    false ||
+    ((await getSetting(guild.id, "moderation", "silent")) as boolean);
+
   try {
-    // todo: do this in most of the places that have lots of await functions and where order of things done doesn't matter
     await Promise.all([
       modEmbed(
-        { interaction, user, action: "Banned", duration, dm: true, dbAction: "BAN", expiresAt },
+        {
+          interaction,
+          user,
+          action: "Banned",
+          duration,
+          dm: true,
+          dbAction: "BAN",
+          expiresAt,
+          silent,
+        },
         reason,
       ),
       guild.members.ban(user.id, { reason: reason ?? undefined }),

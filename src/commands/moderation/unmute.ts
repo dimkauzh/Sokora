@@ -1,3 +1,4 @@
+import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -10,12 +11,16 @@ export const data = new SlashCommandSubcommandBuilder()
   )
   .addStringOption(reason =>
     reason.setName("reason").setDescription("The reason for unmuting the user."),
+  )
+  .addBooleanOption(bool =>
+    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
-  const target = interaction.guild?.members.cache.get(user.id);
   const reason = interaction.options.getString("reason");
+  const guild = interaction.guild!;
+  const target = guild.members.cache.get(user.id);
 
   if (
     await errorCheck(
@@ -27,17 +32,27 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
-  if (!target?.communicationDisabledUntil)
+  if (target?.isCommunicationDisabled())
     return await errorEmbed({
       interaction,
       title: "You can't unmute this user.",
       reason: "The user was never muted.",
     });
 
-  await Promise.all([
-    modEmbed({ interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE" }, reason),
-    target
-      ?.edit({ communicationDisabledUntil: null })
-      .catch(async error => await errorEmbed({ interaction, error, forward: true })),
-  ]);
+  const silent =
+    interaction.options.getBoolean("silent") ||
+    false ||
+    ((await getSetting(guild.id, "moderation", "silent")) as boolean);
+
+  try {
+    await Promise.all([
+      modEmbed(
+        { interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE", silent },
+        reason,
+      ),
+      target?.edit({ communicationDisabledUntil: null }),
+    ]);
+  } catch (error) {
+    await errorEmbed({ interaction, error, forward: true });
+  }
 }

@@ -59,25 +59,27 @@ export async function run(interaction: ChatInputCommandInteraction) {
       title: "You have provided a channel that can't be locked in the first place.",
     });
 
-  await Promise.all([
-    channel.permissionOverwrites
-      .create(guild.id, {
+  try {
+    await Promise.all([
+      channel.permissionOverwrites.create(guild.id, {
         SendMessages: null,
         SendMessagesInThreads: null,
         CreatePublicThreads: null,
         CreatePrivateThreads: null,
-      })
-      .catch(async error => await errorEmbed({ interaction, error, forward: true })),
-    modActionEmbed(
-      {
-        title: "Unlocked a channel.",
-        body: [
-          `**Moderator**: ${interaction.user.username}`,
-          `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
-        ],
-      },
-      guild,
-      interaction,
-    ),
-  ]);
+      }),
+      modActionEmbed(
+        {
+          title: "Unlocked a channel.",
+          body: [
+            `**Moderator**: ${interaction.user.username}`,
+            `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
+          ],
+        },
+        guild,
+        interaction,
+      ),
+    ]);
+  } catch (error) {
+    await errorEmbed({ interaction, error, forward: true });
+  }
 }

@@ -59,32 +59,31 @@ export async function run(interaction: ChatInputCommandInteraction) {
       title: "You have provided a channel that can't be locked.",
     });
 
-  await Promise.all([
-    channel.permissionOverwrites
-      .create(guild.id, {
+  try {
+    await Promise.all([
+      channel.permissionOverwrites.create(guild.id, {
         SendMessages: false,
         SendMessagesInThreads: false,
         CreatePublicThreads: false,
         CreatePrivateThreads: false,
-      })
-      .catch(
-        async error =>
-          await errorEmbed({
-            interaction,
-            error,
-            forward: true,
-          }),
+      }),
+      modActionEmbed(
+        {
+          title: "Locked a channel.",
+          body: [
+            `**Moderator**: ${interaction.user.username}`,
+            `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
+          ],
+        },
+        guild,
+        interaction,
       ),
-    modActionEmbed(
-      {
-        title: "Locked a channel.",
-        body: [
-          `**Moderator**: ${interaction.user.username}`,
-          `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
-        ],
-      },
-      guild,
+    ]);
+  } catch (error) {
+    return await errorEmbed({
       interaction,
-    ),
-  ]);
+      error,
+      forward: true,
+    });
+  }
 }

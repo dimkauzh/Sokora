@@ -62,9 +62,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setTitle(`Edit news: ${news.title}`)
     .addComponents(firstActionRow, secondActionRow);
 
-  await interaction
-    .showModal(editModal)
-    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
+  try {
+    await interaction.showModal(editModal);
+  } catch (error) {
+    await errorEmbed({ interaction, error, forward: true });
+  }
 
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;

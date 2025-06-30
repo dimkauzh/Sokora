@@ -34,6 +34,9 @@ type ErrorOptions = {
   unbanError?: boolean;
 };
 
+// TODO - there's a bunch of duplicate validations
+// * to simplify, i mean stuff like: "if (!memberIsInServer) {...}", then "errorCheck(outsideError)"
+// * most cases (not all, tho) are managed by this, so uh a little code review would be really nice
 export async function errorCheck(
   permission: PermissionResolvable,
   options: Options,
@@ -84,17 +87,15 @@ export async function errorCheck(
   const highestModPos = member.roles.highest.position;
 
   if (outsideError)
-    if (
-      !(await guild.members
-        .fetch(user.id)
-        .then(() => true)
-        .catch(() => false))
-    )
+    if (!guild.members.cache.has(user.id)) {
+      const isBanError = (await guild.bans.fetch()).has(user.id) && action === "Ban";
+
       return await errorEmbed({
         interaction,
         title: `You can't ${action.toLowerCase()} ${name}.`,
-        reason: "This user isn't in this server.",
+        reason: isBanError ? "This user was already banned." : "This user isn't in this server.",
       });
+    }
 
   if (!target) return;
   const highestTargetPos = target.roles.highest.position;
@@ -114,7 +115,7 @@ export async function errorCheck(
 
   const same: boolean = highestModPos == highestTargetPos;
 
-  if (highestModPos <= highestTargetPos)
+  if (highestModPos <= highestTargetPos && member.id !== guild.ownerId)
     return await errorEmbed({
       interaction,
       title: `You can't ${action.toLowerCase()} ${name}.`,
@@ -132,11 +133,12 @@ export async function errorCheck(
 }
 
 export async function modEmbed(
-  options: Options,
+  options: Options & { silent: boolean },
   reason?: string | null,
   showModerator: boolean = false,
 ) {
-  const { interaction, user, action, duration, dm, dbAction, expiresAt, previousID } = options;
+  const { interaction, user, action, duration, dm, dbAction, expiresAt, previousID, silent } =
+    options;
   if (!user || !action) return;
   const guild = interaction.guild!;
   const name = user.displayName;
@@ -195,10 +197,12 @@ export async function modEmbed(
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(genColor(100));
 
-  await Promise.all([
-    logChannel(guild, { embeds: [embed] }),
-    reply(interaction, { embeds: [embed] }),
-  ]);
+  async function replier() {
+    if (silent) await reply(interaction, { embeds: [embed], flags: "Ephemeral" });
+    else await reply(interaction, { embeds: [embed] });
+  }
+
+  await Promise.all([logChannel(guild, { embeds: [embed] }), replier()]);
 
   if (!dm) return;
   const dmChannel = await user.createDM().catch(() => null);

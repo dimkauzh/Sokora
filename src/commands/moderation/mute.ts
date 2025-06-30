@@ -1,3 +1,4 @@
+import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -15,12 +16,17 @@ export const data = new SlashCommandSubcommandBuilder()
       .setDescription("The duration of the mute (e.g 30m, 1d, 2h).")
       .setRequired(true),
   )
-  .addStringOption(string => string.setName("reason").setDescription("The reason for the mute."));
+  .addStringOption(string => string.setName("reason").setDescription("The reason for the mute."))
+  .addBooleanOption(bool =>
+    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
+  );
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const duration = interaction.options.getString("duration")!;
   const reason = interaction.options.getString("reason");
+  const guild = interaction.guild!;
+
   if (
     await errorCheck(
       "ModerateMembers",
@@ -42,15 +48,23 @@ export async function run(interaction: ChatInputCommandInteraction) {
     Date.parse(new Date().toISOString()) + Date.parse(new Date(ms(duration)).toISOString()),
   ).toISOString();
 
-  await Promise.all([
-    modEmbed(
-      { interaction, user, action: "Muted", duration, dm: true, dbAction: "MUTE" },
-      reason,
-      true,
-    ),
-    interaction.guild?.members.cache
-      .get(user.id)
-      ?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined })
-      .catch(async error => await errorEmbed({ interaction, error, forward: true })),
-  ]);
+  const silent =
+    interaction.options.getBoolean("silent") ||
+    false ||
+    ((await getSetting(guild.id, "moderation", "silent")) as boolean);
+
+  try {
+    await Promise.all([
+      modEmbed(
+        { interaction, user, action: "Muted", duration, dm: true, dbAction: "MUTE", silent },
+        reason,
+        true,
+      ),
+      guild.members.cache
+        .get(user.id)
+        ?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined }),
+    ]);
+  } catch (error) {
+    await errorEmbed({ interaction, error, forward: true });
+  }
 }

@@ -51,9 +51,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setTitle("Write your news.")
     .addComponents(firstActionRow, secondActionRow);
 
-  await interaction
-    .showModal(newsModal)
-    .catch(async error => await errorEmbed({ interaction, error, forward: true }));
+  try {
+    await interaction.showModal(newsModal);
+  } catch (error) {
+    await errorEmbed({ interaction, error, forward: true });
+  }
 
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
@@ -73,9 +75,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const id = (listAllQuery.all(guild.id).length + 1).toString();
     addNews(guild.id, title, body, i.user.displayName, i.user.avatarURL()!, null!, id);
 
-    await sendChannelNews(guild, id, interaction).catch(
-      async error => await errorEmbed({ interaction, error, forward: true }),
-    );
+    try {
+      await sendChannelNews(guild, id, interaction);
+    } catch (error) {
+      await errorEmbed({ interaction, error, forward: true });
+    }
 
     await i.reply({
       embeds: [new EmbedBuilder().setTitle("News added.").setColor(genColor(100))],

@@ -1,3 +1,4 @@
+import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
 
@@ -14,12 +15,16 @@ export const data = new SlashCommandSubcommandBuilder()
       .setDescription(
         "Inform the warned user of the moderator that took the action. Defaults to false.",
       ),
+  )
+  .addBooleanOption(bool =>
+    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const reason = interaction.options.getString("reason");
   const showModerator = interaction.options.getBoolean("show_moderator") ?? false;
+  const guild = interaction.guild!;
   if (
     await errorCheck(
       "ModerateMembers",
@@ -30,8 +35,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
+  const silent =
+    interaction.options.getBoolean("silent") ||
+    false ||
+    ((await getSetting(guild.id, "moderation", "silent")) as boolean);
+
   await modEmbed(
-    { interaction, user, action: "Warned", dm: true, dbAction: "WARN" },
+    { interaction, user, action: "Warned", dm: true, dbAction: "WARN", silent },
     reason,
     showModerator,
   );

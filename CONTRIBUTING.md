@@ -49,6 +49,7 @@ A few guides onto how code contributed to Sokora should look like.
 - Avoid curly braces in one-line `if` statements.
 - Non-nullish assertions are valid when needed.
 - Use the cache instead of a new `fetch()` call where possible, to avoid unnecessary usage (e.g., if possible, prefer `guild.members.cache` over `await guild.members.fetch()`).
+- Prefer `Promise.all` over having several `await` statements.
 
 ---
 

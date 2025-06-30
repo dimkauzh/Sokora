@@ -54,7 +54,7 @@ export const settingsDefinition: SettingsDefinition = {
     },
   },
   moderation: {
-    description: "Change where Sokora sends moderation logs.",
+    description: "Change Sokora's moderation logs and silent moderation settings.",
     settings: {
       channel: {
         type: "CHANNEL",
@@ -68,6 +68,11 @@ export const settingsDefinition: SettingsDefinition = {
       auto_slowdown: {
         type: "BOOL",
         desc: "Enable automatic channel slowdown during high activity.",
+        val: false,
+      },
+      silent: {
+        type: "BOOL",
+        desc: "If enabled, all moderation actions will be done without pinging the affected user.",
         val: false,
       },
     },

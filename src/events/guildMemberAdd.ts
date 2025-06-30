@@ -50,7 +50,7 @@ export default (async function run(member) {
   );
 
   try {
-    await dmChannel.send({ embeds: [embed] }).catch(() => null);
+    await dmChannel.send({ embeds: [embed] });
   } catch (error) {
     return await errorEmbed({ client: member.client, error, log: true, forward: true });
   }

@@ -1,3 +1,4 @@
+import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -8,10 +9,17 @@ export const data = new SlashCommandSubcommandBuilder()
   .addUserOption(user =>
     user.setName("user").setDescription("The user that you want to kick.").setRequired(true),
   )
-  .addStringOption(string => string.setName("reason").setDescription("The reason for the kick."));
+  .addStringOption(string => string.setName("reason").setDescription("The reason for the kick."))
+  .addBooleanOption(bool =>
+    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
+  );
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
+  const reason = interaction.options.getString("reason");
+  const guild = interaction.guild!;
+  const member = guild.members.cache.get(user.id)!;
+
   if (
     await errorCheck(
       "KickMembers",
@@ -22,26 +30,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
-  if (!interaction.guild?.members.cache.get(user.id))
-    return await errorEmbed({
-      interaction,
-      title: `You can't kick ${user.username}.`,
-      reason: "This user is not in the server.",
-    });
+  const silent =
+    interaction.options.getBoolean("silent") ||
+    false ||
+    ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
-  const reason = interaction.options.getString("reason");
-  await Promise.all([
-    modEmbed({ interaction, user, action: "Kicked", dm: true, dbAction: "KICK" }, reason),
-    interaction.guild?.members.cache
-      .get(user.id)
-      ?.kick(reason ?? undefined)
-      .catch(
-        async error =>
-          await errorEmbed({
-            interaction,
-            error,
-            forward: true,
-          }),
-      ),
-  ]);
+  try {
+    await Promise.all([
+      modEmbed({ interaction, user, action: "Kicked", dm: true, dbAction: "KICK", silent }, reason),
+      member.kick(reason ?? undefined),
+    ]);
+  } catch (error) {
+    return await errorEmbed({ interaction, error, forward: true });
+  }
 }

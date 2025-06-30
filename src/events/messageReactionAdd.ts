@@ -7,31 +7,35 @@ import { pfpCheck } from "utils/pfpCheck";
 import { Event } from "utils/types";
 
 export default (async function run(reaction, user) {
-  if (reaction.partial)
-    await reaction.fetch().catch(
-      async error =>
-        await errorEmbed({
-          client,
-          error,
-          title: `Error fetching reaction.`,
-          log: true,
-          forward: true,
-        }),
-    );
-
-  if (user.partial)
-    await user.fetch().catch(
-      async error =>
-        await errorEmbed({
-          client,
-          error,
-          title: `Error fetching user.`,
-          log: true,
-          forward: true,
-        }),
-    );
-
   const client = user.client;
+
+  if (reaction.partial)
+    try {
+      await reaction.fetch();
+    } catch (error) {
+      return await errorEmbed({
+        client,
+        error,
+        title: `Error fetching reaction.`,
+        log: true,
+        forward: true,
+      });
+    }
+
+  if (user.partial) {
+    try {
+      await user.fetch();
+    } catch (error) {
+      await errorEmbed({
+        client,
+        error,
+        title: `Error fetching user.`,
+        log: true,
+        forward: true,
+      });
+    }
+  }
+
   const message = await reaction.message.fetch();
   if (!message.guild) return;
 
