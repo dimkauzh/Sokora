@@ -215,7 +215,7 @@ export const settingsDefinition: SettingsDefinition = {
         iterable: true,
       },
       allowed_channels: {
-        type: "ROLE",
+        type: "CHANNEL",
         desc: "Channels where easter eggs are allowed.",
         iterable: true,
       },
