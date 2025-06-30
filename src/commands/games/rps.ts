@@ -66,7 +66,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You cannot play against yourself.",
     });
 
-  // todo: prevent unknown error when deleting
   const reply = await interaction.reply({ embeds: [baseEmbed], components: [optionsRow] });
   const playerChoices = new Map<string, RPSChoice>();
   const collector = reply.createMessageComponentCollector({ time: 60000 });
@@ -94,32 +93,37 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
 
   collector.on("end", async (_, reason) => {
-    if (reason == "time")
-      return await interaction.editReply({
-        embeds: [
-          new EmbedBuilder()
-            .setAuthor({ name: "Game timed out" })
-            .setDescription("The game has been canceled due to inactivity.")
-            .setColor(genColor(0)),
-        ],
-        components: [],
-      });
+    try {
+      if (reason == "time")
+        return await interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setAuthor({ name: "Game timed out" })
+              .setDescription("The game has been canceled due to inactivity.")
+              .setColor(genColor(0)),
+          ],
+          components: [],
+        });
 
-    const p1Choice = playerChoices.get(user.id)!;
-    const p2Choice = opponent.bot ? randomize(rpsChoices) : playerChoices.get(opponent.id)!;
-    const winner = getWinner(p1Choice, p2Choice);
-    const avatar = winner == 1 ? userAvatar : opponent.displayAvatarURL();
-    const resultEmbed = new EmbedBuilder()
-      .setAuthor({ name: `${pfpCheck(avatar)}Game results`, iconURL: avatar })
-      .setDescription(
-        [
-          `**${user.username}**: ${rpsEmojis[p1Choice]}`,
-          `**${opponent.username}**: ${rpsEmojis[p2Choice]}\n`,
-          `${winner == 0 ? "**It's a tie!**" : winner == 1 ? `The winner is **${user.username}**!` : `The winner is **${opponent.username}**!`}`,
-        ].join("\n"),
-      )
-      .setColor(winner == 0 ? genColor(60) : genColor(120));
+      const p1Choice = playerChoices.get(user.id)!;
+      const p2Choice = opponent.bot ? randomize(rpsChoices) : playerChoices.get(opponent.id)!;
+      const winner = getWinner(p1Choice, p2Choice);
+      const avatar = winner == 1 ? userAvatar : opponent.displayAvatarURL();
+      const resultEmbed = new EmbedBuilder()
+        .setAuthor({ name: `${pfpCheck(avatar)}Game results`, iconURL: avatar })
+        .setDescription(
+          [
+            `**${user.username}**: ${rpsEmojis[p1Choice]}`,
+            `**${opponent.username}**: ${rpsEmojis[p2Choice]}\n`,
+            `${winner == 0 ? "**It's a tie!**" : winner == 1 ? `The winner is **${user.username}**!` : `The winner is **${opponent.username}**!`}`,
+          ].join("\n"),
+        )
+        .setColor(winner == 0 ? genColor(60) : genColor(120));
 
-    await interaction.editReply({ embeds: [resultEmbed], components: [] });
+      await interaction.editReply({ embeds: [resultEmbed], components: [] });
+    } catch (error) {
+      if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
+      throw error;
+    }
   });
 }

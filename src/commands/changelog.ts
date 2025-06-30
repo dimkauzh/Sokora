@@ -47,7 +47,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setFooter({ text: replace("(madeWith)") })
     .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
 
-  // todo: prevent unknown error when deleting
   const reply = await interaction.reply({ embeds: [embed], components: [row] });
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
@@ -80,5 +79,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     }
   });
 
-  collector.on("end", async () => await interaction.editReply({ components: [] }));
+  collector.on("end", async () => {
+    try {
+      await interaction.editReply({ components: [] });
+    } catch (error) {
+      if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
+      throw error;
+    }
+  });
 }

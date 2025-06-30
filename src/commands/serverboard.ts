@@ -72,7 +72,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(ButtonStyle.Primary),
   );
 
-  // todo: prevent unknown error when deleting
   const reply = await interaction.reply({
     embeds: [await getEmbed()],
     components: pages != 1 ? [row] : [],
@@ -109,5 +108,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await i.update({ embeds: [await getEmbed()], components: [row] });
   });
 
-  collector.on("end", async () => await interaction.editReply({ components: [] }));
+  collector.on("end", async () => {
+    try {
+      await interaction.editReply({ components: [] });
+    } catch (error) {
+      if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
+      throw error;
+    }
+  });
 }
