@@ -5,10 +5,9 @@
  */
 export function kominator(string: string): string[] {
   const ret = string.split(",").map(str => str.replaceAll('"', "").trim());
-  console.debug("De-comma'd", ret, "from", string);
   return ret;
 }
 
-export function kominate(strings: string[]): string {
+export function dekominator(strings: string[]): string {
   return strings.map(str => str.trim()).join(",");
 }

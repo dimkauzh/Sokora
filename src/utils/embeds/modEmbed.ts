@@ -7,7 +7,7 @@ import {
   type User,
 } from "discord.js";
 import ms from "ms";
-import { reply } from "utils/reply";
+import { safeReply } from "utils/safeReply";
 import { genColor } from "../colorGen";
 import { logChannel } from "../logChannel";
 import { pfpCheck } from "../pfpCheck";
@@ -198,8 +198,9 @@ export async function modEmbed(
     .setColor(genColor(100));
 
   async function replier() {
-    if (silent) await reply(interaction, { embeds: [embed], flags: "Ephemeral" });
-    else await reply(interaction, { embeds: [embed] });
+    if (silent)
+      await safeReply({ interaction, replyOptions: { embeds: [embed], flags: "Ephemeral" } });
+    else await safeReply({ interaction, replyOptions: { embeds: [embed] } });
   }
 
   await Promise.all([logChannel(guild, { embeds: [embed] }), replier()]);

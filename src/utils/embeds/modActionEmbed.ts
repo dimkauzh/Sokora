@@ -3,7 +3,7 @@ import { ChatInputCommandInteraction, EmbedBuilder, Guild } from "discord.js";
 import { genColor } from "../colorGen";
 import { logChannel } from "../logChannel";
 import { pfpCheck } from "../pfpCheck";
-import { reply } from "../reply";
+import { safeReply } from "../safeReply";
 import { errorEmbed } from "./errorEmbed";
 
 type Content = {
@@ -35,7 +35,10 @@ export async function modActionEmbed(
 
   if (footer) embed.setFooter({ text: footer });
   try {
-    await Promise.all([logChannel(guild, { embeds: [embed] }), reply(i, { embeds: [embed] })]);
+    await Promise.all([
+      logChannel(guild, { embeds: [embed] }),
+      safeReply({ interaction: i, replyOptions: { embeds: [embed] } }),
+    ]);
   } catch (error) {
     await errorEmbed({ client: guild.client, error, log: true, forward: true });
   }

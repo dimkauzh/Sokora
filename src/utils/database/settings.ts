@@ -1,8 +1,8 @@
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
-import { kominate, kominator } from "utils/kominator";
+import { dekominator } from "utils/kominator";
 import { getDatabase } from ".";
-import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { FieldData, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
   name: "settings",
@@ -54,7 +54,7 @@ export const settingsDefinition: SettingsDefinition = {
     },
   },
   moderation: {
-    description: "Change Sokora's moderation logs and silent moderation settings.",
+    description: "Change Sokora's settings related to moderation.",
     settings: {
       channel: {
         type: "CHANNEL",
@@ -78,7 +78,7 @@ export const settingsDefinition: SettingsDefinition = {
     },
   },
   logging: {
-    description: "Select what you want to log.",
+    description: "Manage the logging settings.",
     settings: {
       enabled: {
         type: "BOOL",
@@ -247,8 +247,12 @@ export async function getSetting<
   guildID: string,
   key: K,
   setting: S,
-): Promise<SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null | undefined> {
-  console.debug(`Will read ${key}.${setting} @ ${guildID}`);
+): Promise<
+  | SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>
+  | SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>[]
+  | null
+  | undefined
+> {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
@@ -269,12 +273,10 @@ export async function getSetting<
     return set.val;
   }
 
-  let value: string | string[] = res[0].value;
+  const value: string | string[] = res[0].value;
   if (value == "null" || !value) return set.val;
-  console.debug("Possibly kominate", value);
-  if (set.iterable) value = kominator(value);
 
-  function switchTypes(value: string): SqlType<typeof set.type> {
+  function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
       case "BOOL":
         return (Number(value) == 1 ? true : false) as SqlType<typeof set.type>;
@@ -285,17 +287,19 @@ export async function getSetting<
     }
   }
 
-  if (typeof value == "string") return switchTypes(value);
-  for (const setting of value) return switchTypes(setting);
+  if (Array.isArray(value))
+    return value.map(valuelet => switchTypes(valuelet)) as
+      | SqlType<FieldData>
+      | SqlType<FieldData>[];
+
+  return switchTypes(value);
 }
 
 export async function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S, value: any) {
-  console.debug(`Will write to ${key}.${setting}`);
-  const set = Array.isArray(value) ? kominate(value) : value;
-  console.debug("Will write data", set);
+  const set = Array.isArray(value) ? dekominator(value) : value;
   deleteQuery.all(JSON.stringify(guildID), `${key}.${setting}`);
   insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, set);
 }

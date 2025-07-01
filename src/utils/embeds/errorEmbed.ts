@@ -1,14 +1,19 @@
 import {
+  AnySelectMenuInteraction,
   AttachmentBuilder,
   Client,
+  ContainerBuilder,
   EmbedBuilder,
+  FileBuilder,
+  SeparatorBuilder,
+  TextDisplayBuilder,
   codeBlock,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "../colorGen";
+import { safeReply } from "utils/safeReply";
+import { genColor, genColorCV2 } from "../colorGen";
 import { errorType } from "../errorType";
-import { reply } from "../reply";
 
 /**
  * Sends the embed containing an error.
@@ -64,7 +69,7 @@ export async function errorEmbed(options: {
   }
 
   const files: AttachmentBuilder[] = [];
-  if (stack && stack.length >= 1024)
+  if (stack && stack.length >= 4096)
     files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
 
   if (forward) {
@@ -77,5 +82,94 @@ export async function errorEmbed(options: {
 
   if (log) console.error(error);
   if (interaction)
-    return await reply(interaction, { embeds: [embed], files: files, flags: "Ephemeral" });
+    return await safeReply({
+      interaction,
+      replyOptions: {
+        embeds: [embed],
+        files: files,
+        flags: "Ephemeral",
+      },
+    });
+}
+
+/**
+ * Sends a CV2 container containing an error.
+ * @param interaction The interaction.
+ * @param title The error.
+ * @param reason The reason of the error.
+ * @param forward Whether or not should the error embed be forwarded to the error log channel.
+ * @returns Embed with the error description.
+ */
+export async function errorEmbedCV2(options: {
+  interaction?: ChatInputCommandInteraction | ButtonInteraction | AnySelectMenuInteraction;
+  client?: Client;
+  error?: unknown | Error;
+  title?: string;
+  reason?: string;
+  log?: boolean;
+  forward?: boolean;
+}) {
+  const { interaction, title, reason, log, forward } = options;
+  const client = options.client ? options.client : interaction ? interaction.client : null;
+  if (!client && !interaction)
+    return console.error(
+      "You need to provide either a client or an interaction for errorEmbed to work.",
+    );
+
+  const error = errorType(options.error);
+  const stack = error.stack;
+  const content = [];
+  if (title) content.push(`**${title}**`);
+  if (reason) content.push(reason);
+  if (!title && !reason)
+    content.push(
+      "The bot has experienced an internal error.\nThe team has been informed. If you keep encountering this issue, you can go to our [support server](https://discord.gg/c6C25P4BuY) to report it.",
+    );
+
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`Something went wrong!\n${content.join("\n")}`),
+    )
+    .setAccentColor(genColorCV2(0)!);
+
+  if (options.error) {
+    container
+      .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(`💬 • Error message\n${codeBlock(error.message)}`),
+      )
+      .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          `📜 • Error stack\n${
+            stack
+              ? stack.length <= 4096
+                ? codeBlock(stack)
+                : "The error stacktrace is an attachment below this embed due to it being too large."
+              : "No error stacktrace."
+          }`,
+        ),
+      );
+  }
+
+  const files: AttachmentBuilder[] = [];
+  if (stack && stack.length >= 4096) {
+    files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
+    container.addFileComponents(new FileBuilder().setURL("attachment://error.txt"));
+  }
+
+  if (forward) {
+    const channel = (client ? client : interaction!.client).channels.cache.get(
+      process.env.DEV_ERROR_CHANNEL_ID || "1343140645132308532",
+    );
+    if (!channel?.isTextBased() || !channel.isSendable()) return;
+    await channel.send({ components: [container], flags: "IsComponentsV2" });
+  }
+
+  if (log) console.error(error);
+  if (interaction)
+    return await safeReply({
+      interaction,
+      replyOptions: { components: [container], flags: ["Ephemeral", "IsComponentsV2"] },
+    });
 }
