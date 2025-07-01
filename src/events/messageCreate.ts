@@ -64,20 +64,11 @@ export default (async function run(message) {
     const enabledEggs = (await getSetting(guild.id, "easter", "enabled_eggs")) as string;
     const allowedChannels = (await getSetting(guild.id, "easter", "allowed_channels")) as string;
     const isChannelAllowed =
-      !allowedChannels ||
-      allowedChannels
-        .split(",")
-        .map(id => id.trim())
-        .includes(message.channel.id);
+      !allowedChannels || kominator(allowedChannels).includes(message.channel.id);
 
     if (isChannelAllowed) {
       for (const easterEgg of easterEggs) {
-        const shouldRunEgg =
-          !enabledEggs ||
-          enabledEggs
-            .split(",")
-            .map(egg => egg.trim())
-            .includes(easterEgg.name);
+        const shouldRunEgg = !enabledEggs || kominator(enabledEggs).includes(easterEgg.name);
 
         if (!shouldRunEgg) continue;
         try {

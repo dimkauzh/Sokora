@@ -1,27 +1,33 @@
+// huge work in progress
 import { getSetting, setSetting, settingsDefinition, settingsKeys } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   ChannelSelectMenuBuilder,
+  ChannelSelectMenuInteraction,
   ChannelType,
   ContainerBuilder,
   MessageActionRowComponentBuilder,
   PermissionsBitField,
   RoleSelectMenuBuilder,
+  RoleSelectMenuInteraction,
   SectionBuilder,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   StringSelectMenuBuilder,
+  StringSelectMenuInteraction,
   StringSelectMenuOptionBuilder,
   TextDisplayBuilder,
   UserSelectMenuBuilder,
+  UserSelectMenuInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { auditEventNames, easterEggNames } from "handlers/events";
 import { capitalize } from "utils/capitalize";
 import { genColorCV2 } from "utils/colorGen";
 import { humanizeSettings } from "utils/humanizeSettings";
+import { kominator } from "utils/kominator";
 import { newline } from "utils/newline";
 
 export const data = new SlashCommandBuilder()
@@ -37,28 +43,61 @@ settingsKeys.forEach(key =>
   ),
 );
 
+// okay extracting a function *like this* is probably not the best approach
+// BUT IT IS AN APPROACH THAT WORKS SO IT IS ALREADY BETTER THAN ANYTHING ELSE so
+// shut up and accept this.
+async function constructThisShit(
+  settingsObj: Record<string, any>,
+  settingComponent: TSettingComponent,
+  container: ContainerBuilder,
+) {
+  for (const setting of Object.keys(settingsObj)) {
+    const object = await settingComponent(setting);
+    const component = object.component;
+    if (component instanceof ButtonBuilder)
+      container.addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+          .setButtonAccessory(component),
+      );
+    else
+      container
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+        .addActionRowComponents(
+          new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
+        );
+  }
+}
+
+type opt = "bool" | "channel" | "user" | "role" | "log" | "egg" | "other";
+
+// this is neither best but again shut up
+type TSettingComponent = (name: string) => Promise<{
+  text: string;
+  data: {
+    type: opt;
+    id: string;
+  };
+  component:
+    | ButtonBuilder
+    | ChannelSelectMenuBuilder
+    | UserSelectMenuBuilder
+    | RoleSelectMenuBuilder
+    | StringSelectMenuBuilder;
+}>;
+
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const key = interaction.options.getSubcommand();
   const settingsDef = settingsDefinition[key];
   const settingsObj = settingsDef.settings;
-  const settingComponent = async (
-    name: string,
-  ): Promise<{
-    text: string;
-    data: { type: string; id: string };
-    component:
-      | ButtonBuilder
-      | ChannelSelectMenuBuilder
-      | UserSelectMenuBuilder
-      | RoleSelectMenuBuilder
-      | StringSelectMenuBuilder;
-  }> => {
+  const settingComponent: TSettingComponent = async (name: string) => {
     const setting = await getSetting(guild.id, key, name);
+    console.debug("CV2 setting read as", setting);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
     const text = `${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`;
-    let data: { type: string; id: string };
+    let data: { type: opt; id: string };
     let component:
       | ButtonBuilder
       | ChannelSelectMenuBuilder
@@ -66,7 +105,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       | RoleSelectMenuBuilder
       | StringSelectMenuBuilder;
 
-    // todo: set default values based on setting value
     switch (settingObject.type) {
       case "BOOL":
         data = { type: "bool", id: name };
@@ -90,19 +128,24 @@ export async function run(interaction: ChatInputCommandInteraction) {
             ChannelType.PublicThread,
             ChannelType.PrivateThread,
           ]);
-        // .setDefaultChannels(setting as unknown as string[]);
+
+        if (setting) component.setDefaultChannels(kominator(setting as string));
 
         break;
       case "USER":
         data = { type: "user", id: name };
-        component = new UserSelectMenuBuilder().setCustomId(data.id).setMaxValues(maxValues);
-        // .setDefaultUsers(setting as unknown as string[]);
+        component = new UserSelectMenuBuilder()
+          .setCustomId(data.id)
+          .setMaxValues(maxValues)
+          .setDefaultUsers(kominator(setting as string));
 
         break;
       case "ROLE":
         data = { type: "role", id: name };
-        component = new RoleSelectMenuBuilder().setCustomId(data.id).setMaxValues(maxValues);
-        // .setDefaultRoles(setting as unknown as string[]);
+        component = new RoleSelectMenuBuilder()
+          .setCustomId(data.id)
+          .setMaxValues(maxValues)
+          .setDefaultRoles(kominator(setting as string));
 
         break;
       case "LOG":
@@ -111,9 +154,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .setCustomId(data.id)
           .setMaxValues(auditEventNames.length)
           .setOptions(
-            auditEventNames.map(
-              option => new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
-              // .setDefault((setting as unknown as string[]).includes(option)),
+            auditEventNames.map(option =>
+              new StringSelectMenuOptionBuilder()
+                .setLabel(option)
+                .setValue(option)
+                .setDefault(kominator((setting as string | undefined) || "").includes(option)),
             ),
           );
         break;
@@ -123,9 +168,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .setCustomId(data.id)
           .setMaxValues(easterEggNames.length)
           .setOptions(
-            easterEggNames.map(
-              option => new StringSelectMenuOptionBuilder().setLabel(option).setValue(option),
-              // .setDefault((setting as unknown as string[]).includes(option)),
+            easterEggNames.map(option =>
+              new StringSelectMenuOptionBuilder()
+                .setLabel(option)
+                .setValue(option)
+                .setDefault(kominator((setting as string | undefined) || "").includes(option)),
             ),
           );
         break;
@@ -142,27 +189,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return { text, data, component };
   };
 
+  const color = genColorCV2(200)!;
   // const avatar = interaction.guild!.iconURL()!;
   const container = new ContainerBuilder()
     .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingsDef.description))
-    .setAccentColor(genColorCV2(200)!);
+    .setAccentColor(color);
 
-  for (const setting of Object.keys(settingsObj)) {
-    const object = await settingComponent(setting);
-    const component = object.component;
-    if (component instanceof ButtonBuilder)
-      container.addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-          .setButtonAccessory(component),
-      );
-    else
-      container
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-        .addActionRowComponents(
-          new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
-        );
-  }
+  await constructThisShit(settingsObj, settingComponent, container);
 
   const reply = await interaction.reply({ components: [container], flags: "IsComponentsV2" });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
@@ -171,15 +204,31 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const actualSetting = await getSetting(guild.id, key, i.customId);
     switch (setting.data.type) {
       case "bool":
-        (setting.component as ButtonBuilder)
-          .setLabel(humanizeSettings(capitalize((!actualSetting)?.toString() ?? "Not set")))
-          .setStyle(setting ? ButtonStyle.Success : ButtonStyle.Danger);
-
-        console.log(setting.component);
         await setSetting(guild.id, key, i.customId, !actualSetting);
         break;
+      case "egg":
+      case "user":
+      case "role":
+      case "channel": {
+        const values = (
+          i as
+            | StringSelectMenuInteraction
+            | UserSelectMenuInteraction
+            | RoleSelectMenuInteraction
+            | ChannelSelectMenuInteraction
+        ).values;
+        console.debug("\n\nAAAAAAAAAAAAAAAAAAAAAAAAA Discord gave", values);
+        await setSetting(guild.id, key, i.customId, values);
+        console.debug("Broke EGG/USR/ROLE/CHANNEL loop");
+        break;
+      }
     }
+    const newContainer = new ContainerBuilder()
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingsDef.description))
+      .setAccentColor(color);
 
-    await i.update({ components: [container], flags: "IsComponentsV2" });
+    await constructThisShit(settingsObj, settingComponent, newContainer);
+
+    await i.update({ components: [newContainer], flags: "IsComponentsV2" });
   });
 }

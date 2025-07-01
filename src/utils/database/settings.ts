@@ -1,6 +1,6 @@
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
-import { kominator } from "utils/kominator";
+import { kominate, kominator } from "utils/kominator";
 import { getDatabase } from ".";
 import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
@@ -248,6 +248,7 @@ export async function getSetting<
   key: K,
   setting: S,
 ): Promise<SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]> | null | undefined> {
+  console.debug(`Will read ${key}.${setting} @ ${guildID}`);
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
@@ -270,12 +271,13 @@ export async function getSetting<
 
   let value: string | string[] = res[0].value;
   if (value == "null" || !value) return set.val;
+  console.debug("Possibly kominate", value);
   if (set.iterable) value = kominator(value);
 
-  function switchTypes(value: string) {
+  function switchTypes(value: string): SqlType<typeof set.type> {
     switch (set.type) {
       case "BOOL":
-        return (value == "1" ? true : false) as SqlType<typeof set.type>;
+        return (Number(value) == 1 ? true : false) as SqlType<typeof set.type>;
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
       default:
@@ -291,9 +293,11 @@ export async function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S, value: any) {
-  const doInsert = (await getSetting(guildID, key, setting)) == null;
-  if (!doInsert) deleteQuery.all(JSON.stringify(guildID), `${key}.${setting}`);
-  insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, value);
+  console.debug(`Will write to ${key}.${setting}`);
+  const set = Array.isArray(value) ? kominate(value) : value;
+  console.debug("Will write data", set);
+  deleteQuery.all(JSON.stringify(guildID), `${key}.${setting}`);
+  insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, set);
 }
 
 export function listPublicServers(): Promise<
