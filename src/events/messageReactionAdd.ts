@@ -67,13 +67,41 @@ export default (async function run(reaction, user) {
     .setFooter({ text: `Message ID: ${message.id}` })
     .setColor(genColor(80));
 
+  const ref = message.reference ? await message.fetchReference() : null;
+
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setLabel("•  Jump to message")
+      .setLabel(`•  Jump to ${ref ? "starred " : ""}message`)
       .setURL(message.url)
       .setEmoji("🔗")
       .setStyle(ButtonStyle.Link),
   );
+
+  const embeds = [];
+
+  if (ref) {
+    row.addComponents(
+      new ButtonBuilder()
+        .setLabel("•  Jump to replied message")
+        .setURL(ref.url)
+        .setEmoji("🔗")
+        .setStyle(ButtonStyle.Link),
+    );
+    const avatar = ref.author.displayAvatarURL();
+    embeds.push(
+      new EmbedBuilder()
+        .setAuthor({
+          name: `${pfpCheck(avatar)}${ref.author.displayName}  •  Replied by starred message`,
+          iconURL: avatar,
+        })
+        .setDescription(ref.content)
+        .setTimestamp(ref.createdAt)
+        .setFooter({ text: `Message ID: ${ref.id}` })
+        .setColor(genColor(75)),
+    );
+  }
+
+  embeds.push(embed);
 
   const attachment = message.attachments.first();
   if (attachment?.contentType?.startsWith("image/")) embed.setImage(attachment.url);
@@ -84,7 +112,7 @@ export default (async function run(reaction, user) {
         message.id,
         message.channel.id,
         message.author.id,
-        (await starboardChannel.send({ embeds: [embed], components: [row] })).id,
+        (await starboardChannel.send({ embeds, components: [row] })).id,
         starCount,
         message.content || "",
         message.createdTimestamp.toString(),
@@ -93,7 +121,7 @@ export default (async function run(reaction, user) {
     const [channelId, , starMessageId, , ,] = existingStarred;
     await (
       await starboardChannel.messages.fetch(starMessageId)
-    ).edit({ embeds: [embed], components: [row] });
+    ).edit({ embeds, components: [row] });
     setStarred(
       message.guild.id,
       message.id,
