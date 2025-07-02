@@ -270,13 +270,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
   });
 
-  // todo: make this disable every component
-  // collector.on("end", async () => {
-  //   try {
-  //     await interaction.editReply({ components: [] });
-  //   } catch (error) {
-  //     if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
-  //     throw error;
-  //   }
-  // });
+  collector.on("end", async () => {
+    try {
+      await interaction.deleteReply();
+    } catch (error) {
+      if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
+      throw error;
+    }
+  });
 }
