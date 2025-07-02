@@ -71,7 +71,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
 
-    const role = (await getSetting(guild.id, "news", "role_id")) as string;
+    const role = (await getSetting(guild.id, "news", "role")) as string;
     let roleToSend: Role | undefined;
     if (role) roleToSend = guild.roles.cache.get(role);
     const title = i.fields.getTextInputValue("title");
@@ -90,7 +90,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setColor(genColor(200));
 
     const channel = guild.channels.cache.get(
-      ((await getSetting(guild.id, "news", "channel_id")) as string) ?? interaction.channel?.id,
+      ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
     ) as TextChannel;
 
     await channel.messages.edit(news.messageID, {

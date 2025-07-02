@@ -24,11 +24,11 @@ export const settingsDefinition: SettingsDefinition = {
       },
       channel: {
         type: "CHANNEL",
-        desc: "ID of the log channel for leveling-related stuff (i.e someone leveling up).",
+        desc: "Channel for logging leveling-related stuff (i.e someone leveling up).",
       },
       block_channels: {
         type: "CHANNEL",
-        desc: "IDs of the channels where messages aren't counted.",
+        desc: "Channels where messages aren't counted.",
         iterable: true,
       },
       xp_gain: {
@@ -58,7 +58,7 @@ export const settingsDefinition: SettingsDefinition = {
     settings: {
       channel: {
         type: "CHANNEL",
-        desc: "ID of the log channel for moderation-related stuff (i.e a message being edited).",
+        desc: "Channel for logging moderation-related stuff (i.e a message being edited).",
       },
       log_messages: {
         type: "BOOL",
@@ -99,13 +99,13 @@ export const settingsDefinition: SettingsDefinition = {
   news: {
     description: "Configure news for your server.",
     settings: {
-      channel_id: {
+      channel: {
         type: "CHANNEL",
-        desc: "ID of the channel where news messages are sent.",
+        desc: "Channel where news messages are sent.",
       },
-      role_id: {
+      role: {
         type: "ROLE",
-        desc: "IDs of the roles that should be pinged when a news message is sent.",
+        desc: "Roles that should be pinged when a news message is sent.",
         iterable: true,
       },
       edit_original_message: {
@@ -178,11 +178,11 @@ export const settingsDefinition: SettingsDefinition = {
       },
       join_channel: {
         type: "CHANNEL",
-        desc: "ID of the channel where welcome messages are sent.",
+        desc: "Channel where welcome messages are sent.",
       },
       leave_channel: {
         type: "CHANNEL",
-        desc: "ID of the channel where leave messages are sent.",
+        desc: "Channel where leave messages are sent.",
       },
       join_dm: {
         type: "BOOL",

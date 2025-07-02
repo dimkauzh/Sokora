@@ -28,7 +28,7 @@ export async function sendChannelNews(
   body?: string,
 ): Promise<void> {
   const news = get(guild.id, id)!;
-  const role = (await getSetting(guild.id, "news", "role_id")) as string;
+  const role = (await getSetting(guild.id, "news", "role")) as string;
   let roleToSend: Role | undefined;
   if (role) roleToSend = guild.roles.cache.get(role);
   const avatar = news.authorPFP;
@@ -41,7 +41,7 @@ export async function sendChannelNews(
     .setColor(genColor(200));
 
   const channel = guild.channels.cache.get(
-    ((await getSetting(guild.id, "news", "channel_id")) as string) ?? interaction.channel?.id,
+    ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
   ) as TextChannel;
   if (!channel) return;
   if (!channel.permissionsFor(guild.client.user)?.has("ViewChannel")) return;
