@@ -119,7 +119,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       iconURL: avatar,
     })
     .setDescription(
-      [`**Moderator**: ${user.username}`, `**Channel**: ${await mention(channel.id, "CHANNEL")}`]
+      [`**Moderator**: ${user.username}`, `**Channel**: ${mention(channel.id, "CHANNEL")}`]
         .filter(Boolean)
         .join("\n"),
     )

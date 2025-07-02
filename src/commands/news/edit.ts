@@ -95,7 +95,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     await channel.messages.edit(news.messageID, {
       embeds: [embed],
-      content: roleToSend ? await mention(roleToSend.id, "ROLE") : undefined,
+      content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
     });
 
     updateNews(guild.id, id, title, body);

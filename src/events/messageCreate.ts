@@ -152,6 +152,6 @@ export default (async function run(message) {
   if (levelChannelId)
     await (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
       embeds: [embed],
-      content: await mention(author.id, "USER"),
+      content: mention(author.id, "USER"),
     });
 } as Event<"messageCreate">);

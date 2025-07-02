@@ -72,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           title: "Unlocked a channel.",
           body: [
             `**Moderator**: ${interaction.user.username}`,
-            `**Channel**: ${channelOption ?? (await mention(channel.id, "CHANNEL"))}`,
+            `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
           ],
         },
         guild,

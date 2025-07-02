@@ -24,10 +24,7 @@ export async function run(
       iconURL: avatar,
     })
     .setDescription(
-      [
-        `**Moderator**: ${executor.username}`,
-        `**Channel**: ${await mention(channel.id, "CHANNEL")}`,
-      ]
+      [`**Moderator**: ${executor.username}`, `**Channel**: ${mention(channel.id, "CHANNEL")}`]
         .filter(Boolean)
         .join("\n"),
     )

@@ -1,7 +1,6 @@
 /**
  * Takes a MarkDown string that follows Sokora's CHANGELOG format and turns it into an array of Discord's-limited-markdown-friendly strings containing the changelog of each release.
  *
- * @export
  * @param {string} string MarkDown string.
  * @returns {{ ver: string, changelog: string }[]} Parsed strings.
  */

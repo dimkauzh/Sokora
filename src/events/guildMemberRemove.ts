@@ -22,7 +22,7 @@ export default (async function run(member: GuildMember) {
   const embed = new EmbedBuilder()
     .setAuthor({ name: `${pfpCheck(avatar)}${member.user.displayName} left`, iconURL: avatar })
     .setDescription(
-      await replaceVariables(
+      replaceVariables(
         (await getSetting(guildID, "welcome", "leave_text")) as string,
         member.guild,
         member.user,

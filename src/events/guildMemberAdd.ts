@@ -28,7 +28,7 @@ export default (async function run(member) {
       ?.fetch()) as TextChannel;
 
     embed.setDescription(
-      await replaceVariables(
+      replaceVariables(
         (await getSetting(guildID, "welcome", "join_text")) as string,
         member.guild,
         member.user,
@@ -46,7 +46,7 @@ export default (async function run(member) {
   if (user.bot) return;
 
   embed.setDescription(
-    await replaceVariables(
+    replaceVariables(
       (await getSetting(guildID, "welcome", "dm_text")) as string,
       member.guild,
       member.user,

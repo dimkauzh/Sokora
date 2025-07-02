@@ -73,11 +73,10 @@ export async function serverEmbed(options: Options) {
       `**${roles.size - 1}** ${pluralOrNot("role", roles.size - 1)} • ${
         roles.size == 1
           ? "*None*"
-          : `${(
-              await Promise.all(
-                sortedRoles.slice(0, 5).map(async role => await mention(role[0], "ROLE")),
-              )
-            ).join("  •  ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
+          : `${sortedRoles
+              .slice(0, 5)
+              .map(role => mention(role[0], "ROLE"))
+              .join("  •  ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
       }`,
     );
 

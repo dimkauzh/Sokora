@@ -49,7 +49,7 @@ export async function sendChannelNews(
   return await channel
     .send({
       embeds: [embed],
-      content: roleToSend ? await mention(roleToSend.id, "ROLE") : undefined,
+      content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
     })
     .then(message => updateNews(guild.id, id, undefined, undefined, message.id));
 }

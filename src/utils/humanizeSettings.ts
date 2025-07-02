@@ -1,9 +1,11 @@
+import { capitalize } from "./capitalize";
 /**
  * Outputs the given settings_string with formatting applied.
  * @param {string} string Settings string, either a key or a value.
  */
 export function humanizeSettings(string: string): string {
   const humanized = string
+    .toLowerCase()
     .trim()
     .replaceAll("_", " ")
     .replaceAll("true", "Enabled")
@@ -13,8 +15,10 @@ export function humanizeSettings(string: string): string {
     .replaceAll("(count)", "`(count)`")
     .replaceAll("(serverowner)", "`(serverowner)`")
     .replaceAll("(currentdate)", "`(currentdate)`")
-    .replaceAll("(currentdate, simple)", "`(currentdate, simple))`")
-    .replaceAll("(currentdate, detailed)", "`(currentdate, detailed)`");
+    .replaceAll("(currentdate, simple)", "`(currentdate, simple)`")
+    .replaceAll("(currentdate, detailed)", "`(currentdate, detailed)`")
+    .replaceAll("dm", "DM")
+    .replaceAll("xp", "XP");
 
-  return humanized;
+  return capitalize(humanized);
 }

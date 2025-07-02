@@ -182,7 +182,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .setCustomId(data.id)
           .setLabel("Edit")
           .setStyle(ButtonStyle.Secondary);
-
         break;
     }
 
