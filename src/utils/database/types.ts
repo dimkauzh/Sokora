@@ -42,7 +42,7 @@ export type SettingsDefinition = Record<
         val?: any;
         iterable?: boolean;
         selectMenu?: boolean;
-        emoji: string;
+        emoji?: string;
       }
     >;
   }

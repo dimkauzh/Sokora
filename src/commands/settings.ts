@@ -11,6 +11,7 @@ import {
   PermissionsBitField,
   RoleSelectMenuBuilder,
   SectionBuilder,
+  SeparatorBuilder,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   StringSelectMenuBuilder,
@@ -95,7 +96,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const setting = await getSetting(guild.id, key, name);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
-    const text = `${settingObject.emoji}  • ${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`;
+    const text = `${settingObject.emoji}  •  ${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`;
     let data: { type: opt; id: string };
     let component:
       | ButtonBuilder
@@ -243,12 +244,25 @@ export async function run(interaction: ChatInputCommandInteraction) {
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
           if (modalInteraction.isModalSubmit()) {
-            await setSetting(
-              guild.id,
-              key,
-              i.customId,
-              modalInteraction.fields.fields.find(field => field.customId == "setting")?.value,
-            );
+            const value = modalInteraction.fields.fields.find(
+              field => field.customId == "setting",
+            )?.value;
+            await setSetting(guild.id, key, i.customId, value);
+            const modalContainer = new ContainerBuilder()
+              .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                  `**${settingsObj[i.customId].emoji}  •  ${humanizeSettings(capitalize(i.customId))}** got changed`,
+                ),
+              )
+              .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+              .addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                  `The ${value!.length < 50 ? "value" : "**value**"} has been set to ${value!.length >= 50 ? value : `**${value}**`}`,
+                ),
+              )
+              .setAccentColor(genColorCV2(100)!);
+
+            await modalInteraction.reply({ components: [modalContainer], flags: "IsComponentsV2" });
           }
         });
         break;
@@ -259,7 +273,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     }
 
     const newContainer = new ContainerBuilder()
-      .addTextDisplayComponents(new TextDisplayBuilder().setContent(`${settingsDef.description}`))
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingsDef.description))
       .setAccentColor(color);
 
     await construct(settingsObj, settingComponent, newContainer);
