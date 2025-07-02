@@ -46,11 +46,6 @@ export const settingsDefinition: SettingsDefinition = {
         desc: "Set the difficulty (ex: 2 will make it 2x harder to level up).",
         val: 2,
       },
-      xp_per_chars: {
-        type: "TEXT",
-        desc: "XP per character count (format: xp:chars).",
-        val: "1:50",
-      },
     },
   },
   moderation: {
@@ -64,11 +59,6 @@ export const settingsDefinition: SettingsDefinition = {
         type: "BOOL",
         desc: "Whether or not edited/deleted messages should be logged.",
         val: true,
-      },
-      auto_slowdown: {
-        type: "BOOL",
-        desc: "Enable automatic channel slowdown during high activity.",
-        val: false,
       },
       silent: {
         type: "BOOL",
@@ -112,11 +102,6 @@ export const settingsDefinition: SettingsDefinition = {
         type: "BOOL",
         desc: "Whether or not the original message should be edited when a news message is updated.",
         val: true,
-      },
-      dm_enabled: {
-        type: "BOOL",
-        desc: "Allow users to receive news in DMs.",
-        val: false,
       },
     },
   },
