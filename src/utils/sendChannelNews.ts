@@ -8,8 +8,8 @@ import {
   type TextChannel,
 } from "discord.js";
 import { genColor } from "./colorGen";
+import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
-import { pfpCheck } from "./pfpCheck";
 
 /**
  * Sends news to a channel.
@@ -33,7 +33,10 @@ export async function sendChannelNews(
   if (role) roleToSend = guild.roles.cache.get(role);
   const avatar = news.authorPFP;
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(avatar)}${news.author}`, iconURL: avatar })
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${news.author}`,
+      iconURL: avatar,
+    })
     .setTitle(title ?? news.title)
     .setDescription(body ?? news.body)
     .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)

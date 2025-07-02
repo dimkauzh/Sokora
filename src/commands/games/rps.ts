@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed.ts";
 import { genColor } from "utils/colorGen.ts";
-import { pfpCheck } from "utils/pfpCheck.ts";
+import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize.ts";
 
 type RPSChoice = "rock" | "paper" | "scissors";
@@ -51,7 +51,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   );
 
   const baseEmbed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(userAvatar)}An invitation to play!`, iconURL: userAvatar })
+    .setAuthor({
+      name: `${dotCheck({ string: userAvatar, doubleSpace: true })}An invitation to play!`,
+      iconURL: userAvatar,
+    })
     .setDescription(
       opponent.bot
         ? `Choose your weapon!`
@@ -110,7 +113,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       const winner = getWinner(p1Choice, p2Choice);
       const avatar = winner == 1 ? userAvatar : opponent.displayAvatarURL();
       const resultEmbed = new EmbedBuilder()
-        .setAuthor({ name: `${pfpCheck(avatar)}Game results`, iconURL: avatar })
+        .setAuthor({
+          name: `${dotCheck({ string: avatar, doubleSpace: true })}Game results`,
+          iconURL: avatar,
+        })
         .setDescription(
           [
             `**${user.username}**: ${rpsEmojis[p1Choice]}`,

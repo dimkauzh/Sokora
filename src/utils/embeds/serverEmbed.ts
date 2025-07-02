@@ -1,7 +1,7 @@
 import { EmbedBuilder, Invite, type Guild } from "discord.js";
 import { genColor, genImageColor } from "../colorGen";
+import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
-import { pfpCheck } from "../pfpCheck";
 import { pluralOrNot } from "../pluralOrNot";
 
 type Options = {
@@ -82,7 +82,7 @@ export async function serverEmbed(options: Options) {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pages ? `#${page}  •  ` : pfpCheck(icon)}${guild.name}`,
+      name: `${pages ? `#${page}  •  ` : dotCheck({ string: icon, doubleSpace: true })}${guild.name}`,
       iconURL: icon,
     })
     .setDescription(guild.description ? `> ${guild.description}` : null)

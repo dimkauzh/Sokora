@@ -19,7 +19,7 @@ import {
 import { errorEmbed } from "embeds/errorEmbed";
 import { capitalize } from "utils/capitalize";
 import { genColor } from "utils/colorGen";
-import { pfpCheck } from "utils/pfpCheck";
+import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 
 const MAX_PER_PAGE = 5;
@@ -73,7 +73,7 @@ async function generateEmbed(params: {
 
   const userEmbed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
       iconURL: avatar,
     })
     .setFields(
@@ -274,7 +274,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
       iconURL: avatar,
     })
 

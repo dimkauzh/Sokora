@@ -10,7 +10,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
-import { pfpCheck } from "utils/pfpCheck";
+import { dotCheck } from "utils/dotCheck";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("view")
@@ -45,7 +45,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const currentNews = sortedNews[page - 1];
     const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
-      .setAuthor({ name: `${pfpCheck(avatar)}${currentNews.author}`, iconURL: avatar })
+      .setAuthor({
+        name: `${dotCheck({ string: avatar, doubleSpace: true })}${currentNews.author}`,
+        iconURL: avatar,
+      })
       .setTitle(currentNews.title)
       .setDescription(currentNews.body)
       .setImage(currentNews.imageURL || null)

@@ -4,8 +4,8 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "disc
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
-import { pfpCheck } from "utils/pfpCheck";
 import type { Event } from "utils/types";
 
 // todo: make links work
@@ -51,7 +51,7 @@ export default (async function run(message) {
     setTimeout(() => {
       timeout = date - Date.now();
       embed.setAuthor({
-        name: `${pfpCheck(avatar)}${author.username}'s message got deleted${(executor ? (executor.id != author.id ? ` by ${executor.username}` : "") : "") || ""}`,
+        name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.username}'s message got deleted${(executor ? (executor.id != author.id ? ` by ${executor.username}` : "") : "") || ""}`,
         iconURL: avatar,
       });
     }, timeout || 200);

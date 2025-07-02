@@ -1,8 +1,8 @@
 // todo: merge this into modEmbed
 import { ChatInputCommandInteraction, EmbedBuilder, Guild } from "discord.js";
 import { genColor } from "../colorGen";
+import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
-import { pfpCheck } from "../pfpCheck";
 import { safeReply } from "../safeReply";
 import { errorEmbed } from "./errorEmbed";
 
@@ -29,7 +29,10 @@ export async function modActionEmbed(
 ): Promise<EmbedBuilder> {
   const { title, iconURL, body, footer } = content;
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(iconURL)}${title}`, iconURL: iconURL })
+    .setAuthor({
+      name: `${dotCheck({ string: iconURL, doubleSpace: true })}${title}`,
+      iconURL: iconURL,
+    })
     .setDescription(Array.isArray(body) ? body.join("\n") : body)
     .setColor(genColor(100));
 

@@ -5,10 +5,10 @@ import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed.ts";
 import { easterEggs } from "handlers/events.ts";
 import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { leavePlease } from "utils/leavePlease";
 import { mention } from "utils/mention.ts";
-import { pfpCheck } from "utils/pfpCheck.ts";
 import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();
@@ -133,7 +133,7 @@ export default (async function run(message) {
   if (newLevelData.level == level || newLevelData.level < level) return;
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}${author.displayName} leveled up!`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.displayName} leveled up!`,
       iconURL: avatar,
     })
     .setDescription(

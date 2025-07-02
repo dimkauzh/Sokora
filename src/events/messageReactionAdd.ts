@@ -3,7 +3,7 @@ import { getStarred, setStarred } from "database/starboard";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
-import { pfpCheck } from "utils/pfpCheck";
+import { dotCheck } from "utils/dotCheck";
 import { Event } from "utils/types";
 
 export default (async function run(reaction, user) {
@@ -59,7 +59,7 @@ export default (async function run(reaction, user) {
   const avatar = message.author.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}${message.author.displayName}  •  ${starCount} ${starEmoji}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${message.author.displayName}  •  ${starCount} ${starEmoji}`,
       iconURL: avatar,
     })
     .setDescription(message.content)

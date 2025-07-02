@@ -1,8 +1,8 @@
 import { AuditLogEvent, ChannelType, Client, EmbedBuilder, GuildAuditLogsEntry } from "discord.js";
 import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
 import { mention } from "utils/mention";
-import { pfpCheck } from "utils/pfpCheck";
 import { pluralOrNot } from "utils/pluralOrNot";
 
 export async function run(
@@ -20,7 +20,7 @@ export async function run(
   const avatar = executor.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}`,
       iconURL: avatar,
     })
     .setDescription(

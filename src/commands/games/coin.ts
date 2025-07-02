@@ -4,7 +4,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { genColor } from "utils/colorGen.ts";
-import { pfpCheck } from "utils/pfpCheck.ts";
+import { dotCheck } from "utils/dotCheck";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("coin")
@@ -13,7 +13,10 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const avatar = interaction.user.displayAvatarURL();
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(avatar)}Coin flip`, iconURL: avatar })
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}Coin flip`,
+      iconURL: avatar,
+    })
     .setDescription(Math.random() >= 0.5 ? "Tails!" : "Heads!")
     .setColor(genColor(120));
 

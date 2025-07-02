@@ -7,8 +7,8 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
-import { pfpCheck } from "utils/pfpCheck";
 import type { Event } from "utils/types";
 
 // todo: make links work
@@ -29,7 +29,7 @@ export default (async function run(oldMessage, newMessage) {
   const avatar = author.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}${author.username} edited a message`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.username} edited a message`,
       iconURL: avatar,
     })
     .setTimestamp(new Date())

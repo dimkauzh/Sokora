@@ -11,8 +11,8 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor, genImageColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
-import { pfpCheck } from "utils/pfpCheck";
 import { pluralOrNot } from "utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -32,7 +32,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}${target?.nickname ?? user.displayName}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${target?.nickname ?? user.displayName}`,
       iconURL: avatar,
     })
     .setFields({
@@ -125,7 +125,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     const levelEmbed = new EmbedBuilder()
       .setAuthor({
-        name: `${pfpCheck(levelAvatar)}${target.nickname ?? user.displayName}`,
+        name: `${dotCheck({ string: levelAvatar, doubleSpace: true })}${target.nickname ?? user.displayName}`,
         iconURL: levelAvatar,
       })
       .setFields({

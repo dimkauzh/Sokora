@@ -1,7 +1,7 @@
 import { EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { version } from "package";
 import { genColor, genImageColor } from "utils/colorGen";
-import { pfpCheck } from "utils/pfpCheck";
+import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
@@ -13,7 +13,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const avatar = user.displayAvatarURL();
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(avatar)}Changelog for ${version}`, iconURL: avatar })
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}Changelog for ${version}`,
+      iconURL: avatar,
+    })
     .setFields([
       {
         name: version,

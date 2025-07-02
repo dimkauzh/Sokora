@@ -2,7 +2,7 @@ import { getSetting } from "database/settings";
 import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
 import { subscribedUsers } from "src/bot";
 import { genColor, genImageColor } from "utils/colorGen";
-import { pfpCheck } from "utils/pfpCheck";
+import { dotCheck } from "utils/dotCheck";
 import { replaceVariables } from "utils/replace";
 import { Event } from "utils/types";
 
@@ -20,7 +20,10 @@ export default (async function run(member: GuildMember) {
     ?.fetch()) as TextChannel;
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(avatar)}${member.user.displayName} left`, iconURL: avatar })
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${member.user.displayName} left`,
+      iconURL: avatar,
+    })
     .setDescription(
       replaceVariables(
         (await getSetting(guildID, "welcome", "leave_text")) as string,

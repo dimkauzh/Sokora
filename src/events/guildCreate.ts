@@ -3,8 +3,8 @@ import { EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { commands } from "handlers/commands";
 import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { leavePlease } from "utils/leavePlease";
-import { pfpCheck } from "utils/pfpCheck";
 import { replace } from "utils/replace";
 import type { Event } from "utils/types";
 
@@ -16,7 +16,7 @@ export default (async function run(guild) {
   const avatar = client.user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}Welcome to ${client.user.username}!`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}Welcome to ${client.user.username}!`,
       iconURL: avatar,
     })
     .setDescription(

@@ -7,8 +7,8 @@ import {
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck } from "embeds/modEmbed";
 import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
-import { pfpCheck } from "utils/pfpCheck";
 import { pluralOrNot } from "utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -115,7 +115,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pfpCheck(avatar)}Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}`,
       iconURL: avatar,
     })
     .setDescription(

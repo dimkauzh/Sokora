@@ -13,8 +13,8 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
-import { pfpCheck } from "utils/pfpCheck";
 import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -82,7 +82,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       await sendChannelNews(guild, id, interaction, title, body);
 
     const embed = new EmbedBuilder()
-      .setAuthor({ name: `${pfpCheck(avatar)}${news.author}`, iconURL: avatar })
+      .setAuthor({
+        name: `${dotCheck({ string: avatar, doubleSpace: true })}${news.author}`,
+        iconURL: avatar,
+      })
       .setTitle(title)
       .setDescription(body)
       .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)

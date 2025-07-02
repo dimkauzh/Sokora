@@ -2,8 +2,8 @@ import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor, genImageColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
-import { pfpCheck } from "utils/pfpCheck";
 import { replaceVariables } from "utils/replace";
 import { Event } from "utils/types";
 
@@ -16,7 +16,10 @@ export default (async function run(member) {
   const user = member.user;
   const avatar = member.user.displayAvatarURL();
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(avatar)}${user.displayName} joined`, iconURL: avatar })
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${user.displayName} joined`,
+      iconURL: avatar,
+    })
     .setFooter({ text: `User ID: ${member.id}` })
     .setColor(
       member.user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(200),

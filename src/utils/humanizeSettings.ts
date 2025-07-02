@@ -1,4 +1,5 @@
 import { capitalize } from "./capitalize";
+
 /**
  * Outputs the given settings_string with formatting applied.
  * @param {string} string Settings string, either a key or a value.

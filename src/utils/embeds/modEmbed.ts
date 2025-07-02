@@ -9,8 +9,8 @@ import {
 import ms from "ms";
 import { safeReply } from "utils/safeReply";
 import { genColor } from "../colorGen";
+import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
-import { pfpCheck } from "../pfpCheck";
 import { errorEmbed } from "./errorEmbed";
 
 type Options = {
@@ -144,7 +144,7 @@ export async function modEmbed(
   const name = user.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
   const avatar = user.displayAvatarURL();
-  let author = `${pfpCheck(avatar)}${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
+  let author = `${dotCheck({ string: avatar, doubleSpace: true })}${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
   if (reason) generalValues.push(`**Reason**: ${reason}`);
   else generalValues.push("*No reason provided*");
 
@@ -214,7 +214,7 @@ export async function modEmbed(
       embeds: [
         embed
           .setAuthor({
-            name: `${pfpCheck(serverAvatar)}You got ${action.toLowerCase()} from ${guild.name}`,
+            name: `${dotCheck({ string: serverAvatar, doubleSpace: true })}You got ${action.toLowerCase()} from ${guild.name}`,
             iconURL: serverAvatar,
           })
           .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))

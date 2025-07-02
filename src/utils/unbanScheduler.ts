@@ -2,8 +2,8 @@ import { getPendingBans, removeModeration } from "database/moderation";
 import { Client, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "./colorGen";
+import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
-import { pfpCheck } from "./pfpCheck";
 
 export function scheduleUnban(
   client: Client,
@@ -41,7 +41,10 @@ export function scheduleUnban(
 
       const avatar = user.displayAvatarURL();
       const embed = new EmbedBuilder()
-        .setAuthor({ name: `${pfpCheck(avatar)}Unbanned ${user.displayName}`, iconURL: avatar })
+        .setAuthor({
+          name: `${dotCheck({ string: avatar, doubleSpace: true })}Unbanned ${user.displayName}`,
+          iconURL: avatar,
+        })
         .setDescription(
           [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
         )

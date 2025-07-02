@@ -8,7 +8,7 @@ import {
 } from "discord.js";
 import { version } from "package";
 import { genColor, genImageColor } from "utils/colorGen";
-import { pfpCheck } from "utils/pfpCheck";
+import { dotCheck } from "utils/dotCheck";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";
 
@@ -30,7 +30,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const uniqueUsers = Array.from(uniqueIDs).length;
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pfpCheck(avatar)}About Sokora`, iconURL: avatar })
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}About Sokora`,
+      iconURL: avatar,
+    })
     .setDescription(
       "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
     )
