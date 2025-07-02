@@ -82,7 +82,7 @@ export default (async function run(message) {
             continue;
           }
 
-          await easterEgg.run(message);
+          if (Math.random() < 0.2) await easterEgg.run(message);
         } catch (error) {
           return await errorEmbed({
             client,
