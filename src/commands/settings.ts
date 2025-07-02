@@ -95,7 +95,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const setting = await getSetting(guild.id, key, name);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
-    const text = `${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`;
+    const text = `${settingObject.emoji}  • ${humanizeSettings(capitalize(name))}\n-# ${newline(settingObject.desc)}`;
     let data: { type: opt; id: string };
     let component:
       | ButtonBuilder
