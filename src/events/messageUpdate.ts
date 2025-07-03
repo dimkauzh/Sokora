@@ -49,8 +49,8 @@ export default (async function run(oldMessage, newMessage) {
 
   if (newMessage.content && url && process.env.ENABLE_MEDIA_FETCHING === "true") {
     const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url);
+    const isVideo = /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
     const isTenor = /tenor\.com\/view\//i.test(url);
-    const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
     const isWebsite = !isImage && !isTenor && !isVideo;
 
     try {
