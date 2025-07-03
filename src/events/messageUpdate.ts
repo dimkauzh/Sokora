@@ -27,6 +27,55 @@ export default (async function run(oldMessage, newMessage) {
   const oldLength = oldContent.length;
   const newLength = newContent.length;
   const avatar = author.displayAvatarURL();
+  const regex = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/;
+  const match = newMessage.content ? newMessage.content.match(regex) : null;
+  const url = match ? match[0] : null;
+  let thumbnail = null;
+  let image = null;
+  let video = null;
+
+  /*
+    BEWARE.
+
+    this code fetches certain meta tags from the HTML from the website sent by the user.
+    this is a MAJOR security risk, as it can lead to skids being able to retrieve the bot's IP address by sending a link to a website that they control, possibly leading to DDoS attacks.
+    if you are a self-hoster, it's highly recommended to disable this feature within your .env configuration to prevent this from happening.
+    otherwise, if you have the appropriate security measures in place, you can leave it enabled.
+
+    WITH GREAT POWER COMES GREAT RESPONSIBILITY (or smth).
+  */
+
+  // --
+
+  if (newMessage.content && url && process.env.ENABLE_META_FETCHING === "true") {
+    const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url);
+    const isTenor = /tenor\.com\/view\//i.test(url);
+    const isWebsite = !isImage && !isTenor;
+
+    try {
+      if (isImage) {
+        image = url;
+      } else if (isTenor || isWebsite) {
+        const response = await fetch(url);
+        const content = await response.text();
+        
+        const metaContentMatch =
+          content.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
+          content.match(/<meta[^>]+property=["']og:video:secure_url["'][^>]+content=["']([^"']+)["'][^>]*>/i) ||
+          content.match(/<meta\s+property=["']twitter:image["']\s+content=["']([^"']+)["']/i);
+        const metaContent = metaContentMatch ? metaContentMatch[1] : undefined; // undefined >>>>> null every day of the week >:)
+
+        if (metaContent) {
+          if (isTenor) video = metaContent; else if (isWebsite) thumbnail = metaContent;
+        }
+      }
+    } catch (error) {
+      console.error("Error fetching meta image:", error);
+    }
+  }
+
+  // --
+
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.username} edited a message`,
@@ -49,6 +98,8 @@ export default (async function run(oldMessage, newMessage) {
             : `*The old content of the message is${oldContent.length > 4096 ? " also" : ""} an attachment below this embed due to it being too large.*`,
       },
     )
+    .setThumbnail(thumbnail)
+    .setImage(image)
     .setFooter({ text: `User ID: ${author.id}` })
     .setColor(genColor(60));
 
@@ -65,6 +116,8 @@ export default (async function run(oldMessage, newMessage) {
     files.push(new AttachmentBuilder(Buffer.from(oldContent, "utf8"), { name: "oldContent.txt" }));
   if (newLength >= MESSAGE_LENGTH_CAP)
     files.push(new AttachmentBuilder(Buffer.from(newContent, "utf8"), { name: "newContent.txt" }));
+  if (video)
+    files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
 
   await logChannel(guild, { embeds: [embed], files: files, components: [row] });
 } as Event<"messageUpdate">);

@@ -28,6 +28,10 @@ export const subscribedUsers = new Set(
 );
 
 client.once("ready", async () => {
+  /* 
+    goos vro...how could you do this to my sigma top.gg autoposter? in bot.ts too? nah ref do something this is outrageous
+  */
+
   // const topgg = new Api(process.env.TOPGG_TOKEN!);
   // try {
   //   await topgg.postStats({
