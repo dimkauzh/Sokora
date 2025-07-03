@@ -42,8 +42,8 @@ export default (async function run(message) {
     /*
       BEWARE.
 
-      this code fetches certain meta tags from the HTML from the website sent by the user.
-      this is a MAJOR security risk, as it can lead to skids being able to retrieve the bot's IP address by sending a link to a website that they control, possibly leading to DDoS attacks.
+      this code fetches certain meta tags, as well as other content (e.g, images, videos), from external URLs sent by users.
+      this is a MAJOR security risk, as it can lead to skids being able to retrieve the bot's IP address by sending a link to a webserver that they control, possibly leading to DDoS attacks.
       if you are a self-hoster, it's highly recommended to disable this feature within your .env configuration to prevent this from happening.
       otherwise, if you have the appropriate security measures in place, you can leave it enabled.
 
@@ -52,14 +52,17 @@ export default (async function run(message) {
 
     // --
 
-    if (message.content && url && process.env.ENABLE_META_FETCHING === "true") {
+    if (message.content && url && process.env.ENABLE_MEDIA_FETCHING === "true") {
       const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url);
       const isTenor = /tenor\.com\/view\//i.test(url);
-      const isWebsite = !isImage && !isTenor;
+      const isVideo = /\.(mp4|webm|ogg)$/i.test(url);
+      const isWebsite = !isImage && !isTenor && !isVideo;
 
       try {
         if (isImage) {
           image = url;
+        } else if (isVideo) {
+          video = url;
         } else if (isTenor || isWebsite) {
           const response = await fetch(url);
           const content = await response.text();
