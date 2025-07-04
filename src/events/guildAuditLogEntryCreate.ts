@@ -1,7 +1,7 @@
 import { AuditLogEvent, Client, GuildAuditLogsEntry } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed.ts";
-import { auditEvents } from "handlers/events.ts";
-import { capitalize } from "utils/capitalize.ts";
+import { errorEmbed } from "embeds/errorEmbed";
+import { auditEvents } from "handlers/events";
+import { capitalize } from "utils/capitalize";
 import { Event } from "utils/types";
 
 export default function createAuditLogHandler(client: Client) {

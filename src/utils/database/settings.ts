@@ -57,16 +57,16 @@ export const settingsDefinition: SettingsDefinition = {
   moderation: {
     description: "Change Sokora's settings related to moderation.",
     settings: {
+      events: {
+        type: "LOG",
+        desc: "Select what events you want to see in your log channel.",
+        iterable: true,
+        emoji: "📅",
+      },
       channel: {
         type: "CHANNEL",
-        desc: "Channel for logging moderation-related stuff (i.e a message being edited).",
+        desc: "Channel for logging moderation events.",
         emoji: "📋",
-      },
-      log_messages: {
-        type: "BOOL",
-        desc: "Whether or not edited/deleted messages should be logged.",
-        val: true,
-        emoji: "🕵️",
       },
       silent: {
         type: "BOOL",

@@ -1,7 +1,6 @@
-import type { Client, GuildAuditLogsEntry, Message } from "discord.js";
-import { Events } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed.ts";
-import createAuditLogHandler from "events/guildAuditLogEntryCreate.ts";
+import { Events, type Client, type GuildAuditLogsEntry, type Message } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import createAuditLogHandler from "events/guildAuditLogEntryCreate";
 import { readdirSync } from "fs";
 import { join } from "path";
 import { client } from "src/bot";

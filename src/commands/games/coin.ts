@@ -3,7 +3,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "utils/colorGen.ts";
+import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 
 export const data = new SlashCommandSubcommandBuilder()

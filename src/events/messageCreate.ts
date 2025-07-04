@@ -2,13 +2,13 @@ import { add, check, remove } from "database/blocklist";
 import { getLevel, setLevel } from "database/leveling";
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed.ts";
-import { easterEggs } from "handlers/events.ts";
+import { errorEmbed } from "embeds/errorEmbed";
+import { easterEggs } from "handlers/events";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { leavePlease } from "utils/leavePlease";
-import { mention } from "utils/mention.ts";
+import { mention } from "utils/mention";
 import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();

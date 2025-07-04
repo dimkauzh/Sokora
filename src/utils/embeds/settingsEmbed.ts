@@ -109,7 +109,7 @@ export async function settingsEmbed(
     const setting = await getSettingPlease(id, key, name, table);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
-    const text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${newline(settingObject.desc)}`;
+    const text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 80, "-# ")}`;
     let data: { type: opt; id: string };
     let component:
       | ButtonBuilder

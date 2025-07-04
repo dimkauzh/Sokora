@@ -1,12 +1,17 @@
-export function newline(str: string): string[] {
-  const arr = Array.from(str);
-  const arrays = [];
-  let i = 0;
+export function newline(str: string, chars: number, startWith?: string): string {
+  const splitStr = str.split(" ");
+  const array: string[] = [];
+  let length: number = 0;
+  let i: number = 0;
+  splitStr.map(string => {
+    let word = string.concat(" ");
+    length += word.length;
+    while (length > chars + i) {
+      if (length > chars) word = `\n${word}`;
+      i += chars;
+    }
+    array.push(word);
+  });
 
-  while (i <= arr.length) {
-    arrays.push(arr.splice(0, 100));
-    i += 100;
-  }
-
-  return arrays.map(i => i.join("")).flat();
+  return `${startWith}${array.join("").replaceAll("\n", `\n${startWith}`)}`;
 }

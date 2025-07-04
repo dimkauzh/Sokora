@@ -1,12 +1,12 @@
-import { setSetting, settingsDefinition } from "database/settings.ts";
+import { setSetting, settingsDefinition } from "database/settings";
 import {
   AutocompleteInteraction,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed.ts";
-import { genColor } from "utils/colorGen.ts";
+import { errorEmbed } from "embeds/errorEmbed";
+import { genColor } from "utils/colorGen";
 
 export async function autocomplete(i: AutocompleteInteraction) {
   const category = i.options.getString("category");
