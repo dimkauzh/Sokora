@@ -6,7 +6,7 @@ import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("changelog")
-  .setDescription(`Sends a link toSokora's latest version (${version}) changelog.`);
+  .setDescription(`Sends a link to Sokora's latest version (${version}) changelog.`);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
