@@ -6,6 +6,7 @@ import {
   ButtonStyle,
   EmbedBuilder,
 } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
@@ -19,7 +20,8 @@ export default (async function run(oldMessage, newMessage) {
   if (author.bot) return;
 
   const guild = oldMessage.guild!;
-  if (!(await getSetting(guild.id, "moderation", "log_messages"))) return;
+  if (!(await getSetting(guild.id, "moderation", "events"))?.toString().includes("messageUpdate"))
+    return;
 
   const oldContent = oldMessage.content!;
   const newContent = newMessage.content!;
@@ -27,7 +29,7 @@ export default (async function run(oldMessage, newMessage) {
   const oldLength = oldContent.length;
   const newLength = newContent.length;
   const avatar = author.displayAvatarURL();
-  const regex = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:\/~+#-]*[\w@?^=%&\/~+#-])/;
+  const regex = /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/;
   const match = newMessage.content ? newMessage.content.match(regex) : null;
   const url = match ? match[0] : null;
   let thumbnail = null;
@@ -47,33 +49,37 @@ export default (async function run(oldMessage, newMessage) {
 
   // --
 
-  if (newMessage.content && url && process.env.ENABLE_MEDIA_FETCHING === "true") {
+  if (newMessage.content && url && process.env.ENABLE_MEDIA_FETCHING == "true") {
     const isImage = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url);
     const isVideo = /\.(mp4|webm|ogg)(\?.*)?$/i.test(url);
     const isTenor = /tenor\.com\/view\//i.test(url);
     const isWebsite = !isImage && !isTenor && !isVideo;
 
     try {
-      if (isImage) {
-        image = url;
-      } else if (isVideo) {
-        video = url;
-      } else if (isTenor || isWebsite) {
-        const response = await fetch(url);
-        const content = await response.text();
-        
+      if (isImage) image = url;
+      else if (isVideo) video = url;
+      else if (isTenor || isWebsite) {
+        const content = await (await fetch(url)).text();
         const metaContentMatch =
           content.match(/<meta\s+property=["']og:image["']\s+content=["']([^"']+)["']/i) ||
-          content.match(/<meta[^>]+property=["']og:video:secure_url["'][^>]+content=["']([^"']+)["'][^>]*>/i) ||
+          content.match(
+            /<meta[^>]+property=["']og:video:secure_url["'][^>]+content=["']([^"']+)["'][^>]*>/i,
+          ) ||
           content.match(/<meta\s+property=["']twitter:image["']\s+content=["']([^"']+)["']/i);
-        const metaContent = metaContentMatch ? metaContentMatch[1] : undefined; // undefined >>>>> null every day of the week >:)
 
+        const metaContent = metaContentMatch ? metaContentMatch[1] : undefined;
         if (metaContent) {
-          if (isTenor) video = metaContent; else if (isWebsite) thumbnail = metaContent;
+          if (isTenor) video = metaContent;
+          else if (isWebsite) thumbnail = metaContent;
         }
       }
     } catch (error) {
-      console.error("Error fetching meta image:", error);
+      return await errorEmbed({
+        client: oldMessage.client,
+        error,
+        title: "Error fetching meta image",
+        forward: true,
+      });
     }
   }
 
@@ -117,10 +123,10 @@ export default (async function run(oldMessage, newMessage) {
   const files: AttachmentBuilder[] = [];
   if (oldLength >= MESSAGE_LENGTH_CAP)
     files.push(new AttachmentBuilder(Buffer.from(oldContent, "utf8"), { name: "oldContent.txt" }));
+
   if (newLength >= MESSAGE_LENGTH_CAP)
     files.push(new AttachmentBuilder(Buffer.from(newContent, "utf8"), { name: "newContent.txt" }));
-  if (video)
-    files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
 
+  if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
   await logChannel(guild, { embeds: [embed], files: files, components: [row] });
 } as Event<"messageUpdate">);

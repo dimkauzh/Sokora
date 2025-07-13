@@ -92,7 +92,7 @@ export interface AuditEvent {
 }
 
 export const auditEvents: AuditEvent[] = [];
-export const auditEventNames: string[] = [];
+export const auditEventNames: string[] = ["messageUpdate"];
 export async function loadAuditEvents(client: Client) {
   const eventsPath = join(process.cwd(), "src", "events", "auditLogs");
 

@@ -61,9 +61,7 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  const res = getByKeyQuery.all(`${key}.${setting}`) as TypeOfDefinition<typeof tableDefinition>[];
-
-  return res;
+  return getByKeyQuery.all(`${key}.${setting}`) as TypeOfDefinition<typeof tableDefinition>[];
 }
 
 export async function getUserSetting<
@@ -95,7 +93,6 @@ export async function getUserSetting<
   }
 
   const value = res[0].value;
-
   switch (set.type) {
     case "BOOL":
       return (value == "1" ? true : false) as SqlType<typeof set.type>;

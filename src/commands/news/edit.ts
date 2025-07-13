@@ -59,7 +59,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const editModal = new ModalBuilder()
     .setCustomId("editnews")
-    .setTitle(`Edit news: ${news.title}`)
+    .setTitle(`•  Edit news: ${news.title}`)
     .addComponents(firstActionRow, secondActionRow);
 
   try {

@@ -1,4 +1,4 @@
-import { getSetting, setSetting, settingsDefinition } from "database/settings";
+import { getSetting, resetSetting, setSetting, settingsDefinition } from "database/settings";
 import {
   getUserSetting,
   setUserSetting,
@@ -41,15 +41,18 @@ async function construct(
   settingsObj: Record<string, any>,
   settingComponent: SettingComponent,
   container: ContainerBuilder,
+  resetMode: boolean,
 ) {
   for (const name of Object.keys(settingsObj)) {
-    const object = await settingComponent(name);
+    const object = await settingComponent(name, resetMode);
+    if (!object) return;
     const component = object.component;
+
     if (component instanceof ButtonBuilder)
       container.addSectionComponents(
         new SectionBuilder()
           .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-          .setButtonAccessory(component),
+          .setButtonAccessory(component as ButtonBuilder),
       );
     else
       container
@@ -81,21 +84,27 @@ async function setSettingPlease(
   else return await setUserSetting(guildID, key, setting, value);
 }
 
-type opt = "bool" | "channel" | "user" | "role" | "log" | "egg" | "other";
+type opt = "bool" | "channel" | "user" | "role" | "log" | "egg" | "other" | "reset";
 
-type SettingComponent = (name: string) => Promise<{
-  text: string;
-  data: {
-    type: opt;
-    id: string;
-  };
-  component:
-    | ButtonBuilder
-    | ChannelSelectMenuBuilder
-    | UserSelectMenuBuilder
-    | RoleSelectMenuBuilder
-    | StringSelectMenuBuilder;
-}>;
+type SettingComponent = (
+  name: string,
+  reset: boolean,
+) => Promise<
+  | {
+      text: string;
+      data: {
+        type: opt;
+        id: string;
+      };
+      component:
+        | ButtonBuilder
+        | ChannelSelectMenuBuilder
+        | UserSelectMenuBuilder
+        | RoleSelectMenuBuilder
+        | StringSelectMenuBuilder;
+    }
+  | undefined
+>;
 
 export async function settingsEmbed(
   interaction: ChatInputCommandInteraction,
@@ -105,18 +114,37 @@ export async function settingsEmbed(
   const key = interaction.options.getSubcommand();
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
-  const settingComponent: SettingComponent = async (name: string) => {
-    const setting = await getSettingPlease(id, key, name, table);
-    const settingObject = settingsObj[name];
-    const maxValues = settingObject.iterable ? 25 : 1;
-    const text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 80, "-# ")}`;
-    let data: { type: opt; id: string };
+  const resetButtons = ["reset_start", "reset_category", "cancel", "yes", "no"];
+  const color = genColorCV2(200)!;
+  let settingName = "";
+  let reset = false;
+  let confirm = false;
+  let resetCategory = false;
+
+  const settingComponent: SettingComponent = async (name: string, reset: boolean) => {
+    if (resetButtons.includes(name)) return;
+    let data: { type: opt; id: string; disabled?: boolean };
     let component:
       | ButtonBuilder
       | ChannelSelectMenuBuilder
       | UserSelectMenuBuilder
       | RoleSelectMenuBuilder
       | StringSelectMenuBuilder;
+
+    const setting = await getSettingPlease(id, key, name, table);
+    const settingObject = settingsObj[name];
+    const maxValues = settingObject.iterable ? 25 : 1;
+    const text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
+
+    if (reset) {
+      data = { type: "reset", id: name };
+      component = new ButtonBuilder()
+        .setCustomId(data.id)
+        .setLabel("Reset")
+        .setStyle(ButtonStyle.Danger);
+
+      return { text, data, component };
+    }
 
     switch (settingObject.type) {
       case "BOOL":
@@ -196,18 +224,68 @@ export async function settingsEmbed(
           .setCustomId(data.id)
           .setLabel("Edit")
           .setStyle(ButtonStyle.Secondary);
+
         break;
     }
 
     return { text, data, component };
   };
 
-  const color = genColorCV2(200)!;
+  const buttons = (reset: boolean, confirm: boolean, disableCategory?: boolean) => {
+    if (reset)
+      return [
+        new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId("reset_category")
+            .setLabel("Reset category")
+            .setStyle(ButtonStyle.Danger),
+          new ButtonBuilder()
+            .setCustomId("cancel")
+            .setLabel("Cancel")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(false),
+        ),
+      ];
+
+    if (confirm)
+      return [
+        new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId("reset_category")
+            .setLabel("Reset category")
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(disableCategory),
+          new ButtonBuilder()
+            .setCustomId("confirmation")
+            .setLabel("You sure?")
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true),
+          new ButtonBuilder().setCustomId("yes").setLabel("Yes").setStyle(ButtonStyle.Secondary),
+          new ButtonBuilder().setCustomId("cancel").setLabel("No").setStyle(ButtonStyle.Primary),
+        ),
+      ];
+
+    return [
+      new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId("reset_start")
+          .setLabel("Reset")
+          .setStyle(ButtonStyle.Danger),
+        new ButtonBuilder()
+          .setCustomId("desc")
+          .setLabel(settingsDef.description)
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true),
+      ),
+    ];
+  };
+
   const container = new ContainerBuilder()
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingsDef.description))
+    .addActionRowComponents(buttons(false, false))
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
     .setAccentColor(color);
 
-  await construct(settingsObj, settingComponent, container);
+  await construct(settingsObj, settingComponent, container, false);
   const reply = await interaction.reply({ components: [container], flags: "IsComponentsV2" });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
@@ -225,35 +303,54 @@ export async function settingsEmbed(
       });
 
     collector.resetTimer({ time: 60000 });
-    switch ((await settingComponent(i.customId)).data.type) {
+    const cID = i.customId;
+    const setting = await settingComponent(cID, reset || confirm);
+    let disableCategory = false;
+    switch (cID) {
+      case "reset_start":
+        reset = true;
+        confirm = false;
+        break;
+      case "reset_category":
+        reset = false;
+        confirm = true;
+        disableCategory = true;
+        resetCategory = true;
+        break;
+      case "yes":
+        if (resetCategory) await resetSetting(id, key);
+        else await setSettingPlease(id, key, settingName, null, table);
+        reset = false;
+        confirm = false;
+        break;
+      case "cancel":
+        reset = false;
+        confirm = false;
+        break;
+    }
+
+    switch (setting?.data.type) {
+      case "reset":
+        reset = false;
+        confirm = true;
+        settingName = cID;
+        break;
       case "bool":
-        await setSettingPlease(
-          id,
-          key,
-          i.customId,
-          !(await getSettingPlease(id, key, i.customId, table)),
-          table,
-        );
+        await setSettingPlease(id, key, cID, !(await getSettingPlease(id, key, cID, table)), table);
         break;
       case "channel":
-        await setSettingPlease(
-          id,
-          key,
-          i.customId,
-          (i as ChannelSelectMenuInteraction).values,
-          table,
-        );
+        await setSettingPlease(id, key, cID, (i as ChannelSelectMenuInteraction).values, table);
         break;
       case "user":
-        await setSettingPlease(id, key, i.customId, (i as UserSelectMenuInteraction).values, table);
+        await setSettingPlease(id, key, cID, (i as UserSelectMenuInteraction).values, table);
         break;
       case "role":
-        await setSettingPlease(id, key, i.customId, (i as RoleSelectMenuInteraction).values, table);
+        await setSettingPlease(id, key, cID, (i as RoleSelectMenuInteraction).values, table);
         break;
       case "other": {
         const modal = new ModalBuilder()
           .setCustomId(i.customId)
-          .setTitle(i.customId)
+          .setTitle(`•  ${humanizeSettings(i.customId)}`)
           .addComponents(
             new ActionRowBuilder<TextInputBuilder>().addComponents(
               new TextInputBuilder()
@@ -262,7 +359,8 @@ export async function settingsEmbed(
                 .setMaxLength(4000)
                 .setStyle(TextInputStyle.Paragraph)
                 .setLabel("Value")
-                .setRequired(true),
+                .setRequired(true)
+                .setValue(`${await getSettingPlease(id, key, cID, table)}`),
             ),
           );
 
@@ -272,11 +370,12 @@ export async function settingsEmbed(
             const value = modalInteraction.fields.fields.find(
               field => field.customId == "setting",
             )?.value;
-            await setSettingPlease(id, key, i.customId, value, table);
+            await setSettingPlease(id, key, cID, value, table);
+
             const modalContainer = new ContainerBuilder()
               .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                  `**${settingsObj[i.customId].emoji}  •  ${humanizeSettings(i.customId)}** got changed`,
+                  `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`,
                 ),
               )
               .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
@@ -287,27 +386,28 @@ export async function settingsEmbed(
               )
               .setAccentColor(genColorCV2(100)!);
 
-            await modalInteraction.reply({ components: [modalContainer], flags: "IsComponentsV2" });
+            await safeReply({
+              interaction: modalInteraction,
+              replyOptions: {
+                components: [modalContainer],
+                flags: ["Ephemeral", "IsComponentsV2"],
+              },
+            });
           }
         });
         break;
       }
       default:
-        await setSettingPlease(
-          id,
-          key,
-          i.customId,
-          (i as StringSelectMenuInteraction).values,
-          table,
-        );
+        await setSettingPlease(id, key, cID, (i as StringSelectMenuInteraction).values, table);
         break;
     }
 
     const newContainer = new ContainerBuilder()
-      .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingsDef.description))
+      .addActionRowComponents(buttons(reset, confirm, disableCategory))
+      .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
       .setAccentColor(color);
 
-    await construct(settingsObj, settingComponent, newContainer);
+    await construct(settingsObj, settingComponent, newContainer, reset || confirm);
     await safeReply({
       interaction: i,
       editOptions: { components: [newContainer], flags: "IsComponentsV2" },

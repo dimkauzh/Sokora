@@ -177,7 +177,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (actionID && !user)
     return await errorEmbed({
       interaction,
-      client: interaction.client,
       title: "No user specified!",
       reason: `Sokora cannot look for "case ${actionID} of *no user*". Please, specify a user.`,
     });

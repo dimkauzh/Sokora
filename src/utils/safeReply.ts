@@ -8,6 +8,7 @@ import {
   InteractionUpdateOptions,
   Message,
   MessagePayload,
+  ModalSubmitInteraction,
 } from "discord.js";
 
 /**
@@ -15,7 +16,7 @@ import {
  *
  * @async
  * @param {{
- *   interaction: ChatInputCommandInteraction | ButtonInteraction | AnySelectMenuInteraction;
+ *   interaction: ChatInputCommandInteraction | ButtonInteraction | AnySelectMenuInteraction | ModalSubmitInteraction;
  *   replyOptions?: string | MessagePayload | InteractionReplyOptions;
  *   editOptions?: string | MessagePayload | InteractionEditReplyOptions;
  *   error?: boolean;
@@ -23,7 +24,11 @@ import {
  * @returns {(Promise<Message<boolean> | InteractionResponse<boolean>>)}
  */
 export async function safeReply(options: {
-  interaction: ChatInputCommandInteraction | ButtonInteraction | AnySelectMenuInteraction;
+  interaction:
+    | ChatInputCommandInteraction
+    | ButtonInteraction
+    | AnySelectMenuInteraction
+    | ModalSubmitInteraction;
   replyOptions?: string | MessagePayload | InteractionReplyOptions;
   editOptions?: string | MessagePayload | InteractionEditReplyOptions;
   error?: boolean;
@@ -34,7 +39,7 @@ export async function safeReply(options: {
     | MessagePayload
     | InteractionReplyOptions;
 
-  if (error) return await interaction.reply(replyOptions!);
+  if (error) return await interaction.reply(reply);
   if (interaction.replied) {
     if (editOptions) return await interaction.editReply(editOptions);
     return await interaction.followUp(reply);

@@ -76,28 +76,6 @@ export const settingsDefinition: SettingsDefinition = {
       },
     },
   },
-  logging: {
-    description: "Manage the logging settings.",
-    settings: {
-      enabled: {
-        type: "BOOL",
-        desc: "Whether or not should the bot log different actions.",
-        val: false,
-        emoji: "✅",
-      },
-      events: {
-        type: "LOG",
-        desc: "Select what logs you want to see in your log channel.",
-        iterable: true,
-        emoji: "📅",
-      },
-      channel: {
-        type: "CHANNEL",
-        desc: "The channel where the logs should be sent. Forum channels supported.",
-        emoji: "🧾",
-      },
-    },
-  },
   news: {
     description: "Configure news for your server.",
     settings: {
@@ -319,6 +297,13 @@ export async function setSetting<
   const set = Array.isArray(value) ? dekominator(value) : value;
   deleteQuery.all(JSON.stringify(guildID), `${key}.${setting}`);
   insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, set);
+}
+
+export async function resetSetting<K extends keyof typeof settingsDefinition>(
+  guildID: string,
+  key: K,
+) {
+  deleteQuery.all(JSON.stringify(guildID), key);
 }
 
 export function listPublicServers(): Promise<

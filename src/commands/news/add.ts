@@ -48,7 +48,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const newsModal = new ModalBuilder()
     .setCustomId("addnews")
-    .setTitle("Write your news.")
+    .setTitle("•  Write your news.")
     .addComponents(firstActionRow, secondActionRow);
 
   try {

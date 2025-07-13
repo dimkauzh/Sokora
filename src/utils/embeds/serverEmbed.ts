@@ -76,7 +76,7 @@ export async function serverEmbed(options: Options) {
           : `${sortedRoles
               .slice(0, 5)
               .map(role => mention(role[0], "ROLE"))
-              .join("  •  ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
+              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
       }`,
     );
 
