@@ -42,12 +42,14 @@ async function construct(
   settingComponent: SettingComponent,
   container: ContainerBuilder,
   resetMode: boolean,
+  cID?: string,
 ) {
   for (const name of Object.keys(settingsObj)) {
     const object = await settingComponent(name, resetMode);
     if (!object) return;
     const component = object.component;
 
+    if (object.data.id == cID && object.data.type == "reset") component.setDisabled(true);
     if (component instanceof ButtonBuilder)
       container.addSectionComponents(
         new SectionBuilder()
@@ -123,7 +125,7 @@ export async function settingsEmbed(
 
   const settingComponent: SettingComponent = async (name: string, reset: boolean) => {
     if (resetButtons.includes(name)) return;
-    let data: { type: opt; id: string; disabled?: boolean };
+    let data: { type: opt; id: string };
     let component:
       | ButtonBuilder
       | ChannelSelectMenuBuilder
@@ -280,12 +282,12 @@ export async function settingsEmbed(
     ];
   };
 
-  const container = new ContainerBuilder()
-    .addActionRowComponents(buttons(false, false))
-    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-    .setAccentColor(color);
-
+  const container = new ContainerBuilder().setAccentColor(color);
   await construct(settingsObj, settingComponent, container, false);
+  container
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+    .addActionRowComponents(buttons(false, false));
+
   const reply = await interaction.reply({ components: [container], flags: "IsComponentsV2" });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
@@ -304,8 +306,8 @@ export async function settingsEmbed(
 
     collector.resetTimer({ time: 60000 });
     const cID = i.customId;
-    const setting = await settingComponent(cID, reset || confirm);
     let disableCategory = false;
+
     switch (cID) {
       case "reset_start":
         reset = true;
@@ -329,7 +331,7 @@ export async function settingsEmbed(
         break;
     }
 
-    switch (setting?.data.type) {
+    switch ((await settingComponent(cID, reset || confirm))?.data.type) {
       case "reset":
         reset = false;
         confirm = true;
@@ -402,12 +404,12 @@ export async function settingsEmbed(
         break;
     }
 
-    const newContainer = new ContainerBuilder()
-      .addActionRowComponents(buttons(reset, confirm, disableCategory))
+    const newContainer = new ContainerBuilder().setAccentColor(color);
+    await construct(settingsObj, settingComponent, newContainer, reset || confirm, cID);
+    newContainer
       .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-      .setAccentColor(color);
+      .addActionRowComponents(buttons(reset, confirm, disableCategory));
 
-    await construct(settingsObj, settingComponent, newContainer, reset || confirm);
     await safeReply({
       interaction: i,
       editOptions: { components: [newContainer], flags: "IsComponentsV2" },

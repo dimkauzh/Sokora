@@ -231,6 +231,9 @@ const listPublicWithInvitesEnabledQuery = database.query(
   "SELECT * FROM settings WHERE EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.server_invite' AND value = '1') AND EXISTS (SELECT 1 FROM settings WHERE key = 'serverboard.shown' AND value = '1');",
 );
 const deleteQuery = database.query("DELETE FROM settings WHERE guildID = $1 AND key = $2;");
+const deleteCategoryQuery = database.query(
+  "DELETE FROM settings WHERE guildID = $1 AND key LIKE $2;",
+);
 const insertQuery = database.query(
   "INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);",
 );
@@ -303,7 +306,7 @@ export async function resetSetting<K extends keyof typeof settingsDefinition>(
   guildID: string,
   key: K,
 ) {
-  deleteQuery.all(JSON.stringify(guildID), key);
+  deleteCategoryQuery.run(JSON.stringify(guildID), `%${key}%`);
 }
 
 export function listPublicServers(): Promise<

@@ -49,6 +49,7 @@ async function generateEmbed(params: {
   const displayedCases = providedCases
     .sort((a, b) => Number(b.id) - Number(a.id))
     .slice(start, end);
+
   const guildEmbed = new EmbedBuilder()
     .setAuthor({ name: `All ${type ? type.toLowerCase() : "moderation"} cases server-wide` })
     .setFields(

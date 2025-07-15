@@ -29,12 +29,12 @@
     "@eslint/js": "^9.31.0",
     "@types/figlet": "^1.7.0",
     "@types/ms": "^0.7.34",
-    "@typescript-eslint/eslint-plugin": "^8.36.0",
-    "@typescript-eslint/parser": "^8.36.0",
+    "@typescript-eslint/eslint-plugin": "^8.37.0",
+    "@typescript-eslint/parser": "^8.37.0",
     "bun-types": "^1.2.18",
     "eslint": "^9.31.0",
     "prettier": "^3.6.2",
     "typescript": "^5.8.3",
-    "typescript-eslint": "^8.36.0"
+    "typescript-eslint": "^8.37.0"
   }
 }

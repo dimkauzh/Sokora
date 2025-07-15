@@ -68,7 +68,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       )} • ${memberRoles
         .slice(0, 3)
         .map(role => mention(role[1].id, "ROLE"))
-        .join("  •  ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
+        .join(" • ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
     );
 
   embed.addFields({
