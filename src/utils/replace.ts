@@ -30,14 +30,15 @@ export function replace(
  * @returns {string} String with values replaced. The function is async because it depends on `fetchOwner()`.
  */
 export function replaceVariables(text: string, guild: Guild, user: User): string {
-  const owner = guild.members.cache.find(u => u.id === guild.ownerId);
-
   const replacementVariables: Replacements = [
     { text: "(name)", replacement: user.displayName },
     { text: "(username)", replacement: user.username },
     { text: "(count)", replacement: guild.memberCount },
     { text: "(servername)", replacement: guild.name },
-    { text: "(serverowner)", replacement: owner!.displayName },
+    {
+      text: "(serverowner)",
+      replacement: guild.members.cache.find(u => u.id == guild.ownerId)!.displayName,
+    },
     { text: "(currentdate)", replacement: mention(Date.now(), "DEFAULT_TIMESTAMP") },
     { text: "(currentdate, simple)", replacement: mention(Date.now(), "SIMPLE_TIMESTAMP") },
     {

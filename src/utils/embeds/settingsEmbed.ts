@@ -1,4 +1,10 @@
-import { getSetting, resetSetting, setSetting, settingsDefinition } from "database/settings";
+import {
+  getSetting,
+  getSettingCategory,
+  resetSettingCategory,
+  setSetting,
+  settingsDefinition,
+} from "database/settings";
 import {
   getUserSetting,
   setUserSetting,
@@ -233,7 +239,7 @@ export async function settingsEmbed(
     return { text, data, component };
   };
 
-  const buttons = (reset: boolean, confirm: boolean, disableCategory?: boolean) => {
+  const buttons = async (reset: boolean, confirm: boolean, disableCategory?: boolean) => {
     if (reset)
       return [
         new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
@@ -257,36 +263,42 @@ export async function settingsEmbed(
             .setLabel("Reset category")
             .setStyle(ButtonStyle.Danger)
             .setDisabled(disableCategory),
-          new ButtonBuilder()
-            .setCustomId("confirmation")
-            .setLabel("You sure?")
-            .setStyle(ButtonStyle.Secondary)
-            .setDisabled(true),
           new ButtonBuilder().setCustomId("yes").setLabel("Yes").setStyle(ButtonStyle.Secondary),
           new ButtonBuilder().setCustomId("cancel").setLabel("No").setStyle(ButtonStyle.Primary),
         ),
       ];
 
-    return [
-      new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+    const actual = (await getSettingCategory(id, key)).map(setting =>
+      setting == undefined ? null : setting,
+    );
+    const defaults = Object.values(settingsObj).map(setting => setting.val ?? null);
+    const topbarArray = [
+      new ButtonBuilder()
+        .setCustomId("desc")
+        .setLabel(settingsDef.description)
+        .setStyle(ButtonStyle.Secondary)
+        .setDisabled(true),
+    ];
+
+    if (!actual.every(value => value == defaults[actual.indexOf(value)]))
+      topbarArray.unshift(
         new ButtonBuilder()
           .setCustomId("reset_start")
           .setLabel("Reset")
           .setStyle(ButtonStyle.Danger),
-        new ButtonBuilder()
-          .setCustomId("desc")
-          .setLabel(settingsDef.description)
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true),
-      ),
-    ];
+      );
+
+    return [new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(topbarArray)];
   };
 
   const container = new ContainerBuilder().setAccentColor(color);
   await construct(settingsObj, settingComponent, container, false);
-  container
-    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-    .addActionRowComponents(buttons(false, false));
+  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+  if (table == "server") container.addActionRowComponents(await buttons(false, false));
+  else
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(settingsDef.description),
+    );
 
   const reply = await interaction.reply({ components: [container], flags: "IsComponentsV2" });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
@@ -320,7 +332,7 @@ export async function settingsEmbed(
         resetCategory = true;
         break;
       case "yes":
-        if (resetCategory) await resetSetting(id, key);
+        if (resetCategory) await resetSettingCategory(id, key);
         else await setSettingPlease(id, key, settingName, null, table);
         reset = false;
         confirm = false;
@@ -374,6 +386,7 @@ export async function settingsEmbed(
             )?.value;
             await setSettingPlease(id, key, cID, value, table);
 
+            const length = value!.length;
             const modalContainer = new ContainerBuilder()
               .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
@@ -383,7 +396,7 @@ export async function settingsEmbed(
               .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
               .addTextDisplayComponents(
                 new TextDisplayBuilder().setContent(
-                  `The ${value!.length < 50 ? "value" : "**value**"} has been set to ${value!.length >= 50 ? value : `**${value}**`}`,
+                  `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`,
                 ),
               )
               .setAccentColor(genColorCV2(100)!);
@@ -406,9 +419,13 @@ export async function settingsEmbed(
 
     const newContainer = new ContainerBuilder().setAccentColor(color);
     await construct(settingsObj, settingComponent, newContainer, reset || confirm, cID);
-    newContainer
-      .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-      .addActionRowComponents(buttons(reset, confirm, disableCategory));
+    newContainer.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+    if (table == "server")
+      newContainer.addActionRowComponents(await buttons(reset, confirm, disableCategory));
+    else
+      newContainer.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(settingsDef.description),
+      );
 
     await safeReply({
       interaction: i,

@@ -186,7 +186,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const cases = type
       ? listGuildModeration(guild.id, type as modType)
       : listGuildModeration(guild.id);
-    if (cases.length === 0) {
+    if (cases.length == 0) {
       await interaction.reply({
         embeds: [
           new EmbedBuilder()
@@ -279,7 +279,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     })
 
     .setColor(genColor(200));
-  if (actions.length === 0) {
+  if (actions.length == 0) {
     embed
       .setFields([
         {

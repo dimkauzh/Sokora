@@ -293,6 +293,17 @@ export async function getSetting<
   return switchTypes(value);
 }
 
+export async function getSettingCategory<K extends keyof typeof settingsDefinition>(
+  guildID: string,
+  key: K,
+) {
+  const array = [];
+  for (const setting of Object.keys(settingsDefinition[key].settings))
+    array.push(await getSetting(guildID, key, setting));
+
+  return array;
+}
+
 export async function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
@@ -302,7 +313,7 @@ export async function setSetting<
   insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, set);
 }
 
-export async function resetSetting<K extends keyof typeof settingsDefinition>(
+export async function resetSettingCategory<K extends keyof typeof settingsDefinition>(
   guildID: string,
   key: K,
 ) {

@@ -88,7 +88,7 @@ export async function errorCheck(
 
   if (outsideError)
     if (!guild.members.cache.has(user.id)) {
-      const isBanError = (await guild.bans.fetch()).has(user.id) && action === "Ban";
+      const isBanError = (await guild.bans.fetch()).has(user.id) && action == "Ban";
 
       return await errorEmbed({
         interaction,
