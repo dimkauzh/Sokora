@@ -1,4 +1,4 @@
-export function errorType(value: unknown): Error | unknown {
+export function errorType(value: unknown): Error {
   if (value instanceof Error) return value;
 
   let stringified = "";
@@ -6,6 +6,6 @@ export function errorType(value: unknown): Error | unknown {
     stringified = JSON.stringify(value);
     return new Error(stringified);
   } catch {
-    return value;
+    return value as Error;
   }
 }

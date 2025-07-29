@@ -30,13 +30,13 @@ export function humanizeSettings(string: string): string {
  * @param {FieldData} type Humanized type.
  */
 export function humanizeType(type: FieldData): string {
-  if (type === "BOOL") return "boolean";
-  if (type === "INTEGER") return "number";
-  if (type === "TEXT") return "text";
-  if (type === "LOG") return "log";
-  if (type === "CHANNEL") return "channel";
-  if (type === "ROLE") return "role";
-  if (type === "USER") return "user";
-  if (type === "TIMESTAMP") return "timestamp";
+  if (type == "BOOL") return "boolean";
+  if (type == "INTEGER") return "number";
+  if (type == "TEXT") return "text";
+  if (type == "LOG") return "log";
+  if (type == "CHANNEL") return "channel";
+  if (type == "ROLE") return "role";
+  if (type == "USER") return "user";
+  if (type == "TIMESTAMP") return "timestamp";
   return "easter egg";
 }

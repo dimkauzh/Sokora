@@ -5,6 +5,7 @@ import {
   setSetting,
   settingsDefinition,
 } from "database/settings";
+import { FieldData } from "database/types";
 import {
   getUserSetting,
   setUserSetting,
@@ -28,6 +29,7 @@ import {
   TextInputBuilder,
   TextInputStyle,
   UserSelectMenuBuilder,
+  codeBlock,
   type ChannelSelectMenuInteraction,
   type ChatInputCommandInteraction,
   type RoleSelectMenuInteraction,
@@ -42,7 +44,6 @@ import { kominator } from "utils/kominator";
 import { newline } from "utils/newline";
 import { safeReply } from "utils/safeReply";
 import { errorEmbedCV2 } from "./errorEmbed";
-import { FieldData } from "database/types";
 
 async function construct(
   settingsObj: Record<string, any>,
@@ -129,12 +130,8 @@ type SettingComponent = (
 function isValueValid(value: string | undefined, type: FieldData): boolean {
   if (!value) return false;
   if (value.trim() == "") return false;
-  if (type === "INTEGER") {
-    if (isNaN(Number(value))) return false;
-  }
-  if (type === "TEXT") {
-    if (!isNaN(Number(value))) return false;
-  }
+  if (type == "INTEGER") if (isNaN(Number(value))) return false;
+  if (type == "TEXT") if (!isNaN(Number(value))) return false;
   return true;
 }
 
@@ -250,10 +247,9 @@ export async function settingsEmbed(
             ),
           );
         break;
-      default: {
-        const t = settingObject.type;
+      default:
         data = {
-          type: t === "INTEGER" ? "number" : "text",
+          type: settingObject.type == "INTEGER" ? "number" : "text",
           id: name,
         };
         component = new ButtonBuilder()
@@ -261,7 +257,6 @@ export async function settingsEmbed(
           .setLabel("Edit")
           .setStyle(ButtonStyle.Secondary);
         break;
-      }
     }
 
     return { text, data, component };
@@ -410,54 +405,40 @@ export async function settingsEmbed(
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
           if (modalInteraction.isModalSubmit()) {
+            function constructModalContainer(settingText: string, valueText: string, hue: number) {
+              return new ContainerBuilder()
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
+                .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+                .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
+                .setAccentColor(genColorCV2(hue)!);
+            }
+
             const value = modalInteraction.fields.fields.find(
               field => field.customId == "setting",
             )?.value;
+            const length = value!.length;
+            let settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`;
+            let valueText = `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`;
+            let hue = 100;
+
             if (!isValueValid(value, settingsObj[cID].type)) {
-              await safeReply({
+              settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
+              valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
+              hue = 0;
+              return await safeReply({
                 interaction: modalInteraction,
                 replyOptions: {
-                  components: [
-                    new ContainerBuilder()
-                      .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(
-                          `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`,
-                        ),
-                      )
-                      .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-                      .addTextDisplayComponents(
-                        new TextDisplayBuilder().setContent(
-                          `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.\nData entered was:\n\`\`\`${value}\`\`\``,
-                        ),
-                      )
-                      .setAccentColor(genColorCV2(0)!),
-                  ],
+                  components: [constructModalContainer(settingText, valueText, hue)],
                   flags: ["Ephemeral", "IsComponentsV2"],
                 },
               });
-              return;
             }
+
             await setSettingPlease(id, key, cID, value, table);
-
-            const length = value!.length;
-            const modalContainer = new ContainerBuilder()
-              .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                  `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`,
-                ),
-              )
-              .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-              .addTextDisplayComponents(
-                new TextDisplayBuilder().setContent(
-                  `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`,
-                ),
-              )
-              .setAccentColor(genColorCV2(100)!);
-
             await safeReply({
               interaction: modalInteraction,
               replyOptions: {
-                components: [modalContainer],
+                components: [constructModalContainer(settingText, valueText, hue)],
                 flags: ["Ephemeral", "IsComponentsV2"],
               },
             });
