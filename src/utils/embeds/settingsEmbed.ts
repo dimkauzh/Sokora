@@ -37,11 +37,12 @@ import {
 import { auditEventNames, easterEggNames } from "handlers/events";
 import { genColorCV2 } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
-import { humanizeSettings } from "utils/humanizeSettings";
+import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
 import { newline } from "utils/newline";
 import { safeReply } from "utils/safeReply";
 import { errorEmbedCV2 } from "./errorEmbed";
+import { FieldData } from "database/types";
 
 async function construct(
   settingsObj: Record<string, any>,
@@ -92,7 +93,17 @@ async function setSettingPlease(
   else return await setUserSetting(guildID, key, setting, value);
 }
 
-type opt = "bool" | "channel" | "user" | "role" | "log" | "egg" | "other" | "reset";
+type opt =
+  | "bool"
+  | "channel"
+  | "user"
+  | "role"
+  | "log"
+  | "egg"
+  | "reset"
+  | "text"
+  | "number"
+  | "other";
 
 type SettingComponent = (
   name: string,
@@ -113,6 +124,19 @@ type SettingComponent = (
     }
   | undefined
 >;
+
+// basic, but gets the job done
+function isValueValid(value: string | undefined, type: FieldData): boolean {
+  if (!value) return false;
+  if (value.trim() == "") return false;
+  if (type === "INTEGER") {
+    if (isNaN(Number(value))) return false;
+  }
+  if (type === "TEXT") {
+    if (!isNaN(Number(value))) return false;
+  }
+  return true;
+}
 
 export async function settingsEmbed(
   interaction: ChatInputCommandInteraction,
@@ -226,14 +250,18 @@ export async function settingsEmbed(
             ),
           );
         break;
-      default:
-        data = { type: "other", id: name };
+      default: {
+        const t = settingObject.type;
+        data = {
+          type: t === "INTEGER" ? "number" : "text",
+          id: name,
+        };
         component = new ButtonBuilder()
           .setCustomId(data.id)
           .setLabel("Edit")
           .setStyle(ButtonStyle.Secondary);
-
         break;
+      }
     }
 
     return { text, data, component };
@@ -343,7 +371,7 @@ export async function settingsEmbed(
         break;
     }
 
-    switch ((await settingComponent(cID, reset || confirm))?.data.type) {
+    switch ((await settingComponent(cID, reset || confirm))?.data.type as opt) {
       case "reset":
         reset = false;
         confirm = true;
@@ -361,7 +389,8 @@ export async function settingsEmbed(
       case "role":
         await setSettingPlease(id, key, cID, (i as RoleSelectMenuInteraction).values, table);
         break;
-      case "other": {
+      case "number":
+      case "text": {
         const modal = new ModalBuilder()
           .setCustomId(i.customId)
           .setTitle(`•  ${humanizeSettings(i.customId)}`)
@@ -369,7 +398,7 @@ export async function settingsEmbed(
             new ActionRowBuilder<TextInputBuilder>().addComponents(
               new TextInputBuilder()
                 .setCustomId("setting")
-                .setPlaceholder("Put the value")
+                .setPlaceholder("Type in the value")
                 .setMaxLength(4000)
                 .setStyle(TextInputStyle.Paragraph)
                 .setLabel("Value")
@@ -384,6 +413,30 @@ export async function settingsEmbed(
             const value = modalInteraction.fields.fields.find(
               field => field.customId == "setting",
             )?.value;
+            if (!isValueValid(value, settingsObj[cID].type)) {
+              await safeReply({
+                interaction: modalInteraction,
+                replyOptions: {
+                  components: [
+                    new ContainerBuilder()
+                      .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(
+                          `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`,
+                        ),
+                      )
+                      .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+                      .addTextDisplayComponents(
+                        new TextDisplayBuilder().setContent(
+                          `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.\nData entered was:\n\`\`\`${value}\`\`\``,
+                        ),
+                      )
+                      .setAccentColor(genColorCV2(0)!),
+                  ],
+                  flags: ["Ephemeral", "IsComponentsV2"],
+                },
+              });
+              return;
+            }
             await setSettingPlease(id, key, cID, value, table);
 
             const length = value!.length;

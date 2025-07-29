@@ -1,6 +1,5 @@
 <!-- markdownlint-disable md024 -->
 <!-- preserve old changelogs here -->
-<!-- don't make multiline comments for the parser to work -->
 
 # Sokora Changelog
 

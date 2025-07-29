@@ -1,6 +1,6 @@
 import { AuditLogEvent, GuildAuditLogsEntry, PartialUser, User } from "discord.js";
 
-// todo: group messagedeletes made close to each other
+// todo: group messageDeletes made close to each other
 export let executor: User | PartialUser | null;
 export let date: number;
 export async function run(auditEntry: GuildAuditLogsEntry<AuditLogEvent.MessageDelete>) {
