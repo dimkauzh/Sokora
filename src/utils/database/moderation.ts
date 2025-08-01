@@ -17,7 +17,8 @@ const definition = {
 
 export type ModerationCase = typeof definition;
 
-export type modType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
+export type ModType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
+
 const database = getDatabase(definition);
 const addQuery = database.query(
   "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
@@ -41,11 +42,17 @@ const editQuery = database.query(
   "UPDATE moderation SET reason = ?3, expiresAt = ?4 WHERE guild = ?1 AND id = ?2;",
 );
 const removeQuery = database.query("DELETE FROM moderation WHERE guild = $1 AND id = $2");
+const getExpiredBansQuery = database.query(
+  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= $1;",
+);
+const getPendingBansQuery = database.query(
+  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt > $1;",
+);
 
 export function addModeration(
   guildID: string | number,
   userID: string,
-  type: modType,
+  type: ModType,
   moderator: string,
   reason = "",
   expiresAt?: number | null,
@@ -56,7 +63,7 @@ export function addModeration(
   return id;
 }
 
-export function listGuildModeration(guildID: number | string, type?: modType) {
+export function listGuildModeration(guildID: number | string, type?: ModType) {
   if (type) return listGuildTypeQuery.all(guildID, type) as TypeOfDefinition<typeof definition>[];
 
   return listGuildQuery.all(guildID) as TypeOfDefinition<typeof definition>[];
@@ -65,7 +72,7 @@ export function listGuildModeration(guildID: number | string, type?: modType) {
 export function listUserModeration(
   guildID: number | string,
   userID: number | string,
-  type?: modType,
+  type?: ModType,
 ) {
   if (type)
     return listUserTypeQuery.all(guildID, userID, type) as TypeOfDefinition<typeof definition>[];
@@ -96,17 +103,9 @@ export function removeModeration(guildID: string | number, id: string) {
   removeQuery.run(guildID, id);
 }
 
-const getExpiredBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= $1;",
-);
-
 export function getExpiredBans(currentTime: number) {
   return getExpiredBansQuery.all(currentTime) as TypeOfDefinition<typeof definition>[];
 }
-
-const getPendingBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt > $1;",
-);
 
 export function getPendingBans(currentTime: number) {
   return getPendingBansQuery.all(currentTime) as TypeOfDefinition<typeof definition>[];

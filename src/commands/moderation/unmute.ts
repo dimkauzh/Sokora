@@ -32,7 +32,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
-  if (target?.isCommunicationDisabled())
+  if (!target?.isCommunicationDisabled())
     return await errorEmbed({
       interaction,
       title: "You can't unmute this user.",

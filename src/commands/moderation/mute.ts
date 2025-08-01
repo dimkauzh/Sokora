@@ -44,10 +44,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "The duration is invalid or is above the 28 day limit.",
     });
 
+  if (guild.members.cache.get(user.id)?.isCommunicationDisabled())
+    return await errorEmbed({
+      interaction,
+      title: `You can't mute ${user.username}.`,
+      reason: "The user is already muted.",
+    });
+
   const time = new Date(
     Date.parse(new Date().toISOString()) + Date.parse(new Date(ms(duration)).toISOString()),
   ).toISOString();
-
   const silent =
     interaction.options.getBoolean("silent") ||
     false ||
@@ -56,7 +62,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     await Promise.all([
       modEmbed(
-        { interaction, user, action: "Muted", duration, dm: true, dbAction: "MUTE", silent },
+        {
+          interaction,
+          user,
+          action: "Muted",
+          duration,
+          dm: true,
+          dbAction: "MUTE",
+          expiresAt: ms(duration),
+          silent,
+        },
         reason,
         true,
       ),

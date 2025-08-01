@@ -4,10 +4,8 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { modActionEmbed } from "embeds/modActionEmbed";
-import { errorCheck } from "embeds/modEmbed";
+import { errorCheck, modEmbed } from "embeds/modEmbed";
 import ms from "ms";
-import { mention } from "utils/mention";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("slowdown")
@@ -37,11 +35,13 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const channelOption = interaction.options.getChannel("channel")!;
-  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
+  let channel = guild.channels.cache.get(interaction.channel!.id)!;
+  if (channelOption) channel = guild.channels.cache.get(channelOption.id)!;
+
   if (
     await errorCheck(
       "ManageChannels",
-      { interaction, channel },
+      { interaction, channel: channel.id },
       { allErrors: false, botError: true, channelError: true },
       "Manage Channels",
     )
@@ -50,10 +50,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const time = interaction.options.getString("time")!;
   const reason = interaction.options.getString("reason");
-  let title = `Set a slowdown of ${channelOption ?? `${channel.name}`} to ${ms(ms(time), {
-    long: true,
-  })}.`;
-  if (!ms(time)) title = `Removed the slowdown from ${channelOption ?? `${channel.name}`}.`;
+  let title = `Set the slowdown to ${ms(ms(time), { long: true })}.`;
+  if (!ms(time)) title = `Removed the slowdown.`;
 
   if (
     !(
@@ -71,17 +69,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   await Promise.all([
     channel.setRateLimitPerUser(ms(time) / 1000, interaction.options.getString("reason")!),
-    modActionEmbed(
+    modEmbed(
       {
-        title,
-        body: [
-          `**Moderator**: ${interaction.user.username}`,
-          reason ? `**Reason**: ${reason}` : "*No reason provided*",
-          `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
-        ],
+        interaction,
+        channel: channel.id,
+        customText: { logTitle: title },
       },
-      guild,
-      interaction,
+      reason,
     ),
   ]);
 }

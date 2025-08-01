@@ -1,12 +1,13 @@
-import { addModeration, editModeration, getModeration, type modType } from "database/moderation";
+import { addModeration, editModeration, getModeration, type ModType } from "database/moderation";
+import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
-  type GuildBasedChannel,
   type PermissionResolvable,
   type User,
 } from "discord.js";
 import ms from "ms";
+import { mention } from "utils/mention";
 import { safeReply } from "utils/safeReply";
 import { genColor } from "../colorGen";
 import { dotCheck } from "../dotCheck";
@@ -16,13 +17,17 @@ import { errorEmbed } from "./errorEmbed";
 type Options = {
   interaction: ChatInputCommandInteraction;
   action?: string;
-  channel?: GuildBasedChannel;
+  channel?: string;
   user?: User;
   duration?: string | null;
   dm?: boolean;
-  dbAction?: modType;
+  dbAction?: ModType;
   expiresAt?: number;
   previousID?: number;
+  customText?: {
+    logTitle: string;
+    dmTitle?: string;
+  };
 };
 
 type ErrorOptions = {
@@ -59,7 +64,7 @@ export async function errorCheck(
       });
 
   if (channelError)
-    if (!channel?.permissionsFor(client).has("ViewChannel"))
+    if (!guild.channels.cache.get(channel!)?.permissionsFor(client).has("ViewChannel"))
       return await errorEmbed({
         interaction,
         title: "The bot can't execute this command.",
@@ -115,7 +120,7 @@ export async function errorCheck(
 
   const same: boolean = highestModPos == highestTargetPos;
 
-  if (highestModPos <= highestTargetPos && member.id !== guild.ownerId)
+  if (highestModPos <= highestTargetPos && member.id != guild.ownerId)
     return await errorEmbed({
       interaction,
       title: `You can't ${action.toLowerCase()} ${name}.`,
@@ -133,26 +138,42 @@ export async function errorCheck(
 }
 
 export async function modEmbed(
-  options: Options & { silent: boolean },
+  options: Options & { silent?: boolean },
   reason?: string | null,
   showModerator: boolean = false,
 ) {
-  const { interaction, user, action, duration, dm, dbAction, expiresAt, previousID, silent } =
-    options;
-  if (!user || !action) return;
+  const {
+    interaction,
+    user,
+    channel,
+    action,
+    duration,
+    dm,
+    dbAction,
+    expiresAt,
+    previousID,
+    customText,
+  } = options;
+  let { silent } = options;
+
   const guild = interaction.guild!;
-  const name = user.displayName;
+  if (!silent) silent = (await getSetting(guild.id, "moderation", "silent")) as boolean;
+
+  const name = user?.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
-  const avatar = user.displayAvatarURL();
-  let author = `${dotCheck({ string: avatar, doubleSpace: true })}${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
+  const serverAvatar = guild.icon ? guild.iconURL()! : undefined;
+  const avatar = user ? user.displayAvatarURL() : serverAvatar;
+  let author = `${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
   if (reason) generalValues.push(`**Reason**: ${reason}`);
   else generalValues.push("*No reason provided*");
 
   if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
+  if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
+
   if (previousID) {
-    const previousCase = getModeration(guild.id, user.id, `${previousID}`);
+    const previousCase = getModeration(guild.id, user!.id, `${previousID}`);
     if (
-      (!previousCase.length && previousCase[0].user != user.id) ||
+      (!previousCase.length && previousCase[0].user != user!.id) ||
       previousCase[0].type != dbAction
     )
       return await errorEmbed({
@@ -167,34 +188,40 @@ export async function modEmbed(
       return await errorEmbed({ interaction, error, log: true, forward: true });
     }
     author = author.concat(`  •  #${previousID}`);
-  } else if (!dbAction) return;
+  }
 
-  try {
-    const moderator = guild.members.cache.get(interaction.user.id);
-    if (!moderator)
-      return await errorEmbed({
-        interaction,
-        title: `Failed to ${action.toLowerCase()}.`,
-        reason: "Cannot find moderator.",
-      });
+  if (dbAction) {
+    if (!action) return;
+    try {
+      const moderator = guild.members.cache.get(interaction.user.id);
+      if (!moderator)
+        return await errorEmbed({
+          interaction,
+          title: `Failed to ${action.toLowerCase()}.`,
+          reason: "Cannot find moderator.",
+        });
 
-    const id = addModeration(
-      guild.id,
-      user.id,
-      dbAction,
-      moderator.id,
-      reason ?? undefined,
-      expiresAt ?? undefined,
-    );
-    author = author.concat(`  •  #${id}`);
-  } catch (error) {
-    return await errorEmbed({ interaction, error, log: true, forward: true });
+      const id = addModeration(
+        guild.id,
+        user!.id,
+        dbAction,
+        moderator.id,
+        reason ?? undefined,
+        expiresAt ?? undefined,
+      );
+      author = author.concat(`  •  #${id}`);
+    } catch (error) {
+      return await errorEmbed({ interaction, error, log: true, forward: true });
+    }
   }
 
   const embed = new EmbedBuilder()
-    .setAuthor({ name: author, iconURL: avatar })
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${customText?.logTitle ?? author}`,
+      iconURL: avatar,
+    })
     .setDescription(generalValues.join("\n"))
-    .setFooter({ text: `User ID: ${user.id}` })
+    .setFooter({ text: user ? `User ID: ${user.id}` : `Channel ID: ${channel}` })
     .setColor(genColor(100));
 
   async function replier() {
@@ -203,25 +230,22 @@ export async function modEmbed(
     else await safeReply({ interaction, replyOptions: { embeds: [embed] } });
   }
 
-  await Promise.all([logChannel(guild, { embeds: [embed] }), replier()]);
-
-  if (!dm) return;
-  const dmChannel = await user.createDM().catch(() => null);
-  if (!dmChannel || !guild.members.cache.get(user.id) || user.bot) return;
-  try {
-    const serverAvatar = guild.icon ? guild.iconURL()! : undefined;
-    await dmChannel.send({
-      embeds: [
-        embed
-          .setAuthor({
-            name: `${dotCheck({ string: serverAvatar, doubleSpace: true })}You got ${action.toLowerCase()} from ${guild.name}`,
-            iconURL: serverAvatar,
-          })
-          .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
-          .setColor(genColor(0)),
-      ],
-    });
-  } catch (error) {
-    return await errorEmbed({ interaction, error, log: true, forward: true });
-  }
+  await Promise.all([
+    logChannel(guild, { embeds: [embed] }, dm, {
+      silent,
+      user: user!,
+      options: {
+        embeds: [
+          new EmbedBuilder()
+            .setAuthor({
+              name: `${dotCheck({ string: serverAvatar, doubleSpace: true })}${customText?.dmTitle ?? `You got ${action?.toLowerCase()} from ${guild.name}`}`,
+              iconURL: serverAvatar,
+            })
+            .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
+            .setColor(genColor(0)),
+        ],
+      },
+    }),
+    replier(),
+  ]);
 }

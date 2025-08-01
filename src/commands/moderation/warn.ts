@@ -25,6 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const reason = interaction.options.getString("reason");
   const showModerator = interaction.options.getBoolean("show_moderator") ?? false;
   const guild = interaction.guild!;
+
   if (
     await errorCheck(
       "ModerateMembers",

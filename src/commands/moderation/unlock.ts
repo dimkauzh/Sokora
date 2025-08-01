@@ -4,13 +4,14 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { modActionEmbed } from "embeds/modActionEmbed";
-import { errorCheck } from "embeds/modEmbed";
-import { mention } from "utils/mention";
+import { errorCheck, modEmbed } from "embeds/modEmbed";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("unlock")
   .setDescription("Unlocks a channel.")
+  .addStringOption(string =>
+    string.setName("reason").setDescription("The reason for unlocking the chanel."),
+  )
   .addChannelOption(channel =>
     channel
       .setName("channel")
@@ -27,11 +28,14 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const channelOption = interaction.options.getChannel("channel")!;
-  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
+  const reason = interaction.options.getString("reason");
+  let channel = guild.channels.cache.get(interaction.channel!.id)!;
+  if (channelOption) channel = guild.channels.cache.get(channelOption.id)!;
+
   if (
     await errorCheck(
       "ManageRoles",
-      { interaction, channel },
+      { interaction, channel: channel.id },
       { allErrors: false, botError: true, channelError: true },
       "Manage Roles",
     )
@@ -67,16 +71,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         CreatePublicThreads: null,
         CreatePrivateThreads: null,
       }),
-      modActionEmbed(
+      modEmbed(
         {
-          title: "Unlocked a channel.",
-          body: [
-            `**Moderator**: ${interaction.user.username}`,
-            `**Channel**: ${channelOption ?? mention(channel.id, "CHANNEL")}`,
-          ],
+          interaction,
+          channel: channel.id,
+          customText: { logTitle: `Locked a channel` },
         },
-        guild,
-        interaction,
+        reason,
       ),
     ]);
   } catch (error) {

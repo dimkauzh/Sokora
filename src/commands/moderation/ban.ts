@@ -24,6 +24,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const duration = interaction.options.getString("duration");
   const reason = interaction.options.getString("reason");
+
   if (
     await errorCheck(
       "BanMembers",

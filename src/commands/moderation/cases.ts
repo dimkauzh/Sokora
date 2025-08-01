@@ -2,8 +2,8 @@ import {
   getModeration,
   listGuildModeration,
   listUserModeration,
-  ModerationCase,
-  modType,
+  type ModerationCase,
+  type ModType,
 } from "database/moderation";
 import { TypeOfDefinition } from "database/types";
 import {
@@ -17,25 +17,23 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
+import ms from "ms";
+import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 
-const MAX_PER_PAGE = 5;
-
 async function generateEmbed(params: {
-  providedCases: TypeOfDefinition<ModerationCase>[];
+  cases: TypeOfDefinition<ModerationCase>[];
   page: number;
-  type: modType | null;
-  guildId: string;
+  type: ModType | null;
+  guildID: string;
   totalPages: number;
-  avatar: string | undefined;
   user: User | null;
 }) {
-  const { type, page, providedCases, totalPages, guildId, avatar, user } = params;
-
-  const actionsEmojis: { [key in modType]: string } = {
+  const { cases, page, type, guildID, totalPages, user } = params;
+  const actionsEmojis: { [key in ModType]: string } = {
     WARN: "⚠️",
     MUTE: "🔇",
     KICK: "📤",
@@ -44,72 +42,55 @@ async function generateEmbed(params: {
     UNMUTE: "🔊",
   };
 
-  const start = (page - 1) * MAX_PER_PAGE;
-  const end = start + MAX_PER_PAGE;
-  const displayedCases = providedCases
-    .sort((a, b) => Number(b.id) - Number(a.id))
-    .slice(start, end);
+  const nothingMsg = [
+    "Nothing to see here...",
+    "Ayay, no cases on this horizon cap'n!",
+    "Clean as a whistle!",
+    "0 + 0 = ?",
+  ];
 
-  const guildEmbed = new EmbedBuilder()
-    .setAuthor({ name: `All ${type ? type.toLowerCase() : "moderation"} cases server-wide` })
-    .setFields(
-      displayedCases.map(c => {
-        return {
-          name: `**Case ${c.id} • ${capitalize(c.type.toLowerCase())}**`,
-          value: [
-            `**User**: <@${c.user}>`,
-            `**Moderator**: <@${c.moderator}>`,
-            c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
-            `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
-          ]
-            .filter(Boolean)
-            .join("\n"),
-        };
-      }),
-    )
-    .setColor(genColor(0))
-    .setFooter({ text: `Page ${page}/${totalPages} • Server ID: ${guildId}` });
+  const start = (page - 1) * 5;
+  const end = start + 5;
+  const displayedCases = cases.sort((a, b) => Number(b.id) - Number(a.id)).slice(start, end);
+  const avatar = user ? user.avatarURL() : client.guilds.cache.get(guildID)?.iconURL();
+  let fields = displayedCases.map(c => {
+    const val = [
+      `**Moderator**: <@${c.moderator}>`,
+      c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
+      `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
+    ];
 
-  if (!user) return guildEmbed;
+    if (!user) val.unshift(`**User**: <@${c.user}>`);
+    if (c.expiresAt)
+      val.push(`**Duration**: ${ms(ms(Number(c.expiresAt).toString()), { long: true })}`);
 
-  const userEmbed = new EmbedBuilder()
+    return {
+      name: `${actionsEmojis[c.type as ModType]} • ${capitalize(c.type.toLowerCase())} #${c.id}`,
+      value: val.join("\n"),
+    };
+  });
+
+  if (cases.length == 0)
+    fields = [
+      {
+        name: `💨 • ${randomize(nothingMsg)}`,
+        value: type
+          ? `*No ${type.toLowerCase()} were made in the entire server!*`
+          : "*No actions were taken in the entire server. How clean!*",
+      },
+    ];
+
+  return new EmbedBuilder()
     .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
-      iconURL: avatar,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} ${user ? user.username : "server-wide"}`,
+      iconURL: avatar!,
     })
-    .setFields(
-      displayedCases.map(action => {
-        const actionValues = [
-          `**Moderator**: <@${action.moderator}>`,
-          action.reason ? `**Reason**: ${action.reason}` : "*No reason provided*",
-          `**Time of action**: <t:${Math.floor(Number(action.timestamp) / 1000)}:d>`,
-        ];
-
-        return {
-          name: `${actionsEmojis[action.type as modType]} • ${capitalize(action.type.toLowerCase())} #${action.id}`, // Include durations ? needs to add a db column
-          value: actionValues.join("\n"),
-        };
-      }),
-    )
-    .setColor(genColor(200))
+    .setFields(fields)
     .setFooter({
-      text: `Page ${page}/${totalPages} • User ID: ${user.id} • Server ID: ${guildId}`,
-    });
-
-  return userEmbed;
+      text: `${totalPages > 1 ? `Page ${page}/${totalPages}` : ""}${user ? `\nUser ID: ${user.id} • Server ID: ${guildID}` : `${totalPages > 1 ? " • " : ""}`}Server ID: ${guildID}`,
+    })
+    .setColor(genColor(200));
 }
-
-const generateRow = () =>
-  new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId("left")
-      .setEmoji("1298708251256291379")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("right")
-      .setEmoji("1298708281493160029")
-      .setStyle(ButtonStyle.Primary),
-  );
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
@@ -147,22 +128,11 @@ export const data = new SlashCommandSubcommandBuilder()
           name: "Unmutes",
           value: "UNMUTE",
         },
-        {
-          name: "Notes",
-          value: "NOTE",
-        },
       ),
   )
   .addNumberOption(option => option.setName("page").setDescription("Page number to display."));
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const nothingMsg = [
-    "Nothing to see here...",
-    "Ayay, no cases on this horizon cap'n!",
-    "Clean as a whistle!",
-    "0 + 0 = ?",
-  ];
-
   const guild = interaction.guild!;
   if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ModerateMembers"))
     return await errorEmbed({
@@ -171,9 +141,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Moderate Members** permission.",
     });
 
+  const guildID = guild.id;
   const user = interaction.options.getUser("user");
+  const type = interaction.options.getString("type") as ModType;
   let actionID = interaction.options.getString("id");
-  const type = interaction.options.getString("type");
   if (actionID && actionID?.startsWith("#")) actionID = actionID.slice(1);
   if (actionID && !user)
     return await errorEmbed({
@@ -182,141 +153,35 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: `Sokora cannot look for "case ${actionID} of *no user*". Please, specify a user.`,
     });
 
-  if (!user) {
-    const cases = type
-      ? listGuildModeration(guild.id, type as modType)
-      : listGuildModeration(guild.id);
-    if (cases.length == 0) {
-      await interaction.reply({
-        embeds: [
-          new EmbedBuilder()
-            .setAuthor({ name: "All moderation cases server-wide" })
-            .setColor(genColor(120))
-            .setFields([
-              {
-                name: `💨 • ${randomize(nothingMsg)}`,
-                value: type
-                  ? `*No ${type.toLowerCase()} were made in the entire server!*`
-                  : "*No actions were taken in the entire server. How clean!*",
-              },
-            ])
-            .setFooter({ text: `Server ID: ${guild.id}` }),
-        ],
-      });
-      return;
-    }
+  let cases;
+  if (user)
+    cases = actionID
+      ? getModeration(guildID, user.id, actionID)
+      : type
+        ? listUserModeration(guildID, user.id, type as ModType)
+        : listUserModeration(guildID, user.id);
 
-    const totalPages = Math.ceil(cases.length / MAX_PER_PAGE);
-    let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
-
-    const row = generateRow();
-
-    const reply = await interaction.reply({
-      embeds: [
-        await generateEmbed({
-          providedCases: cases,
-          page,
-          totalPages,
-          guildId: guild.id,
-          type: type as modType | null,
-          user,
-          avatar: undefined,
-        }),
-      ],
-      components: totalPages > 1 ? [row] : [],
-    });
-    if (totalPages <= 1) return;
-    const collector = reply.createMessageComponentCollector({ time: 30000 });
-
-    collector.on("collect", async (i: ButtonInteraction) => {
-      if (i.message.id != (await reply.fetch()).id)
-        return await errorEmbed({
-          interaction: i,
-          title:
-            "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-        });
-
-      if (i.user.id != interaction.user.id)
-        return await errorEmbed({
-          interaction: i,
-          title: "You are not the person who executed this command.",
-        });
-
-      collector.resetTimer({ time: 30000 });
-      if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;
-      else page = page < totalPages ? page + 1 : 1;
-
-      await i.update({
-        embeds: [
-          await generateEmbed({
-            providedCases: cases,
-            page,
-            totalPages,
-            guildId: guild.id,
-            type: type as modType | null,
-            user,
-            avatar: undefined,
-          }),
-        ],
-        components: [row],
-      });
-    });
-
-    return;
-  }
-  const actions = actionID
-    ? getModeration(guild.id, user!.id, actionID)
-    : type
-      ? listUserModeration(guild.id, user!.id, type as modType)
-      : listUserModeration(guild.id, user!.id);
-
-  const avatar = user.displayAvatarURL();
-
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}${type ? `${capitalize(type.toLowerCase())} cases` : "Cases"} of ${user.username}`,
-      iconURL: avatar,
-    })
-
-    .setColor(genColor(200));
-  if (actions.length == 0) {
-    embed
-      .setFields([
-        {
-          name: `💨 • ${randomize(nothingMsg)}`,
-          value: "*No actions have been taken on this user*",
-        },
-      ])
-      .setFooter({
-        text: `User ID: ${user.id} • Server ID: ${guild.id}`,
-      });
-
-    await interaction.reply({ embeds: [embed] });
-    return;
-  }
-
-  const totalPages = Math.ceil(actions.length / MAX_PER_PAGE);
+  cases = type ? listGuildModeration(guildID, type as ModType) : listGuildModeration(guildID);
+  const totalPages = Math.ceil(cases.length / 5);
   let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
-
-  const row = generateRow();
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId("left")
+      .setEmoji("1298708251256291379")
+      .setStyle(ButtonStyle.Primary),
+    new ButtonBuilder()
+      .setCustomId("right")
+      .setEmoji("1298708281493160029")
+      .setStyle(ButtonStyle.Primary),
+  );
 
   const reply = await interaction.reply({
-    embeds: [
-      await generateEmbed({
-        providedCases: actions,
-        page,
-        totalPages,
-        guildId: guild.id,
-        type: type as modType | null,
-        user,
-        avatar,
-      }),
-    ],
+    embeds: [await generateEmbed({ cases, page, totalPages, guildID, type, user })],
     components: totalPages > 1 ? [row] : [],
   });
+
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
-
   collector.on("collect", async (i: ButtonInteraction) => {
     if (i.message.id != (await reply.fetch()).id)
       return await errorEmbed({
@@ -336,17 +201,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     else page = page < totalPages ? page + 1 : 1;
 
     await i.update({
-      embeds: [
-        await generateEmbed({
-          providedCases: actions,
-          page,
-          totalPages,
-          guildId: guild.id,
-          type: type as modType | null,
-          user,
-          avatar,
-        }),
-      ],
+      embeds: [await generateEmbed({ cases, page, totalPages, guildID, type, user })],
       components: [row],
     });
   });

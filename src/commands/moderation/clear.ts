@@ -40,10 +40,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const channelOption = interaction.options.getChannel("channel")!;
   const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
+
   if (
     await errorCheck(
       "ManageMessages",
-      { interaction, channel },
+      { interaction, channel: channel.id },
       { allErrors: false, botError: true, channelError: true },
       "Manage Messages",
     )
