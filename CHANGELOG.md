@@ -1,4 +1,4 @@
-<!-- markdownlint-disable md024 -->
+<!-- markdownlint-disable md024 md007 -->
 <!-- preserve old changelogs here -->
 
 # Sokora Changelog
@@ -7,65 +7,74 @@
 
 ### Added
 
-#### New commands
-
-- Added `/games rps` to play Rock, Paper, Scissors.
-- Added `/math graph` to graphically represent a function.
-- Added `/help variables` to show help with _Dynamic (variables)_.
-- Added `/ping` to view bot ping and latency.
-- Added `/embed` to create custom embeds.
-
-#### Moderation
-
-- Added the ability to `/moderation clear` messages for a single user.
-- Added reason field to `/moderation unmute`.
-
-#### Changelog
-
-- Added older versions to the `/changelog` command.
-
-#### About
-
-- Added unique member count to `/about`.
-
-#### Serverboard
-
-- Added the ability for server owners to display an invite link to their servers from the serverboard.
-
-#### Starboard
-
-- Added a starboard. It can be configured from `/settings starboard`.
-
-#### Dynamic (variables)
-
-- Gave a proper name to replaceable variables (`Dynamic (variables)`), and added more options:
-- - `(serverowner)` - Server owner's name
-- - `(currentdate)` - Current date in the 'July 10, 2025' format
-- - `(currentdate, simple)` - Current date in the '7/10/25' format
-- - `(currentdate, detailed)` - Current date in the 'July 10, 2025, at 1:11 PM' format
-
-#### Easter eggs
-
-- Added two new easter eggs.
+- New commands.
+    - Added a new `/games` category.
+        - Added `/games rps` to play Rock, Paper, Scissors.
+        - Added `/games coin` to flip a coin.
+        - Added `/games ascii` to convert text to ASCII art.
+    - Added a new `/math` category.
+        - Added `/math graph` to graphically represent a function.
+        - Added `/math calc` to execute a mathematical expression.
+    - Added `/help variables` to show help with _Dynamic (variables)_.
+    - Added `/ping` to view bot ping and latency.
+    - Added `/embed` to create custom embeds.
+- Dynamic (variables)
+    - Gave a proper name to replaceable variables (`Dynamic (variables)`), and added more options:
+    - - `(serverowner)` - Server owner's name
+    - - `(currentdate)` - Current date in the 'July 10, 2025' format
+    - - `(currentdate, simple)` - Current date in the '7/10/25' format
+    - - `(currentdate, detailed)` - Current date in the 'July 10, 2025, at 1:11 PM' format
+- User settings
+    - Added user settings as a feature.
+        - Added TopGG reminders setting.
+- Moderation
+    - Added the ability to clear messages for a single user.
+    - Added reason field to `/moderation unmute`.
+    - Added the ability to silently perform moderation actions.
+    - Added the ability to view all cases of a server, and to filter by case type.
+- Other additions
+    - Added a starboard. It can be configured from `/settings starboard`.
+    - Added unique member count to `/about`.
+    - Added the ability for server owners to display an invite link to their servers from the serverboard.
+- Easter eggs
+    - Added two new easter eggs.
+- Settings
+    - Enable/disable specific easter eggs.
+    - Enable easter eggs in specific channels only.
+    - Give roles to users when they join.
+    - Now you can set different channels for join and leave messages.
+    - Whether to show an invite to your server or not in serverboard.
+        - What channel the invite should point to.
+    - Whether all moderation actions should be silent or not.
+    - What kind of moderation events should be logged.
+    - Settings for new starboard feature.
+        - Channel to send starred messages to, emoji to be reacted, and reaction threshold.
 
 ### Changed
 
-#### Settings
-
-- Now settings display more readable embeds, by replacing `_` with whitespace, `true` / `false` with `Enabled` / `Disabled`, and formatting Dynamic (variables) into `code snippets`.
+- Settings were rebuilt into completely new settings panes that allow to change settings from the own embed, without using commands.
 
 ### Fixed
 
-#### News
+- News
+    - Fixed not being able to delete the first new you create.
+- Moderation
+    - Fixed the bot crashing because of too large messages being deleted.
+    - Fixed a `Jump to message` option being shown on deleted messages (you cannot jump to a deleted message).
+    - Fixed the bot showing "Application didn't respond" when unmuting someone muted by another bot.
+    - Fixed the bot unable to send a moderation log when a deleted / edited message is too large. It will instead upload two text files containing old and new messages.
+- _Many other fixes were made, not all of them are tracked._
 
-- Fixed not being able to delete the first new you create.
+### Removed
 
-#### Moderation
+- Moderation
+    - Removed the ability to add notes on users.
+- Settings
+    - Commands to change settings. Use the new embeds to change settings from there.
+- Changelog
+    - Changelog itself won't be shown in embeds anymore (it's too long). `/changelog` will show a link to this file.
 
-- Fixed the bot crashing because of too large messages being deleted.
-- Fixed a `Jump to message` option being shown on deleted messages (you cannot jump to a deleted message).
-- Fixed the bot showing "Application didn't respond" when unmuting someone muted by another bot.
-- Fixed the bot unable to send a moderation log when a deleted / edited message is too large. It will instead upload two text files containing old and new messages.
+---
 
 ## 0.2.0
 
