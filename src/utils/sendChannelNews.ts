@@ -40,7 +40,7 @@ export async function sendChannelNews(
     .setTitle(title ?? news.title)
     .setDescription(body ?? news.body)
     .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)
-    .setFooter({ text: `Latest news from ${guild.name}\nID: ${news.id}` })
+    .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
     .setColor(genColor(200));
 
   const channel = guild.channels.cache.get(

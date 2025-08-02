@@ -17,7 +17,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       name: `${dotCheck({ string: avatar, doubleSpace: true })}Coin flip`,
       iconURL: avatar,
     })
-    .setDescription(Math.random() >= 0.5 ? "Tails!" : "Heads!")
+    .setDescription(
+      Math.random() >= 0.5 ? "The coin landed on **tails**!" : "The coin landed on **heads**!",
+    )
     .setColor(genColor(120));
 
   await interaction.reply({ embeds: [embed] });

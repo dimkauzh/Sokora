@@ -87,7 +87,7 @@ async function generateEmbed(params: {
     })
     .setFields(fields)
     .setFooter({
-      text: `${totalPages > 1 ? `Page ${page}/${totalPages}` : ""}${user ? `\nUser ID: ${user.id} • Server ID: ${guildID}` : `${totalPages > 1 ? " • " : ""}`}Server ID: ${guildID}`,
+      text: `${totalPages > 1 ? `Page ${page} of ${totalPages}` : ""}${user ? `\nUser ID: ${user.id} • Server ID: ${guildID}` : `${totalPages > 1 ? " • " : ""}`}Server ID: ${guildID}`,
     })
     .setColor(genColor(200));
 }

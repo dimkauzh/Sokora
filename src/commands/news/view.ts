@@ -53,7 +53,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(currentNews.body)
       .setImage(currentNews.imageURL || null)
       .setTimestamp(parseInt(currentNews.updatedAt))
-      .setFooter({ text: `Page ${page} of ${sortedNews.length} • ID: ${currentNews.id}` })
+      .setFooter({
+        text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
+      })
       .setColor(genColor(200));
   }
 
@@ -70,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const reply = await interaction.reply({
     embeds: [getEmbed()],
-    components: page >= 1 ? [row] : [],
+    components: sortedNews.length > 1 ? [row] : [],
   });
 
   if (page < 1) return;

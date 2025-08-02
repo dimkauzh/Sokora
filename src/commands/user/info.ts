@@ -98,11 +98,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   if (!enabled && user.bot) return;
   const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
-  const [level, xp] = getLevel(guild.id, target.id)!;
+  const [level, xp] = getLevel(guild.id, target.id);
   const nextLevelXp = Math.floor(
     100 * difficulty * (level + 1) ** 2 - 80 * difficulty * level ** 2,
   )?.toLocaleString("en-US");
-  const levelAvatar = target.displayAvatarURL();
 
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
@@ -125,13 +124,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     const levelEmbed = new EmbedBuilder()
       .setAuthor({
-        name: `${dotCheck({ string: levelAvatar, doubleSpace: true })}${target.nickname ?? user.displayName}`,
-        iconURL: levelAvatar,
+        name: `${dotCheck({ string: avatar, doubleSpace: true })}${target?.nickname ?? user.displayName}`,
+        iconURL: avatar,
       })
       .setFields({
         name: `⚡ • Level ${level}`,
         value: [
-          `**${xp.toLocaleString("en-US")}/${nextLevelXp}** XP`,
+          xp && xp > 0
+            ? `**${xp.toLocaleString("en-US")}/${nextLevelXp}** XP`
+            : `**No XP** out of **${nextLevelXp}** XP!`,
           `The next level is **${level + 1}**`,
         ].join("\n"),
       })

@@ -102,7 +102,9 @@ export async function serverEmbed(options: Options) {
         value: statValues.join("\n"),
       },
     )
-    .setFooter({ text: `${pages ? `Page ${page}/${pages} • ` : ""}Server ID: ${guild.id}` })
+    .setFooter({
+      text: `${pages && pages > 1 ? `Page ${page} of ${pages} • ` : ""}Server ID: ${guild.id}`,
+    })
     .setColor((await genImageColor(icon)) ?? genColor(200));
 
   if (options.invite?.show) {

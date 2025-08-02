@@ -43,7 +43,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setAuthor({ name: "Leaderboard" })
       .setColor(genColor(200))
-      .setFooter({ text: `Page ${page}/${totalPages}` });
+      .setFooter({ text: `Page ${page} of ${totalPages}` });
 
     for (let i = 0; i < pageData.length; i++) {
       const userData = pageData[i];
