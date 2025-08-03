@@ -1,1 +1,2 @@
-export const deletedMsgs: Set<{ date: number; content: string }> = new Set();
+export const deletedMsgs: Set<{ id: string; execId: string; date: number; content: string }> =
+  new Set();

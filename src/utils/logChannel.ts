@@ -2,6 +2,7 @@ import { getSetting } from "database/settings";
 import {
   ChannelType,
   DMChannel,
+  InteractionResponse,
   Message,
   MessageEditOptions,
   type Channel,
@@ -35,7 +36,7 @@ export async function logChannel(
     options: string | MessagePayload | MessageCreateOptions;
   },
   editMessage?: Message,
-) {
+): Promise<void | Message | InteractionResponse> {
   let channel: TextChannel | DMChannel;
   const logChannel = await getSetting(guild.id, "moderation", "channel");
 
@@ -58,7 +59,7 @@ export async function logChannel(
 
     if (!channel) return;
     if (!channel.permissionsFor(guild.client.user)?.has("ViewChannel")) return;
-    await channel.send(options);
+    return await channel.send(options);
   }
 
   if (dm) {
@@ -68,7 +69,7 @@ export async function logChannel(
     channel = (await dmOptions.user.createDM().catch(() => null)) as DMChannel;
     if (!channel || !guild.members.cache.get(dmOptions.user.id) || dmOptions.user.bot) return;
     try {
-      await channel.send(dmOptions.options);
+      return await channel.send(dmOptions.options);
     } catch (error) {
       return await errorEmbed({ client: guild.client, error });
     }
@@ -76,7 +77,7 @@ export async function logChannel(
 
   if (editMessage) {
     try {
-      await editMessage.edit(options as string | MessagePayload | MessageEditOptions);
+      return await editMessage.edit(options as string | MessagePayload | MessageEditOptions);
     } catch (error) {
       return await errorEmbed({ client: guild.client, error });
     }
