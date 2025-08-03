@@ -122,7 +122,7 @@ export async function loadAuditEvents(client: Client) {
         };
 
         auditEvents.push(auditEvent);
-        auditEventNames.push(auditEventName);
+        if (auditEventName != "messageBulkDelete") auditEventNames.push(auditEventName);
       } catch (error) {
         return await errorEmbed({
           client,

@@ -2,6 +2,8 @@ import { getSetting } from "database/settings";
 import {
   ChannelType,
   DMChannel,
+  Message,
+  MessageEditOptions,
   type Channel,
   type Guild,
   type MessageCreateOptions,
@@ -32,14 +34,14 @@ export async function logChannel(
     user: User;
     options: string | MessagePayload | MessageCreateOptions;
   },
+  editMessage?: Message,
 ) {
   let channel: TextChannel | DMChannel;
   const logChannel = await getSetting(guild.id, "moderation", "channel");
 
-  if (!logChannel && !dm) return;
   if (logChannel) {
     channel = (await guild.channels.cache
-      .get(`${await getSetting(guild.id, "moderation", "channel")}`)
+      .get(`${logChannel}`)
       ?.fetch()
       .then((channel: Channel) => {
         if (
@@ -66,7 +68,15 @@ export async function logChannel(
     channel = (await dmOptions.user.createDM().catch(() => null)) as DMChannel;
     if (!channel || !guild.members.cache.get(dmOptions.user.id) || dmOptions.user.bot) return;
     try {
-      return await channel.send(dmOptions.options);
+      await channel.send(dmOptions.options);
+    } catch (error) {
+      return await errorEmbed({ client: guild.client, error });
+    }
+  }
+
+  if (editMessage) {
+    try {
+      await editMessage.edit(options as string | MessagePayload | MessageEditOptions);
     } catch (error) {
       return await errorEmbed({ client: guild.client, error });
     }

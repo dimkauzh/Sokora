@@ -12,7 +12,6 @@ import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
 import type { Event } from "utils/types";
 
-// todo: make links work
 const MESSAGE_LENGTH_CAP = 1024;
 export default (async function run(oldMessage, newMessage) {
   if (oldMessage.partial) return;

@@ -1,14 +1,15 @@
 import { date, executor } from "audit/messageDelete";
 import { getSetting } from "database/settings";
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Message } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { genColor } from "utils/colorGen";
+import { deletedMsgs } from "utils/constants";
 import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
+import { newline } from "utils/newline";
 import type { Event } from "utils/types";
 
-// todo: make links work
 export default (async function run(message) {
   try {
     if (message.partial) return;
@@ -33,9 +34,22 @@ export default (async function run(message) {
       return;
 
     const avatar = author.displayAvatarURL();
+    const msgContent = message.content;
+    const msgArray = deletedMsgs.values().toArray();
+    const msgDates = msgArray.map(msg => msg.date);
+    const msgCount = deletedMsgs.size;
+
+    deletedMsgs.add({
+      date: Date.now(),
+      content: newline(msgContent, 150, `-------- • ${new Date()}\n`),
+    });
+
+    if (msgDates[msgCount - 1] - msgDates[0] >= 300000) deletedMsgs.clear();
+
+    console.log(deletedMsgs);
     const regex =
       /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/;
-    const match = message.content ? message.content.match(regex) : null;
+    const match = msgContent ? msgContent.match(regex) : null;
     const url = match ? match[0] : null;
     let thumbnail = null;
     let image = null;
@@ -92,7 +106,11 @@ export default (async function run(message) {
 
     const embed = new EmbedBuilder()
       .setDescription(
-        message.content && message.content.length > 0 ? message.content : "*Empty message*",
+        deletedMsgs.size > 1
+          ? "*The file below shows all deleted messages.*"
+          : msgContent && msgContent.length > 0
+            ? msgContent
+            : "*Empty message*",
       )
       .setThumbnail(thumbnail)
       .setImage(image)
@@ -100,28 +118,46 @@ export default (async function run(message) {
       .setFooter({ text: `User ID: ${author.id}` })
       .setColor(genColor(0));
 
-    const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setLabel("•  Jump to message")
-        .setURL(message.url)
-        .setEmoji("🔗")
-        .setStyle(ButtonStyle.Link),
-    );
-
     let timeout;
     setTimeout(() => {
       timeout = date - Date.now();
-      embed.setAuthor({
-        name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.username}'s message got deleted${(executor ? (executor.id != author.id ? ` by ${executor.username}` : "") : "") || ""}`,
-        iconURL: avatar,
-      });
+      const authorText = [
+        `${dotCheck({ string: avatar, doubleSpace: true })}`,
+        msgCount > 1
+          ? executor
+            ? `${executor.username} deleted ${msgCount} messages`
+            : `${author.username} deleted ${msgCount} messages`
+          : `${author.username}'s message got deleted`,
+        msgCount > 1
+          ? ""
+          : `${(executor ? (executor.id != author.id ? ` by ${executor.username}` : "") : "") || ""}`,
+      ];
+      embed.setAuthor({ name: authorText.join(""), iconURL: avatar });
     }, timeout || 200);
 
-    await logChannel(guild, {
-      embeds: [embed],
-      components: [row],
-      files: video ? [{ attachment: video, name: `tenor.mp4` }] : [],
-    });
+    const files: AttachmentBuilder[] = [];
+    if (msgCount > 1)
+      files.push(
+        new AttachmentBuilder(Buffer.from(msgArray.map(msg => msg.content).join("\n"), "utf-8"), {
+          name: "message.txt",
+        }),
+      );
+    else {
+      if (msgContent.length >= 1024)
+        files.push(new AttachmentBuilder(Buffer.from(msgContent, "utf8"), { name: "message.txt" }));
+
+      if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
+    }
+
+    const response = await logChannel(guild, { embeds: [embed], files: files });
+    if (msgCount > 1)
+      await logChannel(
+        guild,
+        { embeds: [embed], files: files },
+        undefined,
+        undefined,
+        response as Message,
+      );
   } catch (error) {
     return await errorEmbed({ client, error, log: true, forward: true });
   }
