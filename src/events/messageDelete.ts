@@ -10,10 +10,7 @@ import { logChannel } from "utils/logChannel";
 import { newline } from "utils/newline";
 import type { Event } from "utils/types";
 
-// guild.id -> last message
-// made it like this so it doesn't overlap if the same event fires up in two guilds at the same time
 const delMsgs = new Map<string, Message | undefined>();
-
 export default (async function run(message) {
   try {
     if (message.partial) return;
@@ -37,41 +34,45 @@ export default (async function run(message) {
     if (!(await getSetting(guild.id, "moderation", "events"))?.toString().includes("messageDelete"))
       return;
 
-    const avatar = author.displayAvatarURL();
-    const msgContent = message.content;
-
     // discord API is unreliably slow
     // if we try to be faster than them, we break
     // this waits 1.5 sec (which SHOULD be enough for discord to do its stuff)
     await new Promise(resolve => setTimeout(resolve, 1500));
-
+    const avatar = executor ? executor.displayAvatarURL() : author.displayAvatarURL();
+    const msgContent = message.content;
+    const prevMsgDates = deletedMsgs
+      .values()
+      .toArray()
+      .map(msg => msg.date);
     const execId = executor?.id ?? "_";
 
     deletedMsgs.add({
-      id: message.author.id,
+      id: author.id,
       execId,
       date: Date.now(),
-      content: newline(msgContent, 150, `-------- • ${new Date().toUTCString()}\n`),
+      content: newline(
+        msgContent,
+        150,
+        `• ${execId != "_" ? `Mod: ${guild.members.cache.get(execId)?.user.username} • ` : ""}Author: ${author.username} • Date: ${new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", timeZoneName: "short", timeZone: "UTC" }).format(message.createdTimestamp)} •\n`,
+      ),
+      prevDate: prevMsgDates[prevMsgDates.length - 1],
     });
 
+    const msgCount = deletedMsgs.size;
     const msgArray = deletedMsgs.values().toArray();
     const msgDates = msgArray.map(msg => msg.date);
     const msgUsers = msgArray.map(msg => msg.id);
     const msgExecs = msgArray.map(msg => msg.execId);
-
-    console.log(msgExecs, msgUsers);
+    const msgPrevDates = msgArray.map(msg => msg.prevDate);
 
     function clear() {
-      console.log("Reset");
       deletedMsgs.clear();
       delMsgs.set(guild!.id, undefined);
     }
 
-    if (msgDates[deletedMsgs.size - 1] - msgDates[0] >= 300000) clear();
-    if (msgUsers.some(v => v != message.author.id)) clear();
-    if (msgExecs.some(v => v != execId)) clear();
-
-    const msgCount = deletedMsgs.size;
+    if (msgDates[msgCount - 1] - msgDates[0] >= 300000) clear();
+    if (msgUsers.some(v => v != author.id)) clear();
+    if (msgExecs.some(v => v != execId || v == author.id)) clear();
 
     const regex =
       /(http|https):\/\/([\w_-]+(?:(?:\.[\w_-]+)+))([\w.,@?^=%&:/~+#-]*[\w@?^=%&/~+#-])/;
@@ -131,6 +132,15 @@ export default (async function run(message) {
     // --
 
     const embed = new EmbedBuilder()
+      .setAuthor({
+        name: [
+          `${dotCheck({ string: avatar, doubleSpace: true })}`,
+          executor
+            ? `${executor.username} deleted ${msgCount > 1 ? `${msgCount} messages` : `a message from ${author.username}`}`
+            : `${author.username} deleted ${msgCount > 1 ? `${msgCount} messages` : "a message"}`,
+        ].join(""),
+        iconURL: avatar,
+      })
       .setDescription(
         deletedMsgs.size > 1
           ? "*The attached text file shows all deleted messages.*"
@@ -142,20 +152,9 @@ export default (async function run(message) {
       .setImage(image)
       .setTimestamp(new Date())
       .setFooter({
-        text: executor
-          ? `Author ID: ${author.id} • Executor ID: ${executor.id}`
-          : `User ID: ${author.id}`,
+        text: `Author ID: ${author.id}${executor ? ` • Executor ID: ${executor.id}` : ""}`,
       })
-      .setColor(genColor(0))
-      .setAuthor({
-        name: [
-          `${dotCheck({ string: avatar, doubleSpace: true })}`,
-          executor
-            ? `${executor.username} deleted ${msgCount > 1 ? `${msgCount} messages` : "a message"} from ${message.author.username}`
-            : `${author.username} deleted ${msgCount > 1 ? `${msgCount} messages` : "a message"}`,
-        ].join(""),
-        iconURL: avatar,
-      });
+      .setColor(genColor(0));
 
     const files: AttachmentBuilder[] = [];
     if (msgCount > 1)
@@ -182,17 +181,15 @@ export default (async function run(message) {
       if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
     }
 
-    console.log("Edit?", msgCount > 1);
+    // just send help please
+    if (Date.now() - msgPrevDates[msgPrevDates.length - 1] <= 3000) setTimeout(() => "", 3000);
     if (msgCount > 1) {
       const oldMsg = delMsgs.get(guild.id);
       if (oldMsg) await oldMsg.delete().catch(console.error);
-      const response = await logChannel(guild, { embeds: [embed], files });
-      delMsgs.set(guild.id, response as Message);
-    } else {
-      const response = await logChannel(guild, { embeds: [embed], files });
-      console.log((response as Message).id);
-      delMsgs.set(guild.id, response as Message);
     }
+
+    const response = await logChannel(guild, { embeds: [embed], files });
+    delMsgs.set(guild.id, response as Message);
   } catch (error) {
     return await errorEmbed({ client, error, log: true, forward: true });
   }
