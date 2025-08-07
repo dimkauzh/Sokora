@@ -18,10 +18,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(
       [
         "**Founder**: Goos",
-        "**Developers**: Dimkauzh, Froxcey, Golem64, Koslz, Nikkerudon",
+        "**Developers**: Froxcey, Golem64, Koslz, Nikkerudon, Zayaan AR",
         "**Designer lead**: ZakaHaceCosas",
-        "**Designers**: ArtyH, pibayar, Pjanda",
-        "**Translators**: Dimkauzh, flojo, Golem64, GraczNet, Nikkerudon, ZakaHaceCosas, SaFire, TrulyBlue",
+        "**Designers**: ArtyH, Pjanda",
+        "**Translators**: Dimkauzh, flojo, Golem64, GraczNet, Nikkerudon, SaFire, TrulyBlue, ZakaHaceCosas",
         "**Testers**: Blaze, fishy, Trynera",
       ].join("\n"),
     )

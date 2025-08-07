@@ -1,6 +1,6 @@
 import { executor } from "audit/messageDelete";
 import { getSetting } from "database/settings";
-import { AttachmentBuilder, EmbedBuilder, Message } from "discord.js";
+import { AttachmentBuilder, EmbedBuilder, Guild, Message } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { genColor } from "utils/colorGen";
@@ -9,6 +9,7 @@ import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
 import { newline } from "utils/newline";
 import type { Event } from "utils/types";
+import { wait } from "utils/wait";
 
 const delMsgs = new Map<string, Message | undefined>();
 export default (async function run(message) {
@@ -40,10 +41,6 @@ export default (async function run(message) {
     await new Promise(resolve => setTimeout(resolve, 1500));
     const avatar = executor ? executor.displayAvatarURL() : author.displayAvatarURL();
     const msgContent = message.content;
-    const prevMsgDates = deletedMsgs
-      .values()
-      .toArray()
-      .map(msg => msg.date);
     const execId = executor?.id ?? "_";
 
     deletedMsgs.add({
@@ -55,15 +52,14 @@ export default (async function run(message) {
         150,
         `• ${execId != "_" ? `Mod: ${guild.members.cache.get(execId)?.user.username} • ` : ""}Author: ${author.username} • Date: ${new Intl.DateTimeFormat("en-GB", { year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", timeZoneName: "short", timeZone: "UTC" }).format(message.createdTimestamp)} •\n`,
       ),
-      prevDate: prevMsgDates[prevMsgDates.length - 1],
     });
 
     const msgCount = deletedMsgs.size;
     const msgArray = deletedMsgs.values().toArray();
     const msgDates = msgArray.map(msg => msg.date);
+    const msgPrevDates = msgArray.map(msg => Date.now() - msg.date);
     const msgUsers = msgArray.map(msg => msg.id);
     const msgExecs = msgArray.map(msg => msg.execId);
-    const msgPrevDates = msgArray.map(msg => msg.prevDate);
 
     function clear() {
       deletedMsgs.clear();
@@ -159,37 +155,33 @@ export default (async function run(message) {
     const files: AttachmentBuilder[] = [];
     if (msgCount > 1)
       files.push(
-        new AttachmentBuilder(
-          Buffer.from(
-            deletedMsgs
-              .values()
-              .toArray()
-              .map(msg => msg.content)
-              .join("\n"),
-            "utf-8",
-          ),
-          {
-            name: "message.txt",
-          },
-        ),
+        new AttachmentBuilder(Buffer.from(msgArray.map(msg => msg.content).join("\n"), "utf-8"), {
+          name: "message.txt",
+        }),
       );
     else {
       if (msgContent.length >= 1024)
         files.push(new AttachmentBuilder(Buffer.from(msgContent, "utf8"), { name: "message.txt" }));
 
-      // shouldn't you fetch() the video and add a Buffer here?
       if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
     }
 
-    // just send help please
-    if (Date.now() - msgPrevDates[msgPrevDates.length - 1] <= 3000) setTimeout(() => "", 3000);
-    if (msgCount > 1) {
-      const oldMsg = delMsgs.get(guild.id);
-      if (oldMsg) await oldMsg.delete().catch(console.error);
+    async function respond(guild: Guild) {
+      const response = await logChannel(guild, { embeds: [embed], files });
+      delMsgs.set(guild.id, response as Message);
     }
 
-    const response = await logChannel(guild, { embeds: [embed], files });
-    delMsgs.set(guild.id, response as Message);
+    if (msgCount > 1) {
+      if (msgPrevDates[msgPrevDates.length - 1] <= 3000)
+        await wait(() => msgPrevDates[msgPrevDates.length - 1] <= 3000);
+      else {
+        const oldMsg = delMsgs.get(guild.id);
+        if (oldMsg) await oldMsg.delete().catch(console.error);
+        return await respond(guild);
+      }
+    }
+
+    await respond(guild);
   } catch (error) {
     return await errorEmbed({ client, error, log: true, forward: true });
   }
