@@ -25,12 +25,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     result = math.evaluate(expr);
     if (typeof result != "number" || Number.isNaN(result) || !Number.isFinite(result))
       throw new Error("Invalid result");
-  } catch {
+  } catch (error) {
     return await errorEmbed({
       interaction,
       title: "Invalid expression.",
-      reason:
-        "Please provide a valid mathematical expression. Examples: 'sin(pi/4)', '10*2+(6/3)', 'sqrt(25)'",
+      reason: String(error).includes("Invalid result")
+        ? `Preferably, provide expressions with a result a computer can manage (expr. \`${expr}\` gave a result above compute limit).`
+        : "Please provide a valid mathematical expression. Examples: 'sin(pi/4)', '10*2+(6/3)', 'sqrt(25)'",
     });
   }
 
