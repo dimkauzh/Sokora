@@ -45,13 +45,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
   try {
-    await Promise.all([
-      modEmbed(
-        { interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE", silent },
-        reason,
-      ),
-      target?.edit({ communicationDisabledUntil: null }),
-    ]);
+    await modEmbed(
+      { interaction, user, action: "Unmuted", dm: true, dbAction: "UNMUTE", silent },
+      reason,
+    );
+    await target?.edit({ communicationDisabledUntil: null });
   } catch (error) {
     await errorEmbed({ interaction, error, forward: true });
   }

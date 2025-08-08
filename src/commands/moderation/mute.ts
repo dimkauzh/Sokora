@@ -60,25 +60,22 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
   try {
-    await Promise.all([
-      modEmbed(
-        {
-          interaction,
-          user,
-          action: "Muted",
-          duration,
-          dm: true,
-          dbAction: "MUTE",
-          expiresAt: ms(duration),
-          silent,
-        },
-        reason,
-        true,
-      ),
-      guild.members.cache
-        .get(user.id)
-        ?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined }),
-    ]);
+    await modEmbed(
+      {
+        interaction,
+        user,
+        action: "Muted",
+        duration,
+        dm: true,
+        dbAction: "MUTE",
+        expiresAt: ms(duration),
+        silent,
+      },
+      reason,
+    );
+    await guild.members.cache
+      .get(user.id)
+      ?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined });
   } catch (error) {
     await errorEmbed({ interaction, error, forward: true });
   }

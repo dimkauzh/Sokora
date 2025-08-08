@@ -4,7 +4,6 @@ import {
   DMChannel,
   InteractionResponse,
   Message,
-  MessageEditOptions,
   type Channel,
   type Guild,
   type MessageCreateOptions,
@@ -35,7 +34,6 @@ export async function logChannel(
     user: User;
     options: string | MessagePayload | MessageCreateOptions;
   },
-  editMessage?: Message,
 ): Promise<void | Message | InteractionResponse> {
   let channel: TextChannel | DMChannel;
   const logChannel = await getSetting(guild.id, "moderation", "channel");
@@ -57,29 +55,26 @@ export async function logChannel(
       })
       .catch(() => null)) as TextChannel;
 
-    if (!channel) return;
-    if (!channel.permissionsFor(guild.client.user)?.has("ViewChannel")) return;
-    return await channel.send(options);
+    if (
+      channel &&
+      channel.permissionsFor(guild.client.user)?.has("ViewChannel") &&
+      channel.permissionsFor(guild.client.user)?.has("SendMessages")
+    )
+      await channel.send(options);
+
+    console.log("we work after this");
   }
 
   if (dm) {
-    if (!dmOptions) return;
-    if (dmOptions.silent) return;
-
-    channel = (await dmOptions.user.createDM().catch(() => null)) as DMChannel;
-    if (!channel || !guild.members.cache.get(dmOptions.user.id) || dmOptions.user.bot) return;
     try {
+      if (!dmOptions) return;
+      if (dmOptions.silent) return;
+
+      channel = (await dmOptions.user.createDM().catch(() => null)) as DMChannel;
+      if (!channel || !guild.members.cache.get(dmOptions.user.id) || dmOptions.user.bot) return;
       return await channel.send(dmOptions.options);
     } catch (error) {
-      return await errorEmbed({ client: guild.client, error });
-    }
-  }
-
-  if (editMessage) {
-    try {
-      return await editMessage.edit(options as string | MessagePayload | MessageEditOptions);
-    } catch (error) {
-      return await errorEmbed({ client: guild.client, error });
+      return await errorEmbed({ client: guild.client, error, log: true });
     }
   }
 }

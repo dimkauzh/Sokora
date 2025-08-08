@@ -1,4 +1,3 @@
-import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -12,10 +11,7 @@ export const data = new SlashCommandSubcommandBuilder()
       .setDescription("The ID of the user that you want to unban.")
       .setRequired(true),
   )
-  .addStringOption(string => string.setName("reason").setDescription("The reason for the unban."))
-  .addBooleanOption(bool =>
-    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
-  );
+  .addStringOption(string => string.setName("reason").setDescription("The reason for the unban."));
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const id = interaction.options.getString("id")!;
@@ -47,17 +43,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
-  const silent =
-    interaction.options.getBoolean("silent") ||
-    false ||
-    ((await getSetting(guild.id, "moderation", "silent")) as boolean);
-
   try {
     await Promise.all([
-      modEmbed(
-        { interaction, user: target, action: "Unbanned", dbAction: "UNBAN", silent },
-        reason,
-      ),
+      modEmbed({ interaction, user: target, action: "Unbanned", dbAction: "UNBAN" }, reason),
       guild.members.unban(id, reason ?? undefined),
     ]);
   } catch (error) {

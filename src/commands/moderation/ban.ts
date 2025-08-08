@@ -55,22 +55,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
   try {
-    await Promise.all([
-      modEmbed(
-        {
-          interaction,
-          user,
-          action: "Banned",
-          duration,
-          dm: true,
-          dbAction: "BAN",
-          expiresAt,
-          silent,
-        },
-        reason,
-      ),
-      guild.members.ban(user.id, { reason: reason ?? undefined }),
-    ]);
+    await modEmbed(
+      {
+        interaction,
+        user,
+        action: "Banned",
+        duration,
+        dm: true,
+        dbAction: "BAN",
+        expiresAt,
+        silent,
+      },
+      reason,
+    );
+    await guild.members.ban(user.id, { reason: reason ?? undefined });
   } catch (error) {
     return await errorEmbed({ interaction, error, forward: true });
   }

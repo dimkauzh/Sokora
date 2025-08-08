@@ -21,6 +21,7 @@ import ms from "ms";
 import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
 import { genColor } from "utils/colorGen";
+import { emojis } from "utils/constants";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 
@@ -94,7 +95,7 @@ async function generateEmbed(params: {
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
-  .setDescription("Moderation cases in a server.")
+  .setDescription("Lists all moderation cases of a user (or in a server).")
   .addUserOption(user => user.setName("user").setDescription("The user that you want to see."))
   .addStringOption(string =>
     string.setName("id").setDescription("The ID of a specific moderation case you want to see."),
@@ -167,11 +168,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId("left")
-      .setEmoji("1298708251256291379")
+      .setEmoji(emojis.leftArrow)
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId("right")
-      .setEmoji("1298708281493160029")
+      .setEmoji(emojis.rightArrow)
       .setStyle(ButtonStyle.Primary),
   );
 

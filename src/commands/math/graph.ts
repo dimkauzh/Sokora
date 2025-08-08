@@ -12,7 +12,7 @@ import { genColor } from "utils/colorGen";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("graph")
-  .setDescription("Graph a mathematical function")
+  .setDescription("Graph a mathematical function.")
   .addStringOption(option =>
     option
       .setName("function")

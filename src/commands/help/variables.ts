@@ -9,7 +9,7 @@ import { replaceVariables } from "utils/replace";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("variables")
-  .setDescription("Show a list of (variables) used to dynamically show data on certain messages");
+  .setDescription("Show a list of (variables) used to dynamically show data on certain messages.");
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const example = `Welcome to (servername), **(name)**!`;

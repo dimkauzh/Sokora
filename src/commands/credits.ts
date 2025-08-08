@@ -5,7 +5,7 @@ import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("credits")
-  .setDescription("Shows everyone who worked on Sokora.");
+  .setDescription("Lists everyone who contributed to Sokora.");
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;

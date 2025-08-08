@@ -137,11 +137,7 @@ export async function errorCheck(
   }
 }
 
-export async function modEmbed(
-  options: Options & { silent?: boolean },
-  reason?: string | null,
-  showModerator: boolean = false,
-) {
+export async function modEmbed(options: Options & { silent?: boolean }, reason?: string | null) {
   const {
     interaction,
     user,
@@ -241,7 +237,7 @@ export async function modEmbed(
               name: `${dotCheck({ string: serverAvatar, doubleSpace: true })}${customText?.dmTitle ?? `You got ${action?.toLowerCase()} from ${guild.name}`}`,
               iconURL: serverAvatar,
             })
-            .setDescription(generalValues.slice(+!showModerator, generalValues.length).join("\n"))
+            .setDescription(generalValues.join("\n"))
             .setColor(genColor(0)),
         ],
       },

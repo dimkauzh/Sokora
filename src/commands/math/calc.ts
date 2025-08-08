@@ -9,7 +9,7 @@ import { genColor } from "utils/colorGen";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("calc")
-  .setDescription("Calculate the result of a mathematical expression")
+  .setDescription("Calculate the result of a mathematical expression.")
   .addStringOption(option =>
     option
       .setName("expression")
@@ -18,9 +18,10 @@ export const data = new SlashCommandSubcommandBuilder()
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
+  await interaction.deferReply();
   const expr = interaction.options.getString("expression", true);
-
   let result: number;
+
   try {
     result = math.evaluate(expr);
     if (typeof result != "number" || Number.isNaN(result) || !Number.isFinite(result))
@@ -40,5 +41,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(`\`${expr}\` = **${result}**`)
     .setColor(genColor(200));
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.editReply({ embeds: [embed] });
 }

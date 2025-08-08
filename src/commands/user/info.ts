@@ -14,6 +14,7 @@ import { genColor, genImageColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { pluralOrNot } from "utils/pluralOrNot";
+import { emojis } from "utils/constants";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("info")
@@ -36,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       iconURL: avatar,
     })
     .setFields({
-      name: `<:discord:1266797021126459423> • Discord info`,
+      name: `<:discord:${emojis.discord}> • Discord info`,
       value: [
         `Username is **${user.username}**`,
         `Display name is ${

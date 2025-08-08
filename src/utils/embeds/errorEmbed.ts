@@ -74,7 +74,7 @@ export async function errorEmbed(options: {
 
   if (forward) {
     const channel = (client ? client : interaction!.client).channels.cache.get(
-      process.env.DEV_ERROR_CHANNEL_ID || "1343140645132308532",
+      process.env.DEV_ERROR_CHANNEL_ID!,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
     await channel.send({ embeds: [embed], files: files });
@@ -161,7 +161,7 @@ export async function errorEmbedCV2(options: {
 
   if (forward) {
     const channel = (client ? client : interaction!.client).channels.cache.get(
-      process.env.DEV_ERROR_CHANNEL_ID || "1343140645132308532",
+      process.env.DEV_ERROR_CHANNEL_ID!,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
     await channel.send({ components: [container], flags: "IsComponentsV2" });

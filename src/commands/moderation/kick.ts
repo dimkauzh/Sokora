@@ -18,7 +18,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const reason = interaction.options.getString("reason");
   const guild = interaction.guild!;
-  const member = guild.members.cache.get(user.id)!;
 
   if (
     await errorCheck(
@@ -36,10 +35,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
   try {
-    await Promise.all([
-      modEmbed({ interaction, user, action: "Kicked", dm: true, dbAction: "KICK", silent }, reason),
-      member.kick(reason ?? undefined),
-    ]);
+    await modEmbed(
+      { interaction, user, action: "Kicked", dm: true, dbAction: "KICK", silent },
+      reason,
+    );
+    await guild.members.cache.get(user.id)?.kick(reason ?? undefined);
   } catch (error) {
     return await errorEmbed({ interaction, error, forward: true });
   }

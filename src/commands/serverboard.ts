@@ -10,6 +10,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
+import { emojis } from "utils/constants";
 
 export const data = new SlashCommandBuilder()
   .setName("serverboard")
@@ -64,11 +65,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId("left")
-      .setEmoji("1298708251256291379")
+      .setEmoji(emojis.leftArrow)
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId("right")
-      .setEmoji("1298708281493160029")
+      .setEmoji(emojis.rightArrow)
       .setStyle(ButtonStyle.Primary),
   );
 

@@ -10,20 +10,12 @@ export const data = new SlashCommandSubcommandBuilder()
   )
   .addStringOption(string => string.setName("reason").setDescription("The reason for the warn."))
   .addBooleanOption(bool =>
-    bool
-      .setName("show_moderator")
-      .setDescription(
-        "Inform the warned user of the moderator that took the action. Defaults to false.",
-      ),
-  )
-  .addBooleanOption(bool =>
     bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const reason = interaction.options.getString("reason");
-  const showModerator = interaction.options.getBoolean("show_moderator") ?? false;
   const guild = interaction.guild!;
 
   if (
@@ -44,6 +36,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
   await modEmbed(
     { interaction, user, action: "Warned", dm: true, dbAction: "WARN", silent },
     reason,
-    showModerator,
   );
 }

@@ -61,6 +61,7 @@ export default (async function run(message) {
       .values()
       .toArray()
       .filter(m => m.senderId == message.author!.id && m.execId == execId);
+
     const msgCount = msgArray.length;
     const msgPrevDate = Date.now() - Math.min(...msgArray.map(m => m.date));
 
@@ -171,22 +172,21 @@ export default (async function run(message) {
         content,
         delMsg: response as Message,
       });
+
       deletedMsgs.set(
         guild.id,
         new Set(
           deletedMessages
             .values()
             .toArray()
-            .filter(s => s.date > 60000),
+            .filter(s => Date.now() - s.date > 60000),
         ),
       );
       return response as Message;
     }
 
     console.debug(msgArray);
-
     const lastMsg = deletedMessages.values().toArray().pop()?.delMsg;
-
     if (lastMsg && msgCount > 1 && msgPrevDate <= 60000) {
       try {
         await lastMsg.delete();
