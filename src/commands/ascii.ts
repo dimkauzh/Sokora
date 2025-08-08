@@ -1,9 +1,9 @@
-import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import { SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import figlet from "figlet";
 import { randomize } from "utils/randomize";
 
-export const data = new SlashCommandSubcommandBuilder()
+export const data = new SlashCommandBuilder()
   .setName("ascii")
   .setDescription("Converts text you send into ASCII art.")
   .addStringOption(option =>
