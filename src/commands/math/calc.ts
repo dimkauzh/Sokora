@@ -18,7 +18,6 @@ export const data = new SlashCommandSubcommandBuilder()
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  await interaction.deferReply();
   const expr = interaction.options.getString("expression", true);
   let result: number;
 
@@ -41,5 +40,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(`\`${expr}\` = **${result}**`)
     .setColor(genColor(200));
 
-  await interaction.editReply({ embeds: [embed] });
+  await interaction.reply({ embeds: [embed] });
 }
