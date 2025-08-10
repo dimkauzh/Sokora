@@ -11,13 +11,12 @@
   - Added a new `/games` category.
     - Added `/games rps` to play Rock, Paper, Scissors.
     - Added `/games coin` to flip a coin.
-    - Added `/games ascii` to convert text to ASCII art.
   - Added a new `/math` category.
     - Added `/math graph` to graphically represent a function.
     - Added `/math calc` to execute a mathematical expression.
+  - Added `/ascii` to convert text to ASCII art.
   - Added `/help variables` to show help with _Dynamic (variables)_.
   - Added `/ping` to view bot ping and latency.
-  - Added `/embed` to create custom embeds.
 - Dynamic (variables)
   - Gave a proper name to replaceable variables (`Dynamic (variables)`), and added more options:
   - - `(serverowner)` - Server owner's name
@@ -47,7 +46,7 @@
     - What channel the invite should point to.
   - Whether all moderation actions should be silent or not.
   - What kind of moderation events should be logged.
-  - Settings for new starboard feature.
+  - Settings for the new starboard feature.
     - Channel to send starred messages to, emoji to be reacted, and reaction threshold.
 
 ### Changed

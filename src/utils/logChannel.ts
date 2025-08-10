@@ -61,8 +61,6 @@ export async function logChannel(
       channel.permissionsFor(guild.client.user)?.has("SendMessages")
     )
       await channel.send(options);
-
-    console.log("we work after this");
   }
 
   if (dm) {

@@ -32,8 +32,10 @@ export default (async function run(message) {
     if (!(await getSetting(guild.id, "moderation", "events"))?.toString().includes("messageDelete"))
       return;
 
-    const avatar = executor ? executor.displayAvatarURL() : author.displayAvatarURL();
-
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    let exec = executor;
+    if (exec?.id == author.id) exec = null;
+    const avatar = exec ? exec.displayAvatarURL() : author.displayAvatarURL();
     let media;
 
     try {
@@ -48,29 +50,36 @@ export default (async function run(message) {
     }
 
     const { image, video, thumbnail } = media;
-
+    const content = message.content;
     const embed = new EmbedBuilder()
       .setAuthor({
         name: [
           `${dotCheck({ string: avatar, doubleSpace: true })}`,
-          executor
-            ? `${executor.username} deleted a message from ${author.username}`
+          exec
+            ? `${exec.username} deleted a message from ${author.username}`
             : `${author.username} deleted a message`,
         ].join(""),
         iconURL: avatar,
       })
       .setDescription(
-        message.content && message.content.length > 0 ? message.content : "*Empty message*",
+        content.length <= 1024
+          ? content && content.length > 0
+            ? content
+            : "*Empty message*"
+          : "*The deleted message is an attachment below this embed due to it being too large.*",
       )
       .setThumbnail(thumbnail)
       .setImage(image)
       .setTimestamp(new Date())
       .setFooter({
-        text: `Author ID: ${author.id}${executor ? ` • Executor ID: ${executor.id}` : ""}`,
+        text: `Author ID: ${author.id}${exec ? ` • Executor ID: ${exec.id}` : ""}`,
       })
       .setColor(genColor(0));
 
     const files: AttachmentBuilder[] = [];
+    if (content.length >= 1024)
+      files.push(new AttachmentBuilder(Buffer.from(content, "utf8"), { name: "message.txt" }));
+
     if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
 
     return await logChannel(guild, { embeds: [embed], files });
