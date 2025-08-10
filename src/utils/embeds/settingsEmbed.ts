@@ -164,7 +164,7 @@ export async function settingsEmbed(
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
     const invitePermission =
-      name === "server_invite" &&
+      name == "server_invite" &&
       !interaction
         .guild!.members.cache.get(interaction.client.user.id)
         ?.permissions.has("CreateInstantInvite");

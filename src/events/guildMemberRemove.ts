@@ -1,6 +1,7 @@
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
 import { subscribedUsers } from "src/bot";
+import { channelCheck } from "utils/channelCheck";
 import { genColor, genImageColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replaceVariables } from "utils/replace";
@@ -36,5 +37,13 @@ export default (async function run(member: GuildMember) {
       member.user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(200),
     );
 
-  await channel.send({ embeds: [embed] });
+  if (
+    await channelCheck({
+      guild: member.guild,
+      channel,
+      permType: "Send",
+      setting: { category: "welcome", setting: "leave_channel" },
+    })
+  )
+    await channel.send({ embeds: [embed] });
 } as Event<"guildMemberRemove">);

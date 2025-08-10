@@ -1,15 +1,10 @@
 import { getLevel } from "database/leveling";
 import { getSetting } from "database/settings";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonInteraction,
-  ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
 import { genColor, genImageColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
@@ -30,26 +25,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     (await target?.user.fetch())?.hexAccentColor ??
     (await genImageColor(undefined, avatar)) ??
     genColor(200);
-
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}${target?.nickname ?? user.displayName}`,
-      iconURL: avatar,
-    })
-    .setFields({
-      name: `<:discord:${emojis.discord}> • Discord info`,
-      value: [
-        `Username is **${user.username}**`,
-        `Display name is ${
-          user.displayName == user.username ? "*not there*" : `**${user.displayName}**`
-        }`,
-        `Created on **<t:${Math.round(user.createdAt.valueOf() / 1000)}:D>**`,
-      ].join("\n"),
-    })
-    .setFooter({ text: `User ID: ${user.id}` })
-    .setColor(embedColor);
-
-  await interaction.reply({ embeds: [embed] });
 
   if (!target) return;
   const serverInfo = [`Joined on **<t:${Math.round(target.joinedAt!.valueOf()! / 1000)}:D>**`];
@@ -72,92 +47,48 @@ export async function run(interaction: ChatInputCommandInteraction) {
         .join(" • ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
     );
 
-  embed.addFields({
-    name: "📒 • Server info",
-    value: serverInfo.join("\n"),
-  });
-
   const enabled = await getSetting(`${guild.id}`, "leveling", "enabled");
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId("general")
-      .setLabel("•  General")
-      .setEmoji("📃")
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("level")
-      .setLabel("•  Level")
-      .setEmoji("⚡")
-      .setStyle(ButtonStyle.Primary),
-  );
-  row.components[0].setDisabled(true);
-
-  const reply = await interaction.editReply({
-    embeds: [embed],
-    components: !user.bot ? (enabled ? [row] : []) : [],
-  });
-
-  if (!enabled && user.bot) return;
   const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
   const [level, xp] = getLevel(guild.id, target.id);
   const nextLevelXp = Math.floor(
     100 * difficulty * (level + 1) ** 2 - 80 * difficulty * level ** 2,
   )?.toLocaleString("en-US");
 
-  const collector = reply.createMessageComponentCollector({ time: 30000 });
-  collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
+  const embed = new EmbedBuilder()
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${target?.nickname ?? user.displayName}`,
+      iconURL: avatar,
+    })
+    .setFields({
+      name: `<:discord:${emojis.discord}> • Discord info`,
+      value: [
+        `Username is **${user.username}**`,
+        `Display name is ${
+          user.displayName == user.username ? "*not there*" : `**${user.displayName}**`
+        }`,
+        `Created on **<t:${Math.round(user.createdAt.valueOf() / 1000)}:D>**`,
+      ].join("\n"),
+      inline: true,
+    })
+    .setFooter({ text: `User ID: ${user.id}` })
+    .setColor(embedColor);
 
-    if (i.user.id != interaction.user.id)
-      return await errorEmbed({
-        interaction: i,
-        title: "You aren't the person who executed this command.",
-      });
+  if (enabled && !user.bot)
+    embed.addFields({
+      name: `⚡ • Level ${level}`,
+      value: [
+        xp && xp > 0
+          ? `**${xp.toLocaleString("en-US")}/${nextLevelXp}** XP`
+          : `**No XP** out of **${nextLevelXp}** XP!`,
+        `The next level is **${level + 1}**`,
+      ].join("\n"),
+      inline: true,
+    });
 
-    collector.resetTimer({ time: 30000 });
-    if (i.customId == "general") row.components[0].setDisabled(true);
-    else row.components[1].setDisabled(true);
-
-    const levelEmbed = new EmbedBuilder()
-      .setAuthor({
-        name: `${dotCheck({ string: avatar, doubleSpace: true })}${target?.nickname ?? user.displayName}`,
-        iconURL: avatar,
-      })
-      .setFields({
-        name: `⚡ • Level ${level}`,
-        value: [
-          xp && xp > 0
-            ? `**${xp.toLocaleString("en-US")}/${nextLevelXp}** XP`
-            : `**No XP** out of **${nextLevelXp}** XP!`,
-          `The next level is **${level + 1}**`,
-        ].join("\n"),
-      })
-      .setFooter({ text: `User ID: ${target.id}` })
-      .setColor(embedColor);
-
-    switch (i.customId) {
-      case "general":
-        row.components[1].setDisabled(false);
-        await i.update({ embeds: [embed], components: [row] });
-        break;
-      case "level":
-        row.components[0].setDisabled(false);
-        await i.update({ embeds: [levelEmbed], components: [row] });
-        break;
-    }
+  embed.addFields({
+    name: "📒 • Server info",
+    value: serverInfo.join("\n"),
   });
 
-  collector.on("end", async () => {
-    try {
-      await interaction.editReply({ components: [] });
-    } catch (error) {
-      if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
-      throw error;
-    }
-  });
+  await interaction.reply({ embeds: [embed] });
 }

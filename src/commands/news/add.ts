@@ -30,7 +30,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     new TextInputBuilder()
       .setCustomId("title")
       .setPlaceholder("Write a title")
-      .setMaxLength(100)
+      .setMaxLength(30)
       .setStyle(TextInputStyle.Short)
       .setLabel("Title")
       .setRequired(true),

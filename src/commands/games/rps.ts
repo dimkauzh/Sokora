@@ -119,12 +119,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
         })
         .setDescription(
           [
-            `**${user.username}**: ${rpsEmojis[p1Choice]}`,
-            `**${opponent.username}**: ${rpsEmojis[p2Choice]}\n`,
-            `${winner == 0 ? "**It's a tie!**" : winner == 1 ? `The winner is **${user.username}**!` : `The winner is **${opponent.username}**!`}`,
+            `**${user.username}** ${rpsEmojis[p1Choice]} vs ${rpsEmojis[p2Choice]} **${opponent.username}**\n`,
+            `${winner == 0 ? "**It's a tie!**" : winner == 1 ? `**${user.username}**, you win!` : `**${opponent.username}**, you win!`}`,
           ].join("\n"),
         )
-        .setColor(winner == 0 ? genColor(60) : genColor(120));
+        .setColor(genColor(winner == 0 ? 60 : 120));
 
       await interaction.editReply({ embeds: [resultEmbed], components: [] });
     } catch (error) {

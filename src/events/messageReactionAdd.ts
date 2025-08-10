@@ -2,6 +2,7 @@ import { getSetting } from "database/settings";
 import { getStarred, setStarred } from "database/starboard";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
+import { channelCheck } from "utils/channelCheck";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { Event } from "utils/types";
@@ -48,7 +49,17 @@ export default (async function run(reaction, user) {
   if (!starboardChannelId) return;
 
   const starboardChannel = message.guild.channels.cache.get(starboardChannelId);
-  if (!starboardChannel?.isTextBased()) return;
+  if (
+    !starboardChannel ||
+    !starboardChannel.isTextBased() ||
+    !(await channelCheck({
+      channel: starboardChannel,
+      guild: message.guild,
+      permType: "Send",
+      setting: { category: "starboard", setting: "channel" },
+    }))
+  )
+    return;
 
   const starCount = reaction.count || 0;
   const threshold =
@@ -91,7 +102,7 @@ export default (async function run(reaction, user) {
     embeds.push(
       new EmbedBuilder()
         .setAuthor({
-          name: `${pfpCheck(avatar)}${ref.author.displayName}  •  Replied by starred message`,
+          name: `${dotCheck({ string: avatar, doubleSpace: true })}${ref.author.displayName}  •  Replied by starred message`,
           iconURL: avatar,
         })
         .setDescription(ref.content)

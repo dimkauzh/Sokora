@@ -40,7 +40,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
     new TextInputBuilder()
       .setCustomId("title")
-      .setMaxLength(100)
+      .setMaxLength(30)
       .setStyle(TextInputStyle.Short)
       .setLabel("Title")
       .setValue(news.title)

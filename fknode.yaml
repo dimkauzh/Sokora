@@ -1,0 +1,5 @@
+prettyCmd: "prettier"
+flagless:
+  flaglessUpdate: true
+  flaglessPretty: true
+launchCmd: "dev"

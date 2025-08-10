@@ -4,6 +4,7 @@ import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggs } from "handlers/events";
+import { channelCheck } from "utils/channelCheck";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
@@ -149,9 +150,19 @@ export default (async function run(message) {
     .setTimestamp()
     .setColor(genColor(200));
 
-  if (levelChannelId)
-    await (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
-      embeds: [embed],
-      content: mention(author.id, "USER"),
-    });
+  if (levelChannelId) {
+    const channel = guild.channels.cache.get(`${levelChannelId}`) as TextChannel;
+    if (
+      await channelCheck({
+        channel,
+        guild,
+        permType: "Send",
+        setting: { category: "leveling", setting: "channel" },
+      })
+    )
+      await channel.send({
+        embeds: [embed],
+        content: mention(author.id, "USER"),
+      });
+  }
 } as Event<"messageCreate">);

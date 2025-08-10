@@ -1,6 +1,7 @@
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
+import { channelCheck } from "utils/channelCheck";
 import { genColor, genImageColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
@@ -38,7 +39,15 @@ export default (async function run(member) {
       ),
     );
 
-    await channel.send({ embeds: [embed] });
+    if (
+      await channelCheck({
+        guild: member.guild,
+        channel,
+        permType: "Send",
+        setting: { category: "welcome", setting: "join_channel" },
+      })
+    )
+      await channel.send({ embeds: [embed] });
   }
 
   if (roles) await member.roles.add([...kominator(roles as string)]);

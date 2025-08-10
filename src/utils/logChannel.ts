@@ -12,6 +12,7 @@ import {
   type User,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
+import { channelCheck } from "./channelCheck";
 
 /**
  * Sends a message in the log channel. (if there is one set)
@@ -56,9 +57,15 @@ export async function logChannel(
       .catch(() => null)) as TextChannel;
 
     if (
-      channel &&
-      channel.permissionsFor(guild.client.user)?.has("ViewChannel") &&
-      channel.permissionsFor(guild.client.user)?.has("SendMessages")
+      await channelCheck({
+        channel,
+        guild,
+        permType: "Both",
+        setting: {
+          category: "moderation",
+          setting: "channel",
+        },
+      })
     )
       await channel.send(options);
   }

@@ -10,6 +10,7 @@ import {
 import { genColor } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
+import { channelCheck } from "./channelCheck";
 
 /**
  * Sends news to a channel.
@@ -46,8 +47,15 @@ export async function sendChannelNews(
   const channel = guild.channels.cache.get(
     ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
   ) as TextChannel;
-  if (!channel) return;
-  if (!channel.permissionsFor(guild.client.user)?.has("ViewChannel")) return;
+  if (
+    !(await channelCheck({
+      channel,
+      guild,
+      permType: "View",
+      setting: { category: "news", setting: "channel" },
+    }))
+  )
+    return;
 
   return await channel
     .send({
