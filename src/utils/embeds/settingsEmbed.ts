@@ -163,7 +163,14 @@ export async function settingsEmbed(
     const setting = await getSettingPlease(id, key, name, table);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
-    const text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
+    const invitePermission =
+      name === "server_invite" &&
+      !interaction
+        .guild!.members.cache.get(interaction.client.user.id)
+        ?.permissions.has("CreateInstantInvite");
+    const text = invitePermission
+      ? `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`
+      : `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
 
     if (reset) {
       data = { type: "reset", id: name };
@@ -257,6 +264,10 @@ export async function settingsEmbed(
           .setLabel("Edit")
           .setStyle(ButtonStyle.Secondary);
         break;
+    }
+
+    if (invitePermission) {
+      (component as ButtonBuilder).setDisabled(true);
     }
 
     return { text, data, component };

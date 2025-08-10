@@ -12,7 +12,7 @@
     "setup": "bun i && bun run cli/setup.ts",
     "dev": "bun --watch ./src/bot.ts",
     "start": "bun ./src/index.ts",
-    "prettier": "prettier -w ."
+    "prettier": "eslint --cache . && prettier --w ."
   },
   "dependencies": {
     "@top-gg/sdk": "^3.1.6",
@@ -26,13 +26,13 @@
     "sharp": "^0.33.5"
   },
   "devDependencies": {
-    "@eslint/js": "^9.32.0",
+    "@eslint/js": "^9.33.0",
     "@types/figlet": "^1.7.0",
     "@types/ms": "^0.7.34",
     "@typescript-eslint/eslint-plugin": "^8.39.0",
     "@typescript-eslint/parser": "^8.39.0",
     "bun-types": "^1.2.19",
-    "eslint": "^9.32.0",
+    "eslint": "^9.33.0",
     "prettier": "^3.6.2",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.39.0"
