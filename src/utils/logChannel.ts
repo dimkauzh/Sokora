@@ -60,7 +60,7 @@ export async function logChannel(
       await channelCheck({
         channel,
         guild,
-        permType: "Both",
+        permType: "Send",
         setting: {
           category: "moderation",
           setting: "channel",

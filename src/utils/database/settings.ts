@@ -313,6 +313,13 @@ export async function setSetting<
   insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, set);
 }
 
+export async function resetSetting<
+  K extends keyof typeof settingsDefinition,
+  S extends keyof (typeof settingsDefinition)[K]["settings"],
+>(guildID: string, key: K, setting: S) {
+  deleteQuery.run(JSON.stringify(guildID), `${key}.${setting}`);
+}
+
 export async function resetSettingCategory<K extends keyof typeof settingsDefinition>(
   guildID: string,
   key: K,

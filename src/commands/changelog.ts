@@ -1,6 +1,6 @@
 import { EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { version } from "package";
-import { genColor, genImageColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
@@ -25,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       },
     ])
     .setFooter({ text: replace("(madeWith)") })
-    .setColor(user.hexAccentColor ?? (await genImageColor(undefined, avatar)) ?? genColor(270));
+    .setColor(await colorize({ user, avatar, hue: 270 }));
 
   await interaction.reply({ embeds: [embed] });
 }

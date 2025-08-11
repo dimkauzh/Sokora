@@ -1,4 +1,4 @@
-import { ColorResolvable } from "discord.js";
+import { ColorResolvable, type User } from "discord.js";
 import Vibrant from "node-vibrant";
 import sharp from "sharp";
 import { kominator } from "./kominator";
@@ -29,17 +29,13 @@ export function genColorCV2(hue: number) {
 
 /**
  * Outputs the most vibrant color from the image.
- * @param {?string} guildURL Guild image URL.
- * @param {?string} memberURL Member image URL.
+ * @param {?string} url Image URL.
  * @returns {Promise<ColorResolvable | undefined>} The color in HEX, or undefined if both URLs are missing.
  */
-export async function genImageColor(
-  guildURL?: string,
-  memberURL?: string,
-): Promise<ColorResolvable | undefined> {
-  if (!guildURL || !memberURL) return;
+export async function genImageColor(url: string): Promise<ColorResolvable | undefined> {
+  if (!url) return;
 
-  const imageBuffer = await (await fetch(guildURL ?? memberURL)).arrayBuffer();
+  const imageBuffer = await (await fetch(url)).arrayBuffer();
   const { r, g, b } = (
     await new Vibrant(await sharp(imageBuffer).toFormat("jpg").toBuffer()).getPalette()
   ).Vibrant!;
@@ -48,4 +44,9 @@ export async function genImageColor(
   const l = Math.round(parseFloat(hsl[2].replace(")", "")) * 100 + 15 * Math.random());
 
   return Bun.color(`hsl(${h}, 100%, ${l}%)`, "hex") as ColorResolvable;
+}
+
+export async function colorize(options: { user?: User; avatar?: string; hue?: number }) {
+  const { user, avatar, hue } = options;
+  return user?.hexAccentColor ?? (await genImageColor(avatar!)) ?? genColor(hue!);
 }

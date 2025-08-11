@@ -1,5 +1,5 @@
 import { EmbedBuilder, Invite, type Guild } from "discord.js";
-import { genColor, genImageColor } from "../colorGen";
+import { colorize } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
 import { pluralOrNot } from "../pluralOrNot";
@@ -105,7 +105,7 @@ export async function serverEmbed(options: Options) {
     .setFooter({
       text: `${pages && pages > 1 ? `Page ${page} of ${pages} • ` : ""}Server ID: ${guild.id}`,
     })
-    .setColor((await genImageColor(icon)) ?? genColor(200));
+    .setColor(await colorize({ avatar: icon, hue: 200 }));
 
   if (options.invite?.show) {
     const previousInvite: Invite | undefined = (await options.guild.invites.fetch()).find(
