@@ -14,7 +14,6 @@
   - Added a new `/math` category.
     - Added `/math graph` to graphically represent a function.
     - Added `/math calc` to execute a mathematical expression.
-  - Added `/ascii` to convert text to ASCII art.
   - Added `/help variables` to show help with _Dynamic (variables)_.
   - Added `/ping` to view bot ping and latency.
 - Dynamic (variables)

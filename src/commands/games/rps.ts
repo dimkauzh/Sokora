@@ -83,7 +83,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       });
 
     if (i.user.id != opponent.id && i.user.id != user.id)
-      return await errorEmbed({ interaction: i, title: "You aren't participating.." });
+      return await errorEmbed({ interaction: i, title: "You aren't participating." });
 
     playerChoices.set(i.user.id, i.customId.split("_")[1] as RPSChoice);
     if (!opponent.bot) {
@@ -120,10 +120,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
         .setDescription(
           [
             `**${user.username}** ${rpsEmojis[p1Choice]} vs ${rpsEmojis[p2Choice]} **${opponent.username}**\n`,
-            `${winner == 0 ? "**It's a tie!**" : winner == 1 ? `**${user.username}**, you win!` : `**${opponent.username}**, you win!`}`,
+            `${winner == 0 ? "**It's a tie!**" : winner == 1 ? `**${user.username}**, you win!` : opponent.bot ? `Sokora wins!` : `**${opponent.username}**, you win!`}`,
           ].join("\n"),
         )
-        .setColor(genColor(winner == 0 ? 60 : 120));
+        .setColor(genColor(winner == 0 ? 60 : winner == 2 && opponent.bot ? 0 : 120));
 
       await interaction.editReply({ embeds: [resultEmbed], components: [] });
     } catch (error) {
