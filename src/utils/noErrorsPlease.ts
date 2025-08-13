@@ -5,7 +5,6 @@ import { errorType } from "./errorType";
 const errorRateLimit = new Set<string>();
 export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
   process.removeAllListeners();
-
   const sendErrorMessage = async (
     error: Error,
     eventType: string,
@@ -19,20 +18,20 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
     await errorEmbed({ interaction, error, log: true, forward: true });
   };
 
-  const handleError = async (error: Error, eventType: string, additionalInfo: string = "") => {
-    return await sendErrorMessage(error, eventType, additionalInfo);
-  };
-
   const processEventListeners: { [key: string]: { listener: (...args: any[]) => Promise<void> } } =
     {
       unhandledRejection: {
         listener: async (reason, promise) => {
-          return await handleError(errorType(reason), "unhandledRejection", `Promise: ${promise}`);
+          return await sendErrorMessage(
+            errorType(reason),
+            "unhandledRejection",
+            `Promise: ${promise}`,
+          );
         },
       },
       uncaughtException: {
         listener: async (error, origin) => {
-          return await handleError(errorType(error), "uncaughtException", `Origin: ${origin}`);
+          return await sendErrorMessage(errorType(error), "uncaughtException", `Origin: ${origin}`);
         },
       },
     };
@@ -42,7 +41,7 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
       try {
         return await listener(...args);
       } catch (err) {
-        return await handleError(errorType(err), "listenerError", `Event: ${event}`);
+        return await sendErrorMessage(errorType(err), "listenerError", `Event: ${event}`);
       }
     });
 }

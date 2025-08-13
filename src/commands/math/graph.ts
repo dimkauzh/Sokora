@@ -83,6 +83,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
             },
             ticks: {
               color: "#ffffff",
+              align: "start",
+              labelOffset: 1,
             },
           },
           y: {
@@ -96,6 +98,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
             },
             ticks: {
               color: "#ffffff",
+              align: "start",
+              labelOffset: 1,
             },
           },
         },

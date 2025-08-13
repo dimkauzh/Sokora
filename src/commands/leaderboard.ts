@@ -76,7 +76,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
-
   collector.on("collect", async (i: ButtonInteraction) => {
     if (i.message.id != (await reply.fetch()).id)
       return await errorEmbed({

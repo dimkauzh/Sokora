@@ -1,8 +1,10 @@
+import { Api } from "@top-gg/sdk";
 import { Chart, registerables } from "chart.js";
 import { getUserSettingsTable } from "database/userSettings";
 import { ActivityType, Client, Partials } from "discord.js";
 import { registerGuildCommands } from "handlers/commands";
 import { loadAuditEvents, loadEasterEggs, loadEvents } from "handlers/events";
+import ms from "ms";
 import { leavePlease } from "utils/leavePlease";
 import { rescheduleUnbans } from "utils/unbanScheduler";
 
@@ -28,29 +30,31 @@ export const subscribedUsers = new Set(
 );
 
 client.once("ready", async () => {
-  // const topgg = new Api(process.env.TOPGG_TOKEN!);
-  // try {
-  //   await topgg.postStats({
-  //     serverCount: (await client.guilds.fetch()).size,
-  //   });
-  //   console.log("Posted statistics to top.gg!");
-  // } catch (error) {
-  //   console.error(`Failed to start top.gg autoposter: ${error}`);
-  // }
-
   const guilds = client.guilds.cache;
   for (const id of guilds.keys())
     await leavePlease(guilds.get(id)!, await guilds.get(id)!.fetchOwner()!, "Not like that.");
 
-  // setInterval(async () => {
-  //   for (const user of subscribedUsers) {
-  //     if (await topgg.hasVoted(user)) continue;
-  //     await client.users.send(
-  //       JSON.parse(user),
-  //       "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
-  //     );
-  //   }
-  // }, ms("1h"));
+  if (process.env.TOPGG_TOKEN) {
+    const topgg = new Api(process.env.TOPGG_TOKEN!);
+    try {
+      await topgg.postStats({
+        serverCount: (await client.guilds.fetch()).size,
+      });
+      console.log("Posted statistics to top.gg!");
+    } catch (error) {
+      console.error(`Failed to start top.gg autoposter: ${error}`);
+    }
+
+    setInterval(async () => {
+      for (const user of subscribedUsers) {
+        if (await topgg.hasVoted(user)) continue;
+        await client.users.send(
+          JSON.parse(user),
+          "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
+        );
+      }
+    }, ms("1h"));
+  }
 
   await Promise.all([
     loadEvents(client),
