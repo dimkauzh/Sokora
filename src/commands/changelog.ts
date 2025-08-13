@@ -11,19 +11,16 @@ export const data = new SlashCommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
-
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}Changelog for ${version}`,
       iconURL: avatar,
     })
-    .setFields([
-      {
-        name: version,
-        value:
-          "See Sokora's changelog [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
-      },
-    ])
+    .setFields({
+      name: version,
+      value:
+        "See Sokora's changelog [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
+    })
     .setFooter({ text: replace("(madeWith)") })
     .setColor(await colorize({ user, avatar, hue: 270 }));
 
