@@ -1,13 +1,16 @@
-import { Guild, User } from "discord.js";
+import type { Guild, User } from "discord.js";
 import { mention } from "./mention";
 import { randomize } from "./randomize";
-import { Replacements } from "./types";
+import type { Replacements } from "./types";
 
 let emojis = ["💖", "💝", "💓", "💗", "💘", "💟", "💕", "💞"];
 if (Math.round(Math.random() * 100) <= 5) emojis = ["⌨️", "💻", "🖥️"];
 
 export const replacements = [
   { text: "(madeWith)", replacement: `Made with ${randomize(emojis)} by the Sokora team` },
+  { text: "(leftArrow)", replacement: "1298708251256291379" },
+  { text: "(rightArrow)", replacement: "1298708281493160029" },
+  { text: "(discord)", replacement: "1266797021126459423" },
 ];
 
 export function replace(

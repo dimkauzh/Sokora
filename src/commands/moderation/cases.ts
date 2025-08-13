@@ -21,9 +21,9 @@ import ms from "ms";
 import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
 import { genColor } from "utils/colorGen";
-import { emojis } from "utils/constants";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
+import { replace } from "utils/replace";
 
 async function generateEmbed(params: {
   cases: TypeOfDefinition<ModerationCase>[];
@@ -168,11 +168,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId("left")
-      .setEmoji(emojis.leftArrow)
+      .setEmoji(replace("(leftArrow)"))
       .setStyle(ButtonStyle.Primary),
     new ButtonBuilder()
       .setCustomId("right")
-      .setEmoji(emojis.rightArrow)
+      .setEmoji(replace("(rightArrow)"))
       .setStyle(ButtonStyle.Primary),
   );
 

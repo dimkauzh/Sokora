@@ -139,7 +139,8 @@ export async function settingsEmbed(
   interaction: ChatInputCommandInteraction,
   table: "server" | "user",
 ) {
-  const id = table == "server" ? interaction.guild!.id : interaction.user.id;
+  const guild = interaction.guild;
+  const id = table == "server" ? guild!.id : interaction.user.id;
   const key = interaction.options.getSubcommand();
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
@@ -164,10 +165,10 @@ export async function settingsEmbed(
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
     const invitePermission =
-      name == "server_invite" &&
-      !interaction
-        .guild!.members.cache.get(interaction.client.user.id)
-        ?.permissions.has("CreateInstantInvite");
+      (name == "server_invite" || name == "invite_channel") &&
+      !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("CreateInstantInvite");
+
+    if (invitePermission) await resetSettingCategory(guild!.id, "serverboard");
     const text = invitePermission
       ? `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`
       : `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
@@ -263,13 +264,11 @@ export async function settingsEmbed(
           .setCustomId(data.id)
           .setLabel("Edit")
           .setStyle(ButtonStyle.Secondary);
+
         break;
     }
 
-    if (invitePermission) {
-      (component as ButtonBuilder).setDisabled(true);
-    }
-
+    if (invitePermission) (component as ButtonBuilder).setDisabled(true);
     return { text, data, component };
   };
 
@@ -436,16 +435,9 @@ export async function settingsEmbed(
               settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
               valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
               hue = 0;
-              return await safeReply({
-                interaction: modalInteraction,
-                replyOptions: {
-                  components: [constructModalContainer(settingText, valueText, hue)],
-                  flags: ["Ephemeral", "IsComponentsV2"],
-                },
-              });
-            }
+              return;
+            } else await setSettingPlease(id, key, cID, value, table);
 
-            await setSettingPlease(id, key, cID, value, table);
             await safeReply({
               interaction: modalInteraction,
               replyOptions: {

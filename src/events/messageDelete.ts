@@ -81,7 +81,6 @@ export default (async function run(message) {
       files.push(new AttachmentBuilder(Buffer.from(content, "utf8"), { name: "message.txt" }));
 
     if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
-
     return await logChannel(guild, { embeds: [embed], files });
   } catch (error) {
     return await errorEmbed({ client, error, log: true, forward: true });

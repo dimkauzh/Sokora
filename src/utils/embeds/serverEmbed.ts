@@ -1,4 +1,4 @@
-import { EmbedBuilder, Invite, type Guild } from "discord.js";
+import { ChannelType, EmbedBuilder, Invite, type Guild } from "discord.js";
 import { colorize } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
@@ -21,7 +21,7 @@ type Options = {
  * @returns Embed that contains the guild info.
  */
 export async function serverEmbed(options: Options) {
-  const { page, pages, guild } = options;
+  const { page, pages, guild, invite } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
   const boosters = guild.members.cache.filter(member => member.premiumSince);
   const icon = guild.iconURL()!;
@@ -44,17 +44,15 @@ export async function serverEmbed(options: Options) {
     `Created on **<t:${Math.round(guild.createdAt.valueOf() / 1000)}:D>**`,
   ];
 
-  const VL = guild.verificationLevel;
-  const TFA = guild.mfaLevel;
-  const NSFW = guild.nsfwLevel;
-
+  const vl = guild.verificationLevel;
+  const nsfw = guild.nsfwLevel;
   const safetyValues: (string | null)[] = [
-    `**${VL == 0 ? "Unrestricted" : VL == 1 ? "Low" : VL == 2 ? "Mid" : VL == 3 ? "High" : "Very high"}** level`,
-    `**${TFA == 1 ? "No" : "Has"}** 2FA`,
+    `**${vl == 0 ? "Unrestricted" : vl == 1 ? "Low" : vl == 2 ? "Mid" : vl == 3 ? "High" : "Very high"}** level`,
+    `**${guild.mfaLevel == 1 ? "No" : "Has"}** 2FA`,
   ];
 
-  if (NSFW != 0)
-    safetyValues.push(`**${NSFW == 1 ? "Explicit" : NSFW == 2 ? "Safe" : "Age restricted"}**`);
+  if (nsfw != 0)
+    safetyValues.push(`**${nsfw == 1 ? "Explicit" : nsfw == 2 ? "Safe" : "Age restricted"}**`);
 
   const statValues: (string | null)[] = [
     `**${guild.memberCount?.toLocaleString("en-US")}** members`,
@@ -107,16 +105,29 @@ export async function serverEmbed(options: Options) {
     })
     .setColor(await colorize({ avatar: icon, hue: 200 }));
 
-  if (options.invite?.show) {
-    const previousInvite: Invite | undefined = (await options.guild.invites.fetch()).find(
+  if (invite?.show) {
+    const previousInvite: Invite | undefined = (await guild.invites.fetch()).find(
       invite =>
         invite.inviter?.id == guild.client.user.id &&
         invite.maxUses == null &&
         invite.expiresAt == null,
     );
 
-    const possiblyFetchedInviteChannel = await options.guild.channels.fetch(
-      options.invite.channel ?? "hi",
+    const possiblyFetchedInviteChannel = await guild.channels.fetch(
+      invite.channel ??
+        guild.channels.cache
+          .filter(
+            channel =>
+              channel.type ==
+              (ChannelType.GuildAnnouncement ||
+                ChannelType.GuildForum ||
+                ChannelType.GuildStageVoice ||
+                ChannelType.GuildText ||
+                ChannelType.GuildVoice ||
+                ChannelType.PublicThread ||
+                ChannelType.PrivateThread),
+          )
+          .find(channel => channel.position == 0)!.id,
     );
 
     const inviteChannel =
@@ -124,7 +135,7 @@ export async function serverEmbed(options: Options) {
       possiblyFetchedInviteChannel.isTextBased() &&
       !possiblyFetchedInviteChannel.isThread()
         ? possiblyFetchedInviteChannel
-        : options.guild.rulesChannel;
+        : guild.rulesChannel;
 
     if (!inviteChannel) return embed;
 

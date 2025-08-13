@@ -143,7 +143,7 @@ export const settingsDefinition: SettingsDefinition = {
       },
       invite_channel: {
         type: "CHANNEL",
-        desc: "Channel for the invite. If not set, if a rules channel exists uses it, hides the invite otherwise.",
+        desc: "Channel for the invite. If not set, uses the first channel in the channel list.",
         emoji: "📨",
       },
     },

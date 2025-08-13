@@ -6,10 +6,10 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { colorize } from "utils/colorGen";
-import { emojis } from "utils/constants";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { pluralOrNot } from "utils/pluralOrNot";
+import { replace } from "utils/replace";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("info")
@@ -60,7 +60,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     })
     .setFields(
       {
-        name: `<:discord:${emojis.discord}> • Discord info`,
+        name: `<:discord:${replace("(discord)")}> • Discord info`,
         value: [
           `Username is **${user.username}**`,
           `Display name is ${

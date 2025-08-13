@@ -48,9 +48,5 @@ export async function fetchMedia(
     }
   }
 
-  return {
-    image,
-    video,
-    thumbnail,
-  };
+  return { image, video, thumbnail };
 }
