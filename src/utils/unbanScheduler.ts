@@ -16,72 +16,75 @@ export function scheduleUnban(
   const key = `${guildID}-${userID}`;
   if (scheduledUnbans.has(key)) clearTimeout(scheduledUnbans.get(key)!);
 
-  const timeout = setTimeout(async () => {
-    try {
-      // CONSTRUCTION ZONE PLEASE SOMEONE
-      const guild = await client.guilds.fetch(guildID);
-      console.log(guild);
-      if (!guild) {
+  const timeout = setTimeout(
+    async () => {
+      try {
+        const guild = await client.guilds.fetch(guildID);
+
+        const user = guild.bans.cache.get(userID)?.user;
+        if (!user) {
+          removeModeration(guildID, userID);
+          return await errorEmbed({
+            client,
+            title: `Failed to unban user ${userID} in guild ${guildID}.`,
+            reason: "User not found in the guild's ban list's cache.",
+            log: true,
+            forward: true,
+          });
+        }
+
+        const moderator = guild.members.cache.get(modID);
+        if (!moderator) {
+          removeModeration(guildID, userID);
+          return await errorEmbed({
+            client,
+            title: `Failed to unban user ${userID} in guild ${guildID}.`,
+            reason: "Moderator not found in the guild cache.",
+            log: true,
+            forward: true,
+          });
+        }
+
+        const avatar = user.displayAvatarURL();
+        const embed = new EmbedBuilder()
+          .setAuthor({
+            name: `${dotCheck({ string: avatar, doubleSpace: true })}Unbanned ${user.displayName}`,
+            iconURL: avatar,
+          })
+          .setDescription(
+            [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
+          )
+          .setFooter({ text: `User ID: ${user.id}` })
+          .setColor(genColor(100));
+
+        await logChannel(guild, { embeds: [embed] });
+        await guild.members.unban(userID, "Temporary ban has expired");
         removeModeration(guildID, userID);
+        scheduledUnbans.delete(key);
+      } catch (error) {
+        if (String(error).toLowerCase().includes("unknown guild")) {
+          removeModeration(guildID, userID);
+          return await errorEmbed({
+            client,
+            title: `Failed to ban user(s) from guild ${guildID}.`,
+            reason: "The guild is undefined.",
+            log: true,
+            forward: true,
+          });
+        }
         return await errorEmbed({
           client,
-          title: `Failed to ban user(s) from guild ${guildID}.`,
-          reason: "The guild is undefined.",
+          error,
+          title: `Failed to unban user ${userID} in guild ${guildID}`,
           log: true,
           forward: true,
         });
       }
-
-      const user = guild.bans.cache.get(userID)?.user;
-      if (!user) {
-        removeModeration(guildID, userID);
-        return await errorEmbed({
-          client,
-          title: `Failed to unban user ${userID} in guild ${guildID}.`,
-          reason: "User not found in the guild's ban list's cache.",
-          log: true,
-          forward: true,
-        });
-      }
-
-      const moderator = guild.members.cache.get(modID);
-      if (!moderator) {
-        removeModeration(guildID, userID);
-        return await errorEmbed({
-          client,
-          title: `Failed to unban user ${userID} in guild ${guildID}.`,
-          reason: "Moderator not found in the guild cache.",
-          log: true,
-          forward: true,
-        });
-      }
-
-      const avatar = user.displayAvatarURL();
-      const embed = new EmbedBuilder()
-        .setAuthor({
-          name: `${dotCheck({ string: avatar, doubleSpace: true })}Unbanned ${user.displayName}`,
-          iconURL: avatar,
-        })
-        .setDescription(
-          [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
-        )
-        .setFooter({ text: `User ID: ${user.id}` })
-        .setColor(genColor(100));
-
-      await logChannel(guild, { embeds: [embed] });
-      await guild.members.unban(userID, "Temporary ban has expired");
-      removeModeration(guildID, userID);
-      scheduledUnbans.delete(key);
-    } catch (error) {
-      return await errorEmbed({
-        client,
-        error,
-        title: `Failed to unban user ${userID} in guild ${guildID}`,
-        log: true,
-        forward: true,
-      });
-    }
-  }, delay);
+    },
+    // this math.min exists because apparently "delay" may surpass the limit
+    // by being bigger than a signed int32 in some cases
+    Math.min(delay, 2147483646),
+  );
 
   return scheduledUnbans.set(key, timeout);
 }
