@@ -53,7 +53,7 @@ client.once("ready", async () => {
           "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
         );
       }
-    }, ms("1h"));
+    }, ms("3h"));
   }
 
   await Promise.all([

@@ -18,9 +18,23 @@ export function scheduleUnban(
 
   const timeout = setTimeout(async () => {
     try {
+      // CONSTRUCTION ZONE PLEASE SOMEONE
       const guild = await client.guilds.fetch(guildID);
+      console.log(guild);
+      if (!guild) {
+        removeModeration(guildID, userID);
+        return await errorEmbed({
+          client,
+          title: `Failed to ban user(s) from guild ${guildID}.`,
+          reason: "The guild is undefined.",
+          log: true,
+          forward: true,
+        });
+      }
+
       const user = guild.bans.cache.get(userID)?.user;
-      if (!user)
+      if (!user) {
+        removeModeration(guildID, userID);
         return await errorEmbed({
           client,
           title: `Failed to unban user ${userID} in guild ${guildID}.`,
@@ -28,9 +42,11 @@ export function scheduleUnban(
           log: true,
           forward: true,
         });
+      }
 
       const moderator = guild.members.cache.get(modID);
-      if (!moderator)
+      if (!moderator) {
+        removeModeration(guildID, userID);
         return await errorEmbed({
           client,
           title: `Failed to unban user ${userID} in guild ${guildID}.`,
@@ -38,6 +54,7 @@ export function scheduleUnban(
           log: true,
           forward: true,
         });
+      }
 
       const avatar = user.displayAvatarURL();
       const embed = new EmbedBuilder()
