@@ -66,10 +66,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (
     !(
       channel.type == ChannelType.GuildText ||
-      channel.type == ChannelType.PublicThread ||
-      channel.type == ChannelType.PrivateThread ||
+      channel.type == ChannelType.GuildAnnouncement ||
       channel.type == ChannelType.GuildVoice ||
-      channel.type == ChannelType.GuildStageVoice
+      channel.type == ChannelType.GuildStageVoice ||
+      channel.type == ChannelType.PublicThread ||
+      channel.type == ChannelType.PrivateThread
     )
   )
     return await errorEmbed({

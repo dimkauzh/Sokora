@@ -20,7 +20,6 @@ export function scheduleUnban(
     async () => {
       try {
         const guild = await client.guilds.fetch(guildID);
-
         const user = guild.bans.cache.get(userID)?.user;
         if (!user) {
           removeModeration(guildID, userID);

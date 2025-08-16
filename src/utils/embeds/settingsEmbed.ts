@@ -1,6 +1,7 @@
 import {
   getSetting,
   getSettingCategory,
+  resetSetting,
   resetSettingCategory,
   setSetting,
   settingsDefinition,
@@ -168,7 +169,11 @@ export async function settingsEmbed(
       (name == "server_invite" || name == "invite_channel") &&
       !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("CreateInstantInvite");
 
-    if (invitePermission) await resetSettingCategory(guild!.id, "serverboard");
+    if (invitePermission) {
+      await resetSetting(guild!.id, "serverboard", "server_invite");
+      await resetSetting(guild!.id, "serverboard", "invite_channel");
+    }
+
     const text = invitePermission
       ? `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`
       : `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;

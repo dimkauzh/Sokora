@@ -118,14 +118,11 @@ export async function serverEmbed(options: Options) {
         guild.channels.cache
           .filter(
             channel =>
-              channel.type ==
-              (ChannelType.GuildAnnouncement ||
-                ChannelType.GuildForum ||
-                ChannelType.GuildStageVoice ||
-                ChannelType.GuildText ||
-                ChannelType.GuildVoice ||
-                ChannelType.PublicThread ||
-                ChannelType.PrivateThread),
+              channel.type == ChannelType.GuildText ||
+              channel.type == ChannelType.GuildAnnouncement ||
+              channel.type == ChannelType.GuildForum ||
+              channel.type == ChannelType.GuildVoice ||
+              channel.type == ChannelType.GuildStageVoice,
           )
           .find(channel => channel.position == 0)!.id,
     );

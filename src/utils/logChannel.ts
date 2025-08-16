@@ -45,10 +45,13 @@ export async function logChannel(
       ?.fetch()
       .then((channel: Channel) => {
         if (
-          channel.type != ChannelType.GuildText &&
-          ChannelType.PublicThread &&
-          ChannelType.PrivateThread &&
-          ChannelType.GuildVoice
+          !(
+            channel.type == ChannelType.GuildText ||
+            channel.type == ChannelType.GuildAnnouncement ||
+            channel.type == ChannelType.GuildVoice ||
+            channel.type == ChannelType.PublicThread ||
+            channel.type == ChannelType.PrivateThread
+          )
         )
           return null;
 
