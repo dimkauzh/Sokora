@@ -5,6 +5,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
 import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
@@ -20,7 +21,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const user = interaction.options.getUser("user") ?? interaction.user;
   const target = guild.members.cache.get(user.id);
-  if (!target) return;
+  if (!target)
+    return await errorEmbed({
+      interaction,
+      title: `Error viewing info for ${mention(user.id, "USER")}`,
+      reason: "This user is not part of this guild!",
+    });
 
   const avatar = target.displayAvatarURL() ?? user.displayAvatarURL();
   const serverInfo = [`Joined on **<t:${Math.round(target.joinedAt!.valueOf()! / 1000)}:D>**`];

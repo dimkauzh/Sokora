@@ -16,11 +16,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       name: `${dotCheck({ string: avatar, doubleSpace: true })}Changelog for ${version}`,
       iconURL: avatar,
     })
-    .setFields({
-      name: version,
-      value:
-        "See Sokora's changelog [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
-    })
+    .setDescription(
+      "See Sokora's changelog [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
+    )
     .setFooter({ text: replace("(madeWith)") })
     .setColor(await colorize({ user, avatar, hue: 270 }));
 
