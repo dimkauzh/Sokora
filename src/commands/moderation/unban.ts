@@ -14,20 +14,13 @@ export const data = new SlashCommandSubcommandBuilder()
   .addStringOption(string => string.setName("reason").setDescription("The reason for the unban."));
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const target = interaction.options.getUser("id")!;
+  const user = interaction.options.getUser("id")!;
   const reason = interaction.options.getString("reason")!;
-  const guild = interaction.guild;
-  if (!guild)
-    return await errorEmbed({
-      interaction,
-      title: "Error unbanning user.",
-      reason: "Couldn't find the guild.",
-    });
 
   if (
     await errorCheck("Ban Members", {
       interaction,
-      user: target,
+      user,
       action: "Unban",
       errorOptions: { allErrors: false, botError: true, ownerError: true, banCheckError: true },
     })
@@ -36,8 +29,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   try {
     await Promise.all([
-      modEmbed({ interaction, user: target, action: "Unbanned", dbAction: "UNBAN" }, reason),
-      guild.members.unban(target.id, reason ?? undefined),
+      modEmbed({ interaction, user, action: "Unbanned", dbAction: "UNBAN" }, reason),
+      interaction.guild?.members.unban(user.id, reason ?? undefined),
     ]);
   } catch (error) {
     await errorEmbed({ interaction, error, forward: true });
