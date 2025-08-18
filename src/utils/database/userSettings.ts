@@ -18,7 +18,7 @@ export const settingsDefinition: SettingsDefinition = {
     settings: {
       remind: {
         type: "BOOL",
-        desc: "Whether or not should the bot remind you about when you can vote in Top.gg again.",
+        desc: "Whether or not should the bot remind you when you can vote in Top.gg. **This setting will DM you.**",
         val: false,
       },
     },

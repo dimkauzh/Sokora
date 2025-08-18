@@ -1,3 +1,5 @@
+// I have a love-hate relationship with this function
+// (mostly hate)
 export function newline(str: string, chars: number, startWith?: string): string {
   const splitStr = str.split(" ");
   const array: string[] = [];
