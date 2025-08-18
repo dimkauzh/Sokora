@@ -25,6 +25,7 @@ export const data = new SlashCommandSubcommandBuilder()
       .setDescription("The channel that you want to slowdown.")
       .addChannelTypes(
         ChannelType.GuildText,
+        ChannelType.GuildAnnouncement,
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
         ChannelType.GuildVoice,
@@ -39,12 +40,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (channelOption) channel = guild.channels.cache.get(channelOption.id)!;
 
   if (
-    await errorCheck(
-      "ManageChannels",
-      { interaction, channel: channel.id },
-      { allErrors: false, botError: true, channelError: true },
-      "Manage Channels",
-    )
+    await errorCheck("Manage Channels", {
+      interaction,
+      channel: channel.id,
+      errorOptions: { allErrors: false, botError: true, channelError: true },
+    })
   )
     return;
 

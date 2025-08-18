@@ -28,12 +28,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
 
   if (
-    await errorCheck(
-      "ModerateMembers",
-      { interaction, user, action: "Mute" },
-      { allErrors: true, botError: true, ownerError: true, outsideError: true },
-      "Moderate Members",
-    )
+    await errorCheck("Moderate Members", {
+      interaction,
+      user,
+      action: "Mute",
+      errorOptions: { allErrors: true, botError: true, ownerError: true, outsideError: true },
+    })
   )
     return;
 

@@ -26,6 +26,7 @@ export const data = new SlashCommandSubcommandBuilder()
       .setDescription("The channel that has the messages that you want to clear.")
       .addChannelTypes(
         ChannelType.GuildText,
+        ChannelType.GuildAnnouncement,
         ChannelType.PublicThread,
         ChannelType.PrivateThread,
         ChannelType.GuildVoice,
@@ -42,12 +43,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
 
   if (
-    await errorCheck(
-      "ManageMessages",
-      { interaction, channel: channel.id },
-      { allErrors: false, botError: true, channelError: true },
-      "Manage Messages",
-    )
+    await errorCheck("Manage Messages", {
+      interaction,
+      channel: channel.id,
+      errorOptions: { allErrors: false, botError: true, channelError: true },
+    })
   )
     return;
 

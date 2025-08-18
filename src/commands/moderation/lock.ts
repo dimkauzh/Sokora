@@ -18,8 +18,7 @@ export const data = new SlashCommandSubcommandBuilder()
       .setDescription("The channel that you want to lock.")
       .addChannelTypes(
         ChannelType.GuildText,
-        ChannelType.PublicThread,
-        ChannelType.PrivateThread,
+        ChannelType.GuildAnnouncement,
         ChannelType.GuildVoice,
         ChannelType.GuildStageVoice,
       ),
@@ -33,12 +32,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (channelOption) channel = guild.channels.cache.get(channelOption.id)!;
 
   if (
-    await errorCheck(
-      "ManageRoles",
-      { interaction, channel: channel.id },
-      { allErrors: false, botError: true, channelError: true },
-      "Manage Roles",
-    )
+    await errorCheck("Manage Roles", {
+      interaction,
+      channel: channel.id,
+      errorOptions: { allErrors: false, botError: true, channelError: true },
+    })
   )
     return;
 
@@ -54,9 +52,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       channel.type == ChannelType.GuildText ||
       channel.type == ChannelType.GuildAnnouncement ||
       channel.type == ChannelType.GuildVoice ||
-      channel.type == ChannelType.GuildStageVoice ||
-      channel.type == ChannelType.PublicThread ||
-      channel.type == ChannelType.PrivateThread
+      channel.type == ChannelType.GuildStageVoice
     )
   )
     return await errorEmbed({

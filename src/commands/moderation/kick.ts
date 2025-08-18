@@ -20,12 +20,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
 
   if (
-    await errorCheck(
-      "KickMembers",
-      { interaction, user, action: "Kick" },
-      { allErrors: true, botError: true, ownerError: true, outsideError: true },
-      "Kick Members",
-    )
+    await errorCheck("Kick Members", {
+      interaction,
+      user,
+      action: "Kick",
+      errorOptions: { allErrors: true, botError: true, ownerError: true, outsideError: true },
+    })
   )
     return;
 

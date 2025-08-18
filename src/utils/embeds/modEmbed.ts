@@ -30,30 +30,26 @@ type Options = {
   };
 };
 
-type ErrorOptions = {
-  allErrors: boolean;
-  botError: boolean;
-  channelError?: boolean;
-  ownerError?: boolean;
-  outsideError?: boolean;
-  unbanError?: boolean;
+type ErrorOptions = Options & {
+  errorOptions: {
+    allErrors: boolean;
+    botError: boolean;
+    channelError?: boolean;
+    ownerError?: boolean;
+    outsideError?: boolean;
+    banCheckError?: boolean;
+  };
 };
 
-// TODO - there's a bunch of duplicate validations
-// * to simplify, i mean stuff like: "if (!memberIsInServer) {...}", then "errorCheck(outsideError)"
-// * most cases (not all, tho) are managed by this, so uh a little code review would be really nice
-export async function errorCheck(
-  permission: PermissionResolvable,
-  options: Options,
-  errorOptions: ErrorOptions,
-  permissionAction: string,
-) {
-  const { interaction, user, channel, action } = options;
-  const { allErrors, botError, channelError, ownerError, outsideError, unbanError } = errorOptions;
+export async function errorCheck(permissionAction: string, options: ErrorOptions) {
+  const { interaction, user, channel, action, errorOptions } = options;
+  const { allErrors, botError, channelError, ownerError, outsideError, banCheckError } =
+    errorOptions;
   const guild = interaction.guild!;
   const members = guild.members.cache!;
   const member = members.get(interaction.user.id)!;
   const client = members.get(interaction.client.user.id)!;
+  const permission = permissionAction.replace(/\s/g, "") as PermissionResolvable;
 
   if (botError)
     if (!client.permissions.has(permission))
@@ -78,13 +74,21 @@ export async function errorCheck(
       reason: `You're missing the **${permissionAction}** permission.`,
     });
 
-  if (unbanError)
-    if (!user)
+  if (banCheckError) {
+    const isBanned = (await guild.bans.fetch()).has(user!.id);
+    if (action == "Ban" && isBanned)
       return await errorEmbed({
         interaction,
-        title: "You can't unban this user.",
+        title: `You can't ban this user.`,
+        reason: "This user is already banned.",
+      });
+    else if (action == "Unban" && !isBanned)
+      return await errorEmbed({
+        interaction,
+        title: `You can't unban this user.`,
         reason: "This user isn't currently banned.",
       });
+  }
 
   if (!allErrors || !user || !action) return;
   const target = members.get(user.id)!;
@@ -92,15 +96,12 @@ export async function errorCheck(
   const highestModPos = member.roles.highest.position;
 
   if (outsideError)
-    if (!guild.members.cache.has(user.id)) {
-      const isBanError = (await guild.bans.fetch()).has(user.id) && action == "Ban";
-
+    if (!guild.members.cache.has(user.id))
       return await errorEmbed({
         interaction,
         title: `You can't ${action.toLowerCase()} ${name}.`,
-        reason: isBanError ? "This user was already banned." : "This user isn't in this server.",
+        reason: "This user isn't in this server.",
       });
-    }
 
   if (!target) return;
   const highestTargetPos = target.roles.highest.position;
@@ -119,7 +120,6 @@ export async function errorCheck(
     });
 
   const same: boolean = highestModPos == highestTargetPos;
-
   if (highestModPos <= highestTargetPos && member.id != guild.ownerId)
     return await errorEmbed({
       interaction,

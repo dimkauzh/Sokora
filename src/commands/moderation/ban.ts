@@ -26,12 +26,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const reason = interaction.options.getString("reason");
 
   if (
-    await errorCheck(
-      "BanMembers",
-      { interaction, user, action: "Ban" },
-      { allErrors: true, outsideError: true, botError: true, ownerError: true },
-      "Ban Members",
-    )
+    await errorCheck("Ban Members", {
+      interaction,
+      user,
+      action: "Ban",
+      errorOptions: {
+        allErrors: true,
+        banCheckError: true,
+        botError: true,
+        ownerError: true,
+      },
+    })
   )
     return;
 

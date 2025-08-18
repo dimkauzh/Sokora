@@ -25,12 +25,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const newWarns = warns.filter(warn => warn.id != `${id}`);
 
   if (
-    await errorCheck(
-      "ModerateMembers",
-      { interaction, user, action: "Remove a warning" },
-      { allErrors: true, botError: false },
-      "Moderate Members",
-    )
+    await errorCheck("Moderate Members", {
+      interaction,
+      user,
+      action: "Remove a warning",
+      errorOptions: { allErrors: true, botError: false },
+    })
   )
     return;
 
