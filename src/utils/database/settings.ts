@@ -49,7 +49,7 @@ export const settingsDefinition: SettingsDefinition = {
       difficulty: {
         type: "INTEGER",
         desc: "Set the difficulty (ex: 2 will make it 2x harder to level up).",
-        val: 2,
+        val: 1,
         emoji: "🧩",
       },
     },
@@ -151,27 +151,27 @@ export const settingsDefinition: SettingsDefinition = {
   welcome: {
     description: "Change how Sokora welcomes your new users.",
     settings: {
+      join_channel: {
+        type: "CHANNEL",
+        desc: "Channel where welcome messages are sent.",
+        emoji: "📥",
+      },
       join_text: {
         type: "TEXT",
         desc: "Text sent when a user joins. Use (variables) to add dynamic info, run /help variables for info.",
         val: "Welcome to (servername), (name)! Interestingly, you just helped us reach (count) members. Have a nice day!",
         emoji: "👋",
       },
+      leave_channel: {
+        type: "CHANNEL",
+        desc: "Channel where leave messages are sent.",
+        emoji: "📤",
+      },
       leave_text: {
         type: "TEXT",
         desc: "Text sent when a user leaves. Use (variables) to add dynamic info, run /help variables for info.",
         val: "(name) has left the server! 😥",
         emoji: "🚪",
-      },
-      join_channel: {
-        type: "CHANNEL",
-        desc: "Channel where welcome messages are sent.",
-        emoji: "📥",
-      },
-      leave_channel: {
-        type: "CHANNEL",
-        desc: "Channel where leave messages are sent.",
-        emoji: "📤",
       },
       join_dm: {
         type: "BOOL",

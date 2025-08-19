@@ -41,8 +41,10 @@ export default (async function run(member) {
       permType: "Send",
       setting: { category: "welcome", setting: "join_channel" },
     })
-  )
+  ) {
     if (roles) await member.roles.add([...kominator(roles as string)]);
+    await channel.send({ embeds: [embed] });
+  }
 
   if (!(await getSetting(guildID, "welcome", "join_dm")) as boolean) return;
   const dmChannel = await user.createDM().catch(() => null);
