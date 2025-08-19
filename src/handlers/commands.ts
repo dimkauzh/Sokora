@@ -48,7 +48,27 @@ async function createSubCommand(name: string, client: Client) {
       else command.addSubcommandGroup(subCommand.data);
 
       pushSubCommand(client, run, autocomplete, subCommand);
+      continue;
     }
+
+    const subCommandGroup = new SlashCommandSubcommandGroupBuilder()
+      .setName(subCommandFile.name.replaceAll(".ts", "").toLowerCase())
+      .setDescription("This subcommand group has no description.");
+
+    for (const subCommandGroupFile of readdirSync(join(commandsPath, name, subCommandFile.name), {
+      withFileTypes: true,
+    })) {
+      if (!subCommandGroupFile.isFile()) continue;
+      const subCommand = await import(
+        pathToFileURL(
+          join(commandsPath, name, subCommandFile.name, subCommandGroupFile.name),
+        ).toString()
+      );
+
+      subCommandGroup.addSubcommand(subCommand.data);
+      pushSubCommand(client, run, autocomplete, subCommand);
+    }
+    command.addSubcommandGroup(subCommandGroup);
   }
 
   return { data: command, run, autocomplete };
