@@ -194,7 +194,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
         return await errorEmbed({
           interaction,
           title: `Failed to ${action.toLowerCase()}.`,
-          reason: "Cannot find moderator.",
+          reason: "Cannot find the moderator.",
         });
 
       const id = addModeration(
@@ -218,6 +218,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     })
     .setDescription(generalValues.join("\n"))
     .setFooter({ text: user ? `User ID: ${user.id}` : `Channel ID: ${channel}` })
+    .setTimestamp(new Date())
     .setColor(genColor(100));
 
   async function replier() {
@@ -238,6 +239,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
               iconURL: serverAvatar,
             })
             .setDescription(generalValues.join("\n"))
+            .setTimestamp(new Date())
             .setColor(genColor(0)),
         ],
       },

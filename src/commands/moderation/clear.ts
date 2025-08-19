@@ -1,14 +1,10 @@
 import {
   ChannelType,
-  EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { errorCheck } from "embeds/modEmbed";
-import { genColor } from "utils/colorGen";
-import { dotCheck } from "utils/dotCheck";
-import { mention } from "utils/mention";
+import { errorCheck, modEmbed } from "embeds/modEmbed";
 import { pluralOrNot } from "utils/pluralOrNot";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -113,21 +109,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
   }
 
-  const user = interaction.user;
-  const avatar = user.displayAvatarURL();
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}`,
-      iconURL: avatar,
-    })
-    .setDescription(
-      [`**Moderator**: ${user.username}`, `**Channel**: ${mention(channel.id, "CHANNEL")}`]
-        .filter(Boolean)
-        .join("\n"),
-    )
-    .setTimestamp(new Date())
-    .setFooter({ text: `Channel ID: ${channel.id}` })
-    .setColor(genColor(0));
-
-  await interaction.reply({ embeds: [embed], flags: "Ephemeral" });
+  await modEmbed({
+    interaction,
+    channel: channel.id,
+    customText: { logTitle: `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}` },
+  });
 }

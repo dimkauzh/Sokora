@@ -50,8 +50,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const time = interaction.options.getString("time")!;
   const reason = interaction.options.getString("reason");
-  let title = `Set the slowdown to ${ms(ms(time), { long: true })}.`;
-  if (!ms(time)) title = `Removed the slowdown.`;
+  let title = `Set the slowdown to ${ms(ms(time), { long: true })}`;
+  if (!ms(time)) title = "Removed the slowdown";
 
   if (
     !(

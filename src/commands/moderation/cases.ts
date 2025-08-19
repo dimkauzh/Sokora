@@ -88,7 +88,7 @@ async function generateEmbed(params: {
     })
     .setFields(fields)
     .setFooter({
-      text: `${totalPages > 1 ? `Page ${page} of ${totalPages}` : ""}${user ? `\nUser ID: ${user.id} • Server ID: ${guildID}` : `${totalPages > 1 ? " • " : ""}`}Server ID: ${guildID}`,
+      text: `${totalPages > 1 ? `Page ${page} of ${totalPages}` : ""}${user ? `\nUser ID: ${user.id} • Server ID: ${guildID}` : `${totalPages > 1 ? ` • Server ID: ${guildID}` : `Server ID: ${guildID}`}`}`,
     })
     .setColor(genColor(200));
 }
@@ -161,8 +161,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       : type
         ? listUserModeration(guildID, user.id, type as ModType)
         : listUserModeration(guildID, user.id);
+  else cases = type ? listGuildModeration(guildID, type as ModType) : listGuildModeration(guildID);
 
-  cases = type ? listGuildModeration(guildID, type as ModType) : listGuildModeration(guildID);
   const totalPages = Math.ceil(cases.length / 5);
   let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

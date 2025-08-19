@@ -72,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         {
           interaction,
           channel: channel.id,
-          customText: { logTitle: `Unlocked a channel` },
+          customText: { logTitle: "Unlocked a channel" },
         },
         reason,
       ),

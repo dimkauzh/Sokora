@@ -53,7 +53,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     dm: true,
     customText: {
       logTitle: `Removed a warning from ${name}`,
-      dmTitle: "Your warning has been removed.",
+      dmTitle: "Your warning has been removed",
     },
   });
 }

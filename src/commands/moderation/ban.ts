@@ -40,7 +40,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
-  let expiresAt: number | undefined;
   if (duration) {
     const durationMs = ms(duration);
     if (!durationMs || durationMs <= 0)
@@ -50,7 +49,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
         reason: "The duration is invalid.",
       });
 
-    expiresAt = Date.now() + durationMs;
     scheduleUnban(interaction.client, guild.id, user.id, interaction.member!.user.id, durationMs);
   }
 
@@ -68,7 +66,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         duration,
         dm: true,
         dbAction: "BAN",
-        expiresAt,
+        expiresAt: duration ? ms(duration) : undefined,
         silent,
       },
       reason,
