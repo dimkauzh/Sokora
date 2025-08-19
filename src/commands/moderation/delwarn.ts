@@ -1,4 +1,5 @@
 import { listUserModeration, removeModeration } from "database/moderation";
+import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -14,6 +15,13 @@ export const data = new SlashCommandSubcommandBuilder()
   )
   .addNumberOption(number =>
     number.setName("id").setDescription("The id of the warn.").setRequired(true),
+  )
+  .addBooleanOption(bool =>
+    bool
+      .setName("silent")
+      .setDescription(
+        "If true, the user won't be notified about this action (overrides the server setting).",
+      ),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -47,6 +55,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
   }
 
+  const silent =
+    interaction.options.getBoolean("silent") ??
+    ((await getSetting(guild.id, "moderation", "silent")) as boolean);
+
   await modEmbed({
     interaction,
     user,
@@ -55,5 +67,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       logTitle: `Removed a warning from ${name}`,
       dmTitle: "Your warning has been removed",
     },
+    silent,
   });
 }

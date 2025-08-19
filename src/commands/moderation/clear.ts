@@ -2,6 +2,7 @@ import {
   ChannelType,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
+  type User,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -36,7 +37,8 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const channelOption = interaction.options.getChannel("channel")!;
-  const channel = guild.channels.cache.get(interaction.channel?.id ?? channelOption.id)!;
+  let channel = guild.channels.cache.get(interaction.channel!.id)!;
+  if (channelOption) channel = guild.channels.cache.get(channelOption.id)!;
 
   if (
     await errorCheck("Manage Messages", {
@@ -77,7 +79,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     if (targetUser) {
       const userMessages = (await channel.messages.fetch({ limit: 100 }))
-        .filter(m => m.author.id == targetUser.id)
+        .filter(m => m.author.id == targetUser.id && !m.partial)
         .first(amount);
 
       if (userMessages.length == 0)
@@ -111,7 +113,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   await modEmbed({
     interaction,
+    user: targetUser as User | undefined,
     channel: channel.id,
-    customText: { logTitle: `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}` },
+    customText: {
+      logTitle: `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}${targetUser ? ` from ${targetUser.username}` : ""}`,
+    },
   });
 }

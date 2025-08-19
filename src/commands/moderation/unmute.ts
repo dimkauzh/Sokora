@@ -13,7 +13,11 @@ export const data = new SlashCommandSubcommandBuilder()
     reason.setName("reason").setDescription("The reason for unmuting the user."),
   )
   .addBooleanOption(bool =>
-    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
+    bool
+      .setName("silent")
+      .setDescription(
+        "If true, the user won't be notified about this action (overrides the server setting).",
+      ),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -40,8 +44,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const silent =
-    interaction.options.getBoolean("silent") ||
-    false ||
+    interaction.options.getBoolean("silent") ??
     ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
   try {

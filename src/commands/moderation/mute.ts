@@ -18,7 +18,11 @@ export const data = new SlashCommandSubcommandBuilder()
   )
   .addStringOption(string => string.setName("reason").setDescription("The reason for the mute."))
   .addBooleanOption(bool =>
-    bool.setName("silent").setDescription("If true, the user won't be notified about this action."),
+    bool
+      .setName("silent")
+      .setDescription(
+        "If true, the user won't be notified about this action (overrides the server setting).",
+      ),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -55,8 +59,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     Date.parse(new Date().toISOString()) + Date.parse(new Date(ms(duration)).toISOString()),
   ).toISOString();
   const silent =
-    interaction.options.getBoolean("silent") ||
-    false ||
+    interaction.options.getBoolean("silent") ??
     ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
   try {

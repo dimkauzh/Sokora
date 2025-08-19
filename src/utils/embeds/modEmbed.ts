@@ -1,5 +1,4 @@
 import { addModeration, editModeration, getModeration, type ModType } from "database/moderation";
-import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
@@ -149,12 +148,10 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     expiresAt,
     previousID,
     customText,
+    silent,
   } = options;
-  let { silent } = options;
 
   const guild = interaction.guild!;
-  if (!silent) silent = (await getSetting(guild.id, "moderation", "silent")) as boolean;
-
   const name = user?.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
   const serverAvatar = guild.icon ? guild.iconURL()! : undefined;
@@ -229,7 +226,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
 
   await Promise.all([
     logChannel(guild, { embeds: [embed] }, dm, {
-      silent,
+      silent: silent!,
       user: user!,
       options: {
         embeds: [
