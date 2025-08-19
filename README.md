@@ -1,16 +1,21 @@
+<!-- markdownlint-disable md033 -->
+<h1 align="center">Sokora</h1>
+
 <div align="center">
-  <p>
-    <img src="static/banner.png" />
-  </p>
-  <p>
-    <a href="https://discord.gg/c6C25P4BuY"><img src="https://img.shields.io/discord/903852579837059113?color=5865F2&logo=discord&logoColor=white" /></a>
-    <a href="https://ptb.discord.com/api/oauth2/authorize?client_id=873918300726394960&permissions=8&scope=bot%20applications.commands"><img src="https://img.shields.io/badge/bot-Invite%20the%20bot%20here!-blue" /></a>
-  </p>
+
+![Sokora's banner](static/banner.png)
+
+[![Discord Badge](https://img.shields.io/discord/903852579837059113?color=5865F2&logo=discord&logoColor=white)](https://discord.gg/c6C25P4BuY)
+[![Invite Bot](https://img.shields.io/badge/bot-Invite%20the%20bot%20here!-blue)](https://ptb.discord.com/api/oauth2/authorize?client_id=873918300726394960&permissions=8&scope=bot%20applications.commands)
+
 </div>
 
-# About
-Sokora is a multipurpose Discord bot that lets you manage your servers easily.
-**Please note that Sokora is currently unstable so it might have issues.**
+## Welcome to Sokora, a beautifully-crafted bot
 
-# Contributing
-While we're developing the bot, you can [help us](CONTRIBUTING.MD) if you find any bugs.
+Sokora is a multipurpose Discord bot that lets you manage your servers easily. It has moderation, levelling, and news functionality among other features, and even a set of easter eggs for the chat to stay fun.
+
+**Please note that Sokora is currently unstable, so it might have issues.**
+
+## Contributing
+
+While we're developing the bot, you can [help us](CONTRIBUTING.md) if you find any bugs.

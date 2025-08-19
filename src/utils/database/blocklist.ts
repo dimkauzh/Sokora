@@ -4,8 +4,8 @@ import { TableDefinition } from "./types";
 const tableDefinition: TableDefinition = {
   name: "blocklist",
   definition: {
-    id: "INTEGER"
-  }
+    id: "INTEGER",
+  },
 };
 
 const database = getDatabase(tableDefinition);

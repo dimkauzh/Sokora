@@ -7,8 +7,8 @@ const tableDefinition = {
     guild: "TEXT",
     user: "TEXT",
     level: "INTEGER",
-    xp: "INTEGER"
-  }
+    xp: "INTEGER",
+  },
 } satisfies TableDefinition;
 
 const database = getDatabase(tableDefinition);
@@ -16,7 +16,7 @@ const database = getDatabase(tableDefinition);
 const getQuery = database.query("SELECT * FROM leveling WHERE guild = $1 AND user = $2;");
 const deleteQuery = database.query("DELETE FROM leveling WHERE guild = $1 AND user = $2;");
 const insertQuery = database.query(
-  "INSERT INTO leveling (guild, user, level, xp) VALUES (?1, ?2, ?3, ?4);"
+  "INSERT INTO leveling (guild, user, level, xp) VALUES (?1, ?2, ?3, ?4);",
 );
 
 const getGuildQuery = database.query("SELECT * FROM leveling WHERE guild = $1;");

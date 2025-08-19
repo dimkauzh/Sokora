@@ -1,42 +1,52 @@
+import { ColorResolvable, type User } from "discord.js";
+import Vibrant from "node-vibrant";
+import sharp from "sharp";
+import { kominator } from "./kominator";
+
 /**
- * Randomises a color and outputs HEX.
- * @param hue Color to randomise.
+ * Randomizes a color and outputs HEX.
+ * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
  * @returns Color in HEX.
  */
-
-export function genColor(hue: number) {
-  const h = hue + 15 * Math.random();
-  let s = 100;
-  let l = 50 + 25 * Math.random();
-
-  s /= 100;
-  l /= 100;
-  const a = s * Math.min(l, 1 - l);
-  const f = (n: number) => {
-    const k = (n + h / 30) % 12;
-    const color = l - a * Math.max(-1, Math.min(k - 3, Math.min(9 - k, 1)));
-    return Math.round(255 * color);
-  };
-
-  return f(0) * 65536 + f(8) * 256 + f(4);
+export function genColor(hue: number): ColorResolvable {
+  return Bun.color(
+    `hsl(${hue + 15 * Math.random()}, ${80 + 20 * Math.random()}%, ${60 + 15 * Math.random()}%)`,
+    "hex",
+  ) as ColorResolvable;
 }
 
 /**
- * Takes RGB and outputs HEX.
- * @param r Red.
- * @param g Green.
- * @param b Blue.
- * @returns Color in HEX.
+ * Randomizes a color and outputs RGB for the accent color of CV2 containers.
+ * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
+ * @returns Color in RGB.
  */
+export function genColorCV2(hue: number) {
+  return Bun.color(
+    `hsl(${hue + 15 * Math.random()}, ${80 + 20 * Math.random()}%, ${60 + 15 * Math.random()}%)`,
+    "[rgb]",
+  );
+}
 
-export function genRGBColor(r: any, g: any, b: any) {
-  r = r.toString(16);
-  g = g.toString(16);
-  b = b.toString(16);
+/**
+ * Outputs the most vibrant color from the image.
+ * @param {?string} url Image URL.
+ * @returns {Promise<ColorResolvable | undefined>} The color in HEX, or undefined if both URLs are missing.
+ */
+export async function genImageColor(url: string): Promise<ColorResolvable | undefined> {
+  if (!url) return;
 
-  if (r.length == 1) r = `0${r}`;
-  if (g.length == 1) g = `0${g}`;
-  if (b.length == 1) b = `0${b}`;
+  const imageBuffer = await (await fetch(url)).arrayBuffer();
+  const { r, g, b } = (
+    await new Vibrant(await sharp(imageBuffer).toFormat("jpg").toBuffer()).getPalette()
+  ).Vibrant!;
+  const hsl = kominator(Bun.color([r, g, b], "hsl")!);
+  const h = Math.round(parseInt(hsl[0].replace("hsl(", "")) + 15 * Math.random());
+  const l = Math.round(parseFloat(hsl[2].replace(")", "")) * 100 + 15 * Math.random());
 
-  return `#${r}${g}${b}`;
+  return Bun.color(`hsl(${h}, 100%, ${l}%)`, "hex") as ColorResolvable;
+}
+
+export async function colorize(options: { user?: User; avatar?: string; hue?: number }) {
+  const { user, avatar, hue } = options;
+  return user?.hexAccentColor ?? (await genImageColor(avatar!)) ?? genColor(hue!);
 }

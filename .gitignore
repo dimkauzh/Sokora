@@ -2,4 +2,7 @@ node_modules/
 .env
 .DS_Store
 data.db
-bun.lockb
+.idea
+.vscode/
+*.tsbuildinfo
+.eslintcache

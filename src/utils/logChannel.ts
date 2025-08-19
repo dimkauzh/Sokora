@@ -1,40 +1,88 @@
+import { getSetting } from "database/settings";
+import {
+  ChannelType,
+  DMChannel,
+  InteractionResponse,
+  Message,
+  type Channel,
+  type Guild,
+  type MessageCreateOptions,
+  type MessagePayload,
+  type TextChannel,
+  type User,
+} from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import { channelCheck } from "./channelCheck";
+
 /**
  * Sends a message in the log channel. (if there is one set)
  * @param guild The guild where the log channel is located.
- * @param embed Embed of the log.
+ * @param options Reply options of the log.
+ * @param dm Whether or not should the bot send a DM to the user.
+ * @param {{
+   silent: boolean;
+   user: User;
+   options: string | MessagePayload | MessageCreateOptions;
+ }} dm Options for sending a DM to the user.
  * @returns Log message.
  */
+export async function logChannel(
+  guild: Guild,
+  options: string | MessagePayload | MessageCreateOptions,
+  dm?: boolean,
+  dmOptions?: {
+    silent: boolean;
+    user: User;
+    options: string | MessagePayload | MessageCreateOptions;
+  },
+): Promise<void | Message | InteractionResponse> {
+  let channel: TextChannel | DMChannel;
+  const logChannel = await getSetting(guild.id, "moderation", "channel");
 
-import {
-  ChannelType,
-  type Channel,
-  type EmbedBuilder,
-  type Guild,
-  type TextChannel
-} from "discord.js";
-import { getSetting } from "./database/settings";
+  if (logChannel) {
+    channel = (await guild.channels.cache
+      .get(`${logChannel}`)
+      ?.fetch()
+      .then((channel: Channel) => {
+        if (
+          !(
+            channel.type == ChannelType.GuildText ||
+            channel.type == ChannelType.GuildAnnouncement ||
+            channel.type == ChannelType.GuildVoice ||
+            channel.type == ChannelType.PublicThread ||
+            channel.type == ChannelType.PrivateThread
+          )
+        )
+          return null;
 
-export async function logChannel(guild: Guild, embed: EmbedBuilder) {
-  const logChannel = getSetting(guild.id, "moderation", "channel");
-  if (!logChannel) return;
+        return channel as TextChannel;
+      })
+      .catch(() => null)) as TextChannel;
 
-  const channel = await guild.channels.cache
-    .get(`${logChannel}`)
-    ?.fetch()
-    .then((channel: Channel) => {
-      if (
-        channel.type != ChannelType.GuildText &&
-        ChannelType.PublicThread &&
-        ChannelType.PrivateThread &&
-        ChannelType.GuildVoice
-      )
-        return null;
+    if (
+      await channelCheck({
+        channel,
+        guild,
+        permType: "Send",
+        setting: {
+          category: "moderation",
+          setting: "channel",
+        },
+      })
+    )
+      await channel.send(options);
+  }
 
-      return channel as TextChannel;
-    })
-    .catch(() => null);
+  if (dm) {
+    try {
+      if (!dmOptions) return;
+      if (dmOptions.silent) return;
 
-  if (!channel) return;
-  if (!channel.permissionsFor(guild.client.user)?.has("ViewChannel")) return;
-  return await channel.send({ embeds: [embed] });
+      channel = (await dmOptions.user.createDM().catch(() => null)) as DMChannel;
+      if (!channel || !guild.members.cache.get(dmOptions.user.id) || dmOptions.user.bot) return;
+      return await channel.send(dmOptions.options);
+    } catch (error) {
+      return await errorEmbed({ client: guild.client, error, log: true });
+    }
+  }
 }

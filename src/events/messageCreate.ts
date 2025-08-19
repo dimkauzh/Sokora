@@ -1,31 +1,44 @@
+import { add, check, remove } from "database/blocklist";
+import { getLevel, setLevel } from "database/leveling";
+import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
-import { readdirSync } from "fs";
-import { join } from "path";
-import { pathToFileURL } from "url";
-import { genColor } from "../utils/colorGen";
-import { add, check, remove } from "../utils/database/blocklist";
-import { getLevel, setLevel } from "../utils/database/leveling";
-import { getSetting } from "../utils/database/settings";
-import { kominator } from "../utils/kominator";
-import { leavePlease } from "../utils/leavePlease";
-import { Event } from "../utils/types";
+import { errorEmbed } from "embeds/errorEmbed";
+import { easterEggs } from "handlers/events";
+import { channelCheck } from "utils/channelCheck";
+import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
+import { kominator } from "utils/kominator";
+import { leavePlease } from "utils/leavePlease";
+import { mention } from "utils/mention";
+import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {
+  const client = message.client;
   if (message.content.startsWith("!SYSTEM")) {
     if (message.author.id != process.env.OWNER) return;
-    let args = message.content.split(" ");
+    const args = message.content.split(" ");
+    if (!args[2]) return message.reply("ERROR: Expected three arguments.");
+    const username = (await client.users.fetch(args[2])).username;
 
-    if (!args[2]) return message.reply("ERROR: Expected three arguments");
-    const username = (await message.client.users.fetch(args[2])).username;
     switch (args[1]) {
       case "add": {
         add(args[2]);
         await message.reply(`${username} has been blocklisted from Sokora.`);
 
-        const guilds = message.client.guilds.cache;
-        for (const id of guilds.keys())
-          await leavePlease(guilds.get(id)!, await guilds.get(id)?.fetchOwner()!, "No.");
+        const guilds = client.guilds.cache;
+        for (const id of guilds.keys()) {
+          const guild = guilds.get(id);
+          if (!guild) {
+            await errorEmbed({
+              client,
+              title: "Failed to blocklist guild.",
+              reason: `Guild ${id} not found`,
+            });
+            continue;
+          }
+          await leavePlease(guild, await guild.fetchOwner(), "No.");
+        }
         break;
       }
       case "remove":
@@ -37,7 +50,7 @@ export default (async function run(message) {
         break;
       default:
         await message.reply(
-          "Hello, this is the system interface to control top level Sokora moderation utilities."
+          "Hello, this is the system interface to control top level Sokora moderation utilities.",
         );
     }
   }
@@ -46,35 +59,62 @@ export default (async function run(message) {
   if (author.bot) return;
   if (!check(author.id)) return;
   const guild = message.guild!;
+  const avatar = author.displayAvatarURL();
 
-  // Easter egg handler
-  if (getSetting(guild.id, "easter", "enabled")) {
-    const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
+  if (await getSetting(guild.id, "easter", "enabled")) {
+    const enabledEggs = (await getSetting(guild.id, "easter", "enabled_eggs")) as string;
+    const allowedChannels = (await getSetting(guild.id, "easter", "allowed_channels")) as string;
+    const isChannelAllowed =
+      !allowedChannels || kominator(allowedChannels).includes(message.channel.id);
 
-    for (const easterEggFile of readdirSync(eventsPath))
-      (await import(pathToFileURL(join(eventsPath, easterEggFile)).toString())).default(message);
+    if (isChannelAllowed) {
+      for (const easterEgg of easterEggs) {
+        const shouldRunEgg = !enabledEggs || kominator(enabledEggs).includes(easterEgg.name);
+
+        if (!shouldRunEgg) continue;
+        try {
+          if (typeof easterEgg.run != "function") {
+            await errorEmbed({
+              client,
+              title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}.`,
+              log: true,
+              forward: true,
+            });
+            continue;
+          }
+
+          if (Math.random() <= 0.15) await easterEgg.run(message);
+        } catch (error) {
+          return await errorEmbed({
+            client,
+            error,
+            title: `Error running easter egg ${easterEgg.name}`,
+            log: true,
+            forward: true,
+          });
+        }
+      }
+    }
   }
 
-  // Leveling
-  if (!getSetting(guild.id, "leveling", "enabled")) return;
-
-  const blockedChannels = getSetting(guild.id, "leveling", "block_channels") as string;
+  if (!(await getSetting(guild.id, "leveling", "enabled"))) return;
+  const blockedChannels = (await getSetting(guild.id, "leveling", "block_channels")) as string;
   if (blockedChannels != undefined)
     for (const channelID of kominator(blockedChannels)) if (message.channelId == channelID) return;
 
-  const cooldown = getSetting(guild.id, "leveling", "cooldown") as number;
+  const cooldown = (await getSetting(guild.id, "leveling", "cooldown")) as number;
   if (cooldown > 0) {
     const key = `${guild.id}-${author.id}`;
     const lastExpTime = cooldowns.get(key) || 0;
     const now = Date.now();
 
     if (now - lastExpTime < cooldown * 1000) return;
-    else cooldowns.set(key, now);
+    cooldowns.set(key, now);
   }
 
-  const xpGain = getSetting(guild.id, "leveling", "xp_gain") as number;
-  const levelChannelId = getSetting(guild.id, "leveling", "channel");
-  const difficulty = getSetting(guild.id, "leveling", "difficulty") as number;
+  const xpGain = (await getSetting(guild.id, "leveling", "xp_gain")) as number;
+  const levelChannelId = await getSetting(guild.id, "leveling", "channel");
+  const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
   const [level, xp] = getLevel(guild.id, author.id);
   const newLevelData = { level: level ?? 0, xp: xp + xpGain };
 
@@ -94,23 +134,35 @@ export default (async function run(message) {
   if (newLevelData.level == level || newLevelData.level < level) return;
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `•  ${author.displayName} has levelled up!`,
-      iconURL: author.displayAvatarURL()
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.displayName} leveled up!`,
+      iconURL: avatar,
     })
     .setDescription(
       [
         `**Congratulations, ${author.displayName}**!`,
         `You made it to **level ${newLevelData.level}**.`,
-        `You need ${100 * difficulty * (newLevelData.level + 1) ** 2 - 80 * difficulty * newLevelData.level ** 2} XP to level up again.`
-      ].join("\n")
+        `You need ${
+          100 * difficulty * (newLevelData.level + 1) ** 2 -
+          80 * difficulty * newLevelData.level ** 2
+        } XP to level up again.`,
+      ].join("\n"),
     )
-    .setThumbnail(author.displayAvatarURL())
     .setTimestamp()
     .setColor(genColor(200));
 
-  if (levelChannelId)
-    (guild.channels.cache.get(`${levelChannelId}`) as TextChannel).send({
-      embeds: [embed],
-      content: `<@${author.id}>`
-    });
+  if (levelChannelId) {
+    const channel = guild.channels.cache.get(`${levelChannelId}`) as TextChannel;
+    if (
+      await channelCheck({
+        channel,
+        guild,
+        permType: "Send",
+        setting: { category: "leveling", setting: "channel" },
+      })
+    )
+      await channel.send({
+        embeds: [embed],
+        content: mention(author.id, "USER"),
+      });
+  }
 } as Event<"messageCreate">);

@@ -1,28 +1,88 @@
-import { EmbedBuilder } from "discord.js";
-import { genColor } from "../utils/colorGen";
-import { getSetting } from "../utils/database/settings";
-import { logChannel } from "../utils/logChannel";
-import { Event } from "../utils/types";
+import { executor } from "audit/messageDelete";
+import { getSetting } from "database/settings";
+import { AttachmentBuilder, EmbedBuilder } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import { client } from "src/bot";
+import { genColor } from "utils/colorGen";
+import { dotCheck } from "utils/dotCheck";
+import { logChannel } from "utils/logChannel";
+import { fetchMedia } from "utils/media";
+import type { Event } from "utils/types";
 
 export default (async function run(message) {
-  const author = message.author!;
-  if (author.bot) return;
+  try {
+    if (message.partial) return;
+    const author = message.author;
+    if (!author)
+      return await errorEmbed({
+        client,
+        title: "Cannot log deleted message.",
+        reason: `Message ${message} lacks an author.`,
+      });
 
-  const guild = message.guild!;
-  if (!getSetting(guild.id, "moderation", "log_messages")) return;
+    if (author.bot) return;
+    const guild = message.guild;
+    if (!guild)
+      return await errorEmbed({
+        client,
+        title: "Cannot log deleted message.",
+        reason: `Message ${message} lacks the guild.`,
+      });
 
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `•  ${author.displayName}'s message has been deleted.`,
-      iconURL: author.displayAvatarURL()
-    })
-    .setDescription(`[Jump to message](${message.url})`)
-    .addFields({
-      name: "🗑️ • Deleted message",
-      value: message.content!
-    })
-    .setFooter({ text: `User ID: ${author.id}` })
-    .setColor(genColor(0));
+    if (!(await getSetting(guild.id, "moderation", "events"))?.toString().includes("messageDelete"))
+      return;
 
-  await logChannel(guild, embed);
+    await new Promise(resolve => setTimeout(resolve, 1500));
+    let exec = executor;
+    if (exec?.id == author.id) exec = null;
+    const avatar = exec ? exec.displayAvatarURL() : author.displayAvatarURL();
+    let media;
+
+    try {
+      media = await fetchMedia(message);
+    } catch (error) {
+      return await errorEmbed({
+        client,
+        error,
+        title: "Error fetching meta image",
+        forward: true,
+      });
+    }
+
+    const { image, video, thumbnail } = media;
+    const content = message.content;
+    const embed = new EmbedBuilder()
+      .setAuthor({
+        name: [
+          `${dotCheck({ string: avatar, doubleSpace: true })}`,
+          exec
+            ? `${exec.username} deleted a message from ${author.username}`
+            : `${author.username} deleted a message`,
+        ].join(""),
+        iconURL: avatar,
+      })
+      .setDescription(
+        content.length <= 1024
+          ? content && content.length > 0
+            ? content
+            : "*Empty message*"
+          : "*The deleted message is an attachment below this embed due to it being too large.*",
+      )
+      .setThumbnail(thumbnail)
+      .setImage(image)
+      .setTimestamp(new Date())
+      .setFooter({
+        text: `Author ID: ${author.id}${exec ? ` • Executor ID: ${exec.id}` : ""}`,
+      })
+      .setColor(genColor(0));
+
+    const files: AttachmentBuilder[] = [];
+    if (content.length >= 1024)
+      files.push(new AttachmentBuilder(Buffer.from(content, "utf8"), { name: "message.txt" }));
+
+    if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
+    return await logChannel(guild, { embeds: [embed], files });
+  } catch (error) {
+    return await errorEmbed({ client, error, log: true, forward: true });
+  }
 } as Event<"messageDelete">);

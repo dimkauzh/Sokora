@@ -1,10 +1,10 @@
 import type { Message, TextChannel } from "discord.js";
-import { multiReact } from "../../utils/multiReact";
+import { multiReact } from "utils/multiReact";
 
-export default async function run(message: Message) {
-  if (!message.content.toLowerCase().includes("bread")) return;
+export async function run(message: Message) {
+  if (!message.content.trim().toLowerCase().includes("bread")) return;
 
   if (Math.round(Math.random() * 100) <= 0.25)
-    (message.channel as TextChannel).send("https://tenor.com/bOMAb.gif");
+    await (message.channel as TextChannel).send("https://tenor.com/bOMAb.gif");
   else await multiReact(message, "🍞🇧🇷🇪🇦🇩👍");
 }

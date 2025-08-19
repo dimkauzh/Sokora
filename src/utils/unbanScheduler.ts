@@ -1,6 +1,8 @@
+import { getPendingBans, removeModeration } from "database/moderation";
 import { Client, EmbedBuilder } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "./colorGen";
-import { getPendingBans, removeModeration } from "./database/moderation";
+import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
 
 export function scheduleUnban(
@@ -8,45 +10,96 @@ export function scheduleUnban(
   guildID: string,
   userID: string,
   modID: string,
-  delay: number
+  delay: number,
 ) {
   const scheduledUnbans = new Map<string, Timer>();
   const key = `${guildID}-${userID}`;
   if (scheduledUnbans.has(key)) clearTimeout(scheduledUnbans.get(key)!);
 
-  const timeout = setTimeout(async () => {
-    try {
-      const guild = await client.guilds.fetch(guildID);
-      const user = guild.bans.cache.get(userID)?.user!;
-      const moderator = guild.members.cache.get(modID)!;
-      const embed = new EmbedBuilder()
-        .setAuthor({ name: `•  Unbanned ${user.displayName}.`, iconURL: user.displayAvatarURL() })
-        .setDescription(
-          [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n")
-        )
-        .setFooter({ text: `User ID: ${user.id}` })
-        .setColor(genColor(100));
+  const timeout = setTimeout(
+    async () => {
+      try {
+        const guild = await client.guilds.fetch(guildID);
+        const user = guild.bans.cache.get(userID)?.user;
+        if (!user) {
+          removeModeration(guildID, userID);
+          return await errorEmbed({
+            client,
+            title: `Failed to unban user ${userID} in guild ${guildID}.`,
+            reason: "User not found in the guild's ban list's cache.",
+            log: true,
+            forward: true,
+          });
+        }
 
-      await logChannel(guild, embed);
-      await guild.members.unban(userID, "Temporary ban has expired");
-      removeModeration(guildID, userID);
-      scheduledUnbans.delete(key);
-    } catch (error) {
-      console.error(`Failed to unban user ${userID} in guild ${guildID}:`, error);
-    }
-  }, delay);
+        const moderator = guild.members.cache.get(modID);
+        if (!moderator) {
+          removeModeration(guildID, userID);
+          return await errorEmbed({
+            client,
+            title: `Failed to unban user ${userID} in guild ${guildID}.`,
+            reason: "Moderator not found in the guild cache.",
+            log: true,
+            forward: true,
+          });
+        }
+
+        const avatar = user.displayAvatarURL();
+        const embed = new EmbedBuilder()
+          .setAuthor({
+            name: `${dotCheck({ string: avatar, doubleSpace: true })}Unbanned ${user.displayName}`,
+            iconURL: avatar,
+          })
+          .setDescription(
+            [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
+          )
+          .setFooter({ text: `User ID: ${user.id}` })
+          .setColor(genColor(100));
+
+        await logChannel(guild, { embeds: [embed] });
+        await guild.members.unban(userID, "Temporary ban has expired");
+        removeModeration(guildID, userID);
+        scheduledUnbans.delete(key);
+      } catch (error) {
+        if (String(error).toLowerCase().includes("unknown guild")) {
+          removeModeration(guildID, userID);
+          return await errorEmbed({
+            client,
+            title: `Failed to ban user(s) from guild ${guildID}.`,
+            reason: "The guild is undefined.",
+            log: true,
+            forward: true,
+          });
+        }
+        return await errorEmbed({
+          client,
+          error,
+          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          log: true,
+          forward: true,
+        });
+      }
+    },
+    // this math.min exists because apparently "delay" may surpass the limit
+    // by being bigger than a signed int32 in some cases
+    Math.min(delay, 2147483646),
+  );
 
   return scheduledUnbans.set(key, timeout);
 }
 
-export function rescheduleUnbans(client: Client) {
+export async function rescheduleUnbans(client: Client) {
   const now = Date.now();
-  const pendingBans = getPendingBans(now);
 
-  for (const ban of pendingBans) {
+  for (const ban of getPendingBans(now)) {
     if (!ban.expiresAt) continue;
-    if (typeof ban.expiresAt !== "number" || isNaN(ban.expiresAt)) {
-      console.error(`Invalid expiresAt value for ban: ${ban.expiresAt}`);
+    if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
+      await errorEmbed({
+        client,
+        title: `Invalid expiresAt value for ban: ${ban.expiresAt}.`,
+        log: true,
+        forward: true,
+      });
       continue;
     }
 
