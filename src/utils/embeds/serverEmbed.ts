@@ -56,7 +56,9 @@ export async function serverEmbed(options: Options) {
 
   const statValues: (string | null)[] = [
     `**${guild.memberCount?.toLocaleString("en-US")}** members`,
-    channelSizes.voice > 0 ? `**${channelCount}** ${pluralOrNot("channel", channelCount)} • **${channelSizes.text}** text and **${channelSizes.voice}** voice` : `**${channelCount}** text ${pluralOrNot("channel", channelCount)}`,
+    channelSizes.voice > 0
+      ? `**${channelCount}** ${pluralOrNot("channel", channelCount)} • **${channelSizes.text}** text and **${channelSizes.voice}** voice`
+      : `**${channelCount}** text ${pluralOrNot("channel", channelCount)}`,
   ];
 
   if (boostTier)
