@@ -46,7 +46,7 @@ export default (async function run(member) {
       setting: { category: "welcome", setting: "join_channel" },
     })
   ) {
-    if (roles) if (!user.bot) await member.roles.add([...kominator(roles as string)]);
+    if (roles && !user.bot) await member.roles.add([...kominator(roles as string)]);
     await channel.send({ embeds: [embed] });
   }
 
