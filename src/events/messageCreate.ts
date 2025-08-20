@@ -1,4 +1,3 @@
-import { add, check, remove } from "database/blocklist";
 import { getLevel, setLevel } from "database/leveling";
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
@@ -8,56 +7,14 @@ import { channelCheck } from "utils/channelCheck";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
-import { leavePlease } from "utils/leavePlease";
 import { mention } from "utils/mention";
 import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {
   const client = message.client;
-  if (message.content.startsWith("!SYSTEM")) {
-    if (message.author.id != process.env.OWNER) return;
-    const args = message.content.split(" ");
-    if (!args[2]) return message.reply("ERROR: Expected three arguments.");
-    const username = (await client.users.fetch(args[2])).username;
-
-    switch (args[1]) {
-      case "add": {
-        add(args[2]);
-        await message.reply(`${username} has been blocklisted from Sokora.`);
-
-        const guilds = client.guilds.cache;
-        for (const id of guilds.keys()) {
-          const guild = guilds.get(id);
-          if (!guild) {
-            await errorEmbed({
-              client,
-              title: "Failed to blocklist guild.",
-              reason: `Guild ${id} not found`,
-            });
-            continue;
-          }
-          await leavePlease(guild, await guild.fetchOwner(), "No.");
-        }
-        break;
-      }
-      case "remove":
-        remove(args[2]);
-        await message.reply(`${username} has been removed from the Sokora blocklist.`);
-        break;
-      case "check":
-        await message.reply(`${!check(args[2])}`);
-        break;
-      default:
-        await message.reply(
-          "Hello, this is the system interface to control top level Sokora moderation utilities.",
-        );
-    }
-  }
-
   const author = message.author;
   if (author.bot) return;
-  if (!check(author.id)) return;
   const guild = message.guild!;
   const avatar = author.displayAvatarURL();
 

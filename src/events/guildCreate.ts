@@ -1,17 +1,12 @@
-import { check } from "database/blocklist";
 import { EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { commands } from "handlers/commands";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
-import { leavePlease } from "utils/leavePlease";
 import { replace } from "utils/replace";
 import type { Event } from "utils/types";
 
 export default (async function run(guild) {
-  const owner = await guild.fetchOwner();
-  if (!check(owner.id)) return await leavePlease(guild, owner, "No.");
-
   const client = guild.client;
   const avatar = client.user.displayAvatarURL();
   const embed = new EmbedBuilder()

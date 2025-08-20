@@ -5,7 +5,6 @@ import { ActivityType, Client, Partials } from "discord.js";
 import { registerGuildCommands } from "handlers/commands";
 import { loadAuditEvents, loadEasterEggs, loadEvents } from "handlers/events";
 import ms from "ms";
-import { leavePlease } from "utils/leavePlease";
 import { rescheduleUnbans } from "utils/unbanScheduler";
 
 export const client = new Client({
@@ -30,10 +29,6 @@ export const subscribedUsers = new Set(
 );
 
 client.once("ready", async () => {
-  const guilds = client.guilds.cache;
-  for (const id of guilds.keys())
-    await leavePlease(guilds.get(id)!, await guilds.get(id)!.fetchOwner()!, "Not like that.");
-
   if (process.env.TOPGG_TOKEN) {
     const topgg = new Api(process.env.TOPGG_TOKEN!);
     try {
