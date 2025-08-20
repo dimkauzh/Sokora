@@ -1,7 +1,5 @@
-import { check } from "database/blocklist";
 import { getUserSetting } from "database/userSettings";
 import { SlashCommandSubcommandBuilder } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
 import { commands, subCommands } from "handlers/commands";
 import { subscribedUsers } from "src/bot";
 import { noErrorsPlease } from "utils/noErrorsPlease";
@@ -25,13 +23,6 @@ export default (async function run(interaction) {
 
   if (!command) return;
   if (interaction.isChatInputCommand()) {
-    if (!interaction.member || !check(interaction.member.user.id!))
-      return await errorEmbed({
-        interaction,
-        title: "The bot has experienced an internal error.",
-        reason: "Please try again later.",
-      });
-
     await noErrorsPlease(interaction);
     command.run(interaction);
   }
