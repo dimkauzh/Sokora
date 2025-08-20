@@ -40,6 +40,7 @@ export default (async function run(oldMessage, newMessage) {
       error,
       title: "Error fetching meta image",
       forward: true,
+      fileName: "messageUpdate.ts",
     });
   }
 

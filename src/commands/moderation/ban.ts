@@ -76,6 +76,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
     await guild.members.ban(user.id, { reason: reason ?? undefined });
   } catch (error) {
-    return await errorEmbed({ interaction, error, forward: true });
+    return await errorEmbed({ interaction, error, forward: true, fileName: "ban.ts" });
   }
 }

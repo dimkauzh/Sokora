@@ -108,6 +108,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       interaction,
       error,
       forward: true,
+      fileName: "clear.ts",
     });
   }
 

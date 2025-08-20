@@ -54,6 +54,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
     await target?.edit({ communicationDisabledUntil: null });
   } catch (error) {
-    await errorEmbed({ interaction, error, forward: true });
+    await errorEmbed({ interaction, error, forward: true, fileName: "unmute.ts" });
   }
 }

@@ -257,6 +257,7 @@ export async function getSetting<
       title: `Setting ${key}.${setting} does not exist in the database. Guild: ${guildID}.`,
       log: true,
       forward: true,
+      fileName: "database/settings.ts",
     });
     return null;
   }
@@ -362,6 +363,12 @@ export async function deletePublicServer(guildId: string) {
   try {
     deletePublicQuery.all(JSON.stringify(guildId));
   } catch (error) {
-    return await errorEmbed({ client, error, log: true, forward: true });
+    return await errorEmbed({
+      client,
+      error,
+      log: true,
+      forward: true,
+      fileName: "database/settings.ts",
+    });
   }
 }
