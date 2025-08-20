@@ -23,11 +23,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b);
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
-  const allMembers = await Promise.all(guilds.map(guild => guild.members.fetch()));
-  const uniqueIDs = new Set<string>();
-
-  for (const col of allMembers) for (const member of col.values()) uniqueIDs.add(member.id);
-  const uniqueUsers = Array.from(uniqueIDs).length;
 
   const embed = new EmbedBuilder()
     .setAuthor({
@@ -42,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         name: "📃 • General",
         value: [
           `Version **${version}**, *Antei*`,
-          `**${members}** ${pluralOrNot("member", members)} • **${uniqueUsers}** ${pluralOrNot("unique user", uniqueUsers)} • **${guilds.size}** ${pluralOrNot(
+          `**${members}** ${pluralOrNot("member", members)} • **${guilds.size}** ${pluralOrNot(
             "guild",
             guilds.size,
           )}${!shards ? "" : ` • **${shards}** ${pluralOrNot("shard", shards)}`}`,

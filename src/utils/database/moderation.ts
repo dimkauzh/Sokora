@@ -36,7 +36,7 @@ const listModQuery = database.query(
 );
 const getIdQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND id = $2;");
 const getLastIdQuery = database.query(
-  "SELECT CAST(id AS int) AS id FROM moderation ORDER BY id DESC LIMIT 1;",
+  "SELECT CAST(id AS int) AS id FROM moderation WHERE guild = ? ORDER BY id DESC LIMIT 1;",
 );
 const editQuery = database.query(
   "UPDATE moderation SET reason = ?3, expiresAt = ?4 WHERE guild = ?1 AND id = ?2;",
