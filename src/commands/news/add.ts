@@ -60,13 +60,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
 
-    const title = replaceVariables(
+    const title = await replaceVariables(
       i.fields.getTextInputValue("title"),
       interaction.guild!,
       interaction.user,
     );
 
-    const body = replaceVariables(
+    const body = await replaceVariables(
       i.fields.getTextInputValue("body"),
       interaction.guild!,
       interaction.user,

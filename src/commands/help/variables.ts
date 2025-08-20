@@ -29,14 +29,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
         name: "👀  • Simple example",
         value: [
           `A simple example: \`${example}\` will result in:`,
-          `> ${replaceVariables(example, interaction.guild!, interaction.user)}`,
+          `> ${await replaceVariables(example, interaction.guild!, interaction.user)}`,
         ].join("\n"),
       },
       {
         name: "🎛  • Another example",
         value: [
           `Adding more stuff:\n\`${exampleTwo}\`\nwill result in:`,
-          `> ${replaceVariables(exampleTwo, interaction.guild!, interaction.user)}`,
+          `> ${await replaceVariables(exampleTwo, interaction.guild!, interaction.user)}`,
         ].join("\n"),
       },
       {
