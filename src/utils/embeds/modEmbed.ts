@@ -178,7 +178,13 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     try {
       editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
     } catch (error) {
-      return await errorEmbed({ interaction, error, log: true, forward: true });
+      return await errorEmbed({
+        interaction,
+        error,
+        log: true,
+        forward: true,
+        fileName: "modEmbed.ts",
+      });
     }
     author = author.concat(`  •  #${previousID}`);
   }
@@ -204,7 +210,13 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
       );
       author = author.concat(`  •  #${id}`);
     } catch (error) {
-      return await errorEmbed({ interaction, error, log: true, forward: true });
+      return await errorEmbed({
+        interaction,
+        error,
+        log: true,
+        forward: true,
+        fileName: "modEmbed.ts",
+      });
     }
   }
 

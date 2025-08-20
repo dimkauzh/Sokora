@@ -44,6 +44,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
     await guild.members.cache.get(user.id)?.kick(reason ?? undefined);
   } catch (error) {
-    return await errorEmbed({ interaction, error, forward: true });
+    return await errorEmbed({ interaction, error, forward: true, fileName: "kick.ts" });
   }
 }

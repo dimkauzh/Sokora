@@ -36,6 +36,7 @@ export default (async function run(message) {
               title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}.`,
               log: true,
               forward: true,
+              fileName: "messageCreate.ts",
             });
             continue;
           }
@@ -48,6 +49,7 @@ export default (async function run(message) {
             title: `Error running easter egg ${easterEgg.name}`,
             log: true,
             forward: true,
+            fileName: "messageCreate.ts",
           });
         }
       }

@@ -52,6 +52,7 @@ export async function loadEasterEggs() {
             title: `Easter egg ${easterEggFile} does not have a run function.`,
             log: true,
             forward: true,
+            fileName: "events.ts",
           });
           continue;
         }
@@ -72,6 +73,7 @@ export async function loadEasterEggs() {
           title: `Error loading easter egg ${easterEggFile}`,
           log: true,
           forward: true,
+          fileName: "events.ts",
         });
       }
     }
@@ -82,6 +84,7 @@ export async function loadEasterEggs() {
       title: `Error loading easter eggs.`,
       log: true,
       forward: true,
+      fileName: "events.ts",
     });
   }
 }
@@ -110,6 +113,7 @@ export async function loadAuditEvents(client: Client) {
             title: `Audit log event ${auditEventFile} does not have a run function.`,
             log: true,
             forward: true,
+            fileName: "events.ts",
           });
           continue;
         }
@@ -130,6 +134,7 @@ export async function loadAuditEvents(client: Client) {
           title: `Error loading audit log event ${auditEventFile}.`,
           log: true,
           forward: true,
+          fileName: "events.ts",
         });
       }
     }
@@ -140,6 +145,7 @@ export async function loadAuditEvents(client: Client) {
       title: `Error loading audit log events.`,
       log: true,
       forward: true,
+      fileName: "events.ts",
     });
   }
 }

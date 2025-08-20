@@ -46,6 +46,7 @@ export default (async function run(message) {
         error,
         title: "Error fetching meta image",
         forward: true,
+        fileName: "messageDelete.ts",
       });
     }
 
@@ -83,6 +84,12 @@ export default (async function run(message) {
     if (video) files.push(new AttachmentBuilder(video, { name: "tenor.mp4" }));
     return await logChannel(guild, { embeds: [embed], files });
   } catch (error) {
-    return await errorEmbed({ client, error, log: true, forward: true });
+    return await errorEmbed({
+      client,
+      error,
+      log: true,
+      forward: true,
+      fileName: "messageDelete.ts",
+    });
   }
 } as Event<"messageDelete">);

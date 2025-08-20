@@ -65,7 +65,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     await interaction.showModal(editModal);
   } catch (error) {
-    await errorEmbed({ interaction, error, forward: true });
+    await errorEmbed({ interaction, error, forward: true, fileName: "edit.ts" });
   }
 
   interaction.client.once("interactionCreate", async i => {

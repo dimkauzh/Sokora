@@ -31,6 +31,12 @@ export default (async function run(guild) {
     if (!welcomeChannel.permissionsFor(guild.client.user)?.has("SendMessages")) return;
     await welcomeChannel.send({ embeds: [embed] });
   } catch (error) {
-    return await errorEmbed({ client, error, log: true, forward: true });
+    return await errorEmbed({
+      client,
+      error,
+      log: true,
+      forward: true,
+      fileName: "guildCreate.ts",
+    });
   }
 } as Event<"guildCreate">);

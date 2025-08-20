@@ -19,6 +19,7 @@ export default (async function run(reaction, user) {
         title: "Error fetching reaction.",
         log: true,
         forward: true,
+        fileName: "messageReactionAdd.ts",
       });
     }
 
@@ -32,6 +33,7 @@ export default (async function run(reaction, user) {
         title: "Error fetching user.",
         log: true,
         forward: true,
+        fileName: "messageReactionAdd.ts",
       });
     }
   }
@@ -147,6 +149,7 @@ export default (async function run(reaction, user) {
       title: "Error handling starboard message.",
       log: true,
       forward: true,
+      fileName: "messageReactionAdd.ts",
     });
   }
 } as Event<"messageReactionAdd">);

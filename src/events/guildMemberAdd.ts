@@ -65,6 +65,12 @@ export default (async function run(member) {
   try {
     await dmChannel.send({ embeds: [embed] });
   } catch (error) {
-    return await errorEmbed({ client: member.client, error, log: true, forward: true });
+    return await errorEmbed({
+      client: member.client,
+      error,
+      log: true,
+      forward: true,
+      fileName: "guildMemberAdd.ts",
+    });
   }
 } as Event<"guildMemberAdd">);

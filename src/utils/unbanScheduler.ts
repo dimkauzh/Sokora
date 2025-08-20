@@ -29,6 +29,7 @@ export function scheduleUnban(
             reason: "User not found in the guild's ban list's cache.",
             log: true,
             forward: true,
+            fileName: "unbanScheduler.ts",
           });
         }
 
@@ -41,6 +42,7 @@ export function scheduleUnban(
             reason: "Moderator not found in the guild cache.",
             log: true,
             forward: true,
+            fileName: "unbanScheduler.ts",
           });
         }
 
@@ -69,6 +71,7 @@ export function scheduleUnban(
             reason: "The guild is undefined.",
             log: true,
             forward: true,
+            fileName: "unbanScheduler.ts",
           });
         }
         return await errorEmbed({
@@ -77,6 +80,7 @@ export function scheduleUnban(
           title: `Failed to unban user ${userID} in guild ${guildID}`,
           log: true,
           forward: true,
+          fileName: "unbanScheduler.ts",
         });
       }
     },
@@ -99,6 +103,7 @@ export async function rescheduleUnbans(client: Client) {
         title: `Invalid expiresAt value for ban: ${ban.expiresAt}.`,
         log: true,
         forward: true,
+        fileName: "unbanScheduler.ts",
       });
       continue;
     }

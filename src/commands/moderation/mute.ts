@@ -80,6 +80,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .get(user.id)
       ?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined });
   } catch (error) {
-    await errorEmbed({ interaction, error, forward: true });
+    await errorEmbed({ interaction, error, forward: true, fileName: "mute.ts" });
   }
 }

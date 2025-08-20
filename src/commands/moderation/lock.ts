@@ -82,6 +82,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       interaction,
       error,
       forward: true,
+      fileName: "lock.ts",
     });
   }
 }

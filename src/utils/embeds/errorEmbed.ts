@@ -31,8 +31,9 @@ export async function errorEmbed(options: {
   reason?: string;
   log?: boolean;
   forward?: boolean;
+  fileName?: string;
 }) {
-  const { interaction, title, reason, log, forward } = options;
+  const { interaction, title, reason, log, forward, fileName } = options;
   const client = options.client ? options.client : interaction ? interaction.client : null;
   if (!client && !interaction)
     return console.error(
@@ -56,7 +57,7 @@ export async function errorEmbed(options: {
 
   if (options.error) {
     embed.addFields(
-      { name: "💬 • Error message", value: codeBlock(error.message) },
+      { name: "💬 • Error message", value: `${codeBlock(error.message)} in \`${fileName}\`` },
       {
         name: "📜 • Error stack",
         value: stack

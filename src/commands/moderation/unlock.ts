@@ -78,6 +78,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ),
     ]);
   } catch (error) {
-    await errorEmbed({ interaction, error, forward: true });
+    await errorEmbed({ interaction, error, forward: true, fileName: "unlock.ts" });
   }
 }

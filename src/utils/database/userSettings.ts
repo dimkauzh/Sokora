@@ -57,6 +57,7 @@ export async function getUserSettingsTable<
       title: `Setting ${key}.${setting} does not exist in the database at all.`,
       log: true,
       forward: true,
+      fileName: "database/userSettings.ts",
     });
     return null;
   }
@@ -78,6 +79,7 @@ export async function getUserSetting<
       title: `Setting ${key}.${setting} does not exist in the database. User: ${userID}.`,
       log: true,
       forward: true,
+      fileName: "database/userSettings.ts",
     });
     return null;
   }

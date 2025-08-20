@@ -54,7 +54,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     await interaction.showModal(newsModal);
   } catch (error) {
-    await errorEmbed({ interaction, error, forward: true });
+    await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
   }
 
   interaction.client.once("interactionCreate", async i => {
@@ -78,7 +78,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     try {
       await sendChannelNews(guild, id, interaction);
     } catch (error) {
-      await errorEmbed({ interaction, error, forward: true });
+      await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
     }
 
     await i.reply({

@@ -20,6 +20,7 @@ export default function createAuditLogHandler(client: Client) {
           title: `Audit log event ${auditEventName} does not have a valid run function.`,
           log: true,
           forward: true,
+          fileName: "guildAuditLogEntryCreate.ts",
         });
 
       await auditEvents[auditEventPos].run(auditEntry, client);
@@ -30,6 +31,7 @@ export default function createAuditLogHandler(client: Client) {
         title: `Error running audit log event ${auditEventName}.`,
         log: true,
         forward: true,
+        fileName: "guildAuditLogEntryCreate.ts",
       });
     }
   } as Event<"guildAuditLogEntryCreate">;
