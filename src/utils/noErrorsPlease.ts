@@ -3,7 +3,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { errorType } from "./errorType";
 
 const errorRateLimit = new Set<string>();
-export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
+export async function noErrorsPlease(interaction: ChatInputCommandInteraction, fileName: string) {
   process.removeAllListeners();
   const sendErrorMessage = async (
     error: Error,
@@ -15,7 +15,7 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction) {
 
     errorRateLimit.add(errorKey);
     setTimeout(() => errorRateLimit.delete(errorKey), 10000);
-    await errorEmbed({ interaction, error, log: true, forward: true });
+    await errorEmbed({ interaction, error, log: true, forward: true, fileName });
   };
 
   const processEventListeners: { [key: string]: { listener: (...args: any[]) => Promise<void> } } =

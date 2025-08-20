@@ -23,7 +23,7 @@ export default (async function run(interaction) {
 
   if (!command) return;
   if (interaction.isChatInputCommand()) {
-    await noErrorsPlease(interaction);
+    await noErrorsPlease(interaction, command.data.name);
     command.run(interaction);
   }
   if (command.autocomplete) command.autocomplete(interaction);

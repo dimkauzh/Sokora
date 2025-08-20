@@ -57,7 +57,10 @@ export async function errorEmbed(options: {
 
   if (options.error) {
     embed.addFields(
-      { name: "💬 • Error message", value: `${codeBlock(error.message)} in \`${fileName}\`` },
+      {
+        name: "💬 • Error message",
+        value: `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
+      },
       {
         name: "📜 • Error stack",
         value: stack
