@@ -28,7 +28,11 @@ export default (async function run(member: GuildMember) {
       iconURL: avatar,
     })
     .setDescription(
-      replaceVariables((await getSetting(guildID, "welcome", "leave_text")) as string, guild, user),
+      await replaceVariables(
+        (await getSetting(guildID, "welcome", "leave_text")) as string,
+        guild,
+        user,
+      ),
     )
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(await colorize({ user, avatar, hue: 200 }));

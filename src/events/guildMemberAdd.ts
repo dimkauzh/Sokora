@@ -25,7 +25,11 @@ export default (async function run(member) {
       iconURL: avatar,
     })
     .setDescription(
-      replaceVariables((await getSetting(guildID, "welcome", "join_text")) as string, guild, user),
+      await replaceVariables(
+        (await getSetting(guildID, "welcome", "join_text")) as string,
+        guild,
+        user,
+      ),
     )
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(await colorize({ user, avatar, hue: 200 }));
@@ -42,7 +46,7 @@ export default (async function run(member) {
       setting: { category: "welcome", setting: "join_channel" },
     })
   ) {
-    if (roles) await member.roles.add([...kominator(roles as string)]);
+    if (roles && !user.bot) await member.roles.add([...kominator(roles as string)]);
     await channel.send({ embeds: [embed] });
   }
 
@@ -51,7 +55,11 @@ export default (async function run(member) {
   if (!dmChannel || user.bot) return;
 
   embed.setDescription(
-    replaceVariables((await getSetting(guildID, "welcome", "dm_text")) as string, guild, user),
+    await replaceVariables(
+      (await getSetting(guildID, "welcome", "dm_text")) as string,
+      guild,
+      user,
+    ),
   );
 
   try {
