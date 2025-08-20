@@ -19,7 +19,6 @@ import {
  *   interaction: ChatInputCommandInteraction | ButtonInteraction | AnySelectMenuInteraction | ModalSubmitInteraction;
  *   replyOptions?: string | MessagePayload | InteractionReplyOptions;
  *   editOptions?: string | MessagePayload | InteractionEditReplyOptions;
- *   error?: boolean;
  * }} options Options.
  * @returns {(Promise<Message<boolean> | InteractionResponse<boolean>>)}
  */
@@ -31,15 +30,13 @@ export async function safeReply(options: {
     | ModalSubmitInteraction;
   replyOptions?: string | MessagePayload | InteractionReplyOptions;
   editOptions?: string | MessagePayload | InteractionEditReplyOptions;
-  error?: boolean;
 }): Promise<Message<boolean> | InteractionResponse<boolean>> {
-  const { interaction, replyOptions, editOptions, error } = options;
+  const { interaction, replyOptions, editOptions } = options;
   const reply = (replyOptions! || editOptions!) as
     | string
     | MessagePayload
     | InteractionReplyOptions;
 
-  if (error) return await interaction.reply(reply);
   if (interaction.replied) {
     if (editOptions) return await interaction.editReply(editOptions);
     return await interaction.followUp(reply);

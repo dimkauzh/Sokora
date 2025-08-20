@@ -62,8 +62,7 @@ async function generateEmbed(params: {
     ];
 
     if (!user) val.unshift(`**User**: <@${c.user}>`);
-    if (c.expiresAt)
-      val.push(`**Duration**: ${ms(ms(Number(c.expiresAt).toString()), { long: true })}`);
+    if (c.expiresAt) val.push(`**Duration**: ${ms(Number(c.expiresAt), { long: true })}`);
 
     return {
       name: `${actionsEmojis[c.type as ModType]} • ${capitalize(c.type.toLowerCase())} #${c.id}`,

@@ -1,5 +1,5 @@
 import { ColorResolvable, type User } from "discord.js";
-import Vibrant from "node-vibrant";
+import { Vibrant } from "node-vibrant/node";
 import sharp from "sharp";
 import { kominator } from "./kominator";
 

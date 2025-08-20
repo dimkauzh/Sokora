@@ -29,18 +29,18 @@ export const subscribedUsers = new Set(
 );
 
 client.once("ready", async () => {
-  if (process.env.TOPGG_TOKEN) {
-    const topgg = new Api(process.env.TOPGG_TOKEN!);
-    try {
-      await topgg.postStats({
-        serverCount: (await client.guilds.fetch()).size,
-      });
-      console.log("Posted statistics to top.gg!");
-    } catch (error) {
-      console.error(`Failed to start top.gg autoposter: ${error}`);
-    }
-
+  if (process.env.TOPGG_TOKEN)
     setInterval(async () => {
+      const topgg = new Api(process.env.TOPGG_TOKEN!);
+      try {
+        await topgg.postStats({
+          serverCount: (await client.guilds.fetch()).size,
+        });
+        console.log("Posted statistics to top.gg!");
+      } catch (error) {
+        console.error(`Failed to start top.gg autoposter: ${error}`);
+      }
+
       for (const user of subscribedUsers) {
         if (await topgg.hasVoted(user)) continue;
         await client.users.send(
@@ -48,8 +48,7 @@ client.once("ready", async () => {
           "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
         );
       }
-    }, ms("3h"));
-  }
+    }, ms("6h"));
 
   await Promise.all([
     loadEvents(client),

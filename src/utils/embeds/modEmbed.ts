@@ -160,7 +160,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
   if (reason) generalValues.push(`**Reason**: ${reason}`);
   else generalValues.push("*No reason provided*");
 
-  if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
+  if (duration) generalValues.push(`**Duration**: ${ms(Number(duration), { long: true })}`);
   if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
 
   if (previousID) {
