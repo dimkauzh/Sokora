@@ -2,7 +2,6 @@ import { resetSetting } from "database/settings";
 import {
   ChannelType,
   EmbedBuilder,
-  Invite,
   NewsChannel,
   StageChannel,
   TextChannel,
@@ -34,7 +33,10 @@ type Options = {
 export async function serverEmbed(options: Options) {
   const { page, pages, guild, invite } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
-  const boosters = guild.members.cache.filter(member => member.premiumSince);
+  const members = guild.members.cache;
+  const boosters = members.filter(member => member.premiumSince);
+  const client = guild.client.user.id;
+  const owner = await guild.fetchOwner();
   const icon = guild.iconURL()!;
 
   const roles = guild.roles.cache;
@@ -51,7 +53,7 @@ export async function serverEmbed(options: Options) {
   const channelCount = channelSizes.text + channelSizes.voice;
 
   const generalValues = [
-    `Owned by **${(await guild.fetchOwner()).user.displayName}**`,
+    `Owned by **${owner.user.displayName}**`,
     `Created on **<t:${Math.round(guild.createdAt.valueOf() / 1000)}:D>**`,
   ];
 
@@ -122,62 +124,42 @@ export async function serverEmbed(options: Options) {
   async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
     await resetSetting(guild.id, "serverboard", "server_invite");
     await resetSetting(guild.id, "serverboard", "invite_channel");
-    await logChannel(
-      guild,
-      {
+    const errEmbed = new EmbedBuilder()
+      .setAuthor({
+        name: `${dot}Serverboard is misconfigured in your server!`,
+        iconURL: icon,
+      })
+      .setFields({
+        name: "⁉️ • What happened",
+        value: [
+          "Sokora does not have the **Create Invite** and/or **Manage Server** permissions to create an invitation, but `serverboard.server_invite` is enabled.",
+          `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
+        ].join("\n"),
+      })
+      .setColor(genColor(60));
+
+    await logChannel(guild, { embeds: [errEmbed] }, true, {
+      silent: false,
+      user: owner.user,
+      options: {
         embeds: [
-          new EmbedBuilder()
-            .setAuthor({ name: `${dot}Alert`, iconURL: icon })
-            .setDescription(
-              [
-                "The bot does not have the **Create Invite** permission to create an invitation.",
-                `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings in **/settings serverboard** again.`,
-              ].join("\n"),
-            )
-            .setColor(genColor(60)),
+          errEmbed.setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` }),
         ],
       },
-      true,
-      // TODO: expand channelCheck so it handles this too
-      // to avoid code duplication basically
-      {
-        silent: false,
-        user: (await guild.fetchOwner()).user,
-        options: {
-          embeds: [
-            new EmbedBuilder()
-              .setAuthor({
-                name: `${dot}Serverboard is misconfigured in your server!`,
-                iconURL: icon,
-              })
-              .setFields({
-                name: "⁉️ • What happened",
-                value: [
-                  "Sokora does not have the **Create Invite** permission to create an invitation, but `serverboard.server_invite` is enabled.",
-                  `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
-                ].join("\n"),
-              })
-              .setColor(genColor(60))
-              .setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` }),
-          ],
-        },
-      },
-    );
+    });
+
     return embed;
   }
 
-  if (!guild.members.cache.get(guild.client.user.id)?.permissions.has("CreateInstantInvite"))
+  if (
+    !members.get(client)?.permissions.has("CreateInstantInvite") ||
+    !members.get(client)?.permissions.has("ManageGuild")
+  )
     return noPerms();
 
   if (invite?.show) {
     const invites = await guild.invites.fetch();
-    const previousInvite: Invite | undefined = invites.find(
-      invite =>
-        invite.inviter?.id == guild.client.user.id &&
-        invite.maxUses == 0 &&
-        invite.expiresAt == null,
-    );
-
+    const previousInvite = invites.find(invite => invite.inviter?.id == client);
     const possiblyFetchedInviteChannel = await guild.channels.fetch(
       invite.channel ??
         guild.channels.cache
@@ -200,7 +182,7 @@ export async function serverEmbed(options: Options) {
         : guild.rulesChannel;
 
     if (!inviteChannel) return embed;
-    if (!inviteChannel.permissionsFor(guild.client.user.id)?.has("CreateInstantInvite"))
+    if (!inviteChannel.permissionsFor(client)?.has("CreateInstantInvite"))
       return noPerms(inviteChannel);
 
     const inviteUrl = previousInvite

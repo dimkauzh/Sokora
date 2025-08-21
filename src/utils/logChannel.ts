@@ -23,7 +23,7 @@ import { channelCheck } from "./channelCheck";
    silent: boolean;
    user: User;
    options: string | MessagePayload | MessageCreateOptions;
- }} dm Options for sending a DM to the user.
+ }} dmOptions Options for sending a DM to the user.
  * @returns Log message.
  */
 export async function logChannel(
