@@ -122,19 +122,47 @@ export async function serverEmbed(options: Options) {
   async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
     await resetSetting(guild.id, "serverboard", "server_invite");
     await resetSetting(guild.id, "serverboard", "invite_channel");
-    await logChannel(guild, {
-      embeds: [
-        new EmbedBuilder()
-          .setAuthor({ name: `${dot}Alert`, iconURL: icon })
-          .setDescription(
-            [
-              "The bot does not have the **Create Invite** permission to create an invitation.",
-              `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings in **/settings serverboard** again.`,
-            ].join("\n"),
-          )
-          .setColor(genColor(60)),
-      ],
-    });
+    await logChannel(
+      guild,
+      {
+        embeds: [
+          new EmbedBuilder()
+            .setAuthor({ name: `${dot}Alert`, iconURL: icon })
+            .setDescription(
+              [
+                "The bot does not have the **Create Invite** permission to create an invitation.",
+                `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings in **/settings serverboard** again.`,
+              ].join("\n"),
+            )
+            .setColor(genColor(60)),
+        ],
+      },
+      true,
+      // TODO: expand channelCheck so it handles this too
+      // to avoid code duplication basically
+      {
+        silent: false,
+        user: (await guild.fetchOwner()).user,
+        options: {
+          embeds: [
+            new EmbedBuilder()
+              .setAuthor({
+                name: `${dot}Serverboard is misconfigured in your server!`,
+                iconURL: icon,
+              })
+              .setFields({
+                name: "⁉️ • What happened",
+                value: [
+                  "Sokora does not have the **Create Invite** permission to create an invitation, but `serverboard.server_invite` is enabled.",
+                  `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
+                ].join("\n"),
+              })
+              .setColor(genColor(60))
+              .setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` }),
+          ],
+        },
+      },
+    );
     return embed;
   }
 
@@ -142,10 +170,11 @@ export async function serverEmbed(options: Options) {
     return noPerms();
 
   if (invite?.show) {
-    const previousInvite: Invite | undefined = (await guild.invites.fetch()).find(
+    const invites = await guild.invites.fetch();
+    const previousInvite: Invite | undefined = invites.find(
       invite =>
         invite.inviter?.id == guild.client.user.id &&
-        invite.maxUses == null &&
+        invite.maxUses == 0 &&
         invite.expiresAt == null,
     );
 

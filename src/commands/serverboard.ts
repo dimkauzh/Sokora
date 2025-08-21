@@ -1,4 +1,4 @@
-import { deletePublicServer, listPublicServers } from "database/settings";
+import { listPublicServers } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -27,8 +27,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
             showInvite: entry.showInvite,
             inviteChannelId: entry.inviteChannelId,
           };
-        } catch {
-          await deletePublicServer(entry.guildID);
+        } catch (error) {
+          // log it instead of deleting it
+          // so we can eventually find what specific error
+          // we should use to delete a public server
+          console.error("Serverboard error", error);
+          console.error("The above will lead to not showing the guild in the serverboard.");
+          // await deletePublicServer(entry.guildID);
           return null;
         }
       }),
