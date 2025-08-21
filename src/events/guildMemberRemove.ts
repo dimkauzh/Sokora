@@ -1,6 +1,5 @@
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
-import { subscribedUsers } from "src/bot";
 import { channelCheck } from "utils/channelCheck";
 import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
@@ -8,7 +7,6 @@ import { replaceVariables } from "utils/replace";
 import { Event } from "utils/types";
 
 export default (async function run(member: GuildMember) {
-  subscribedUsers.delete(member.id);
   const guild = member.guild;
   const guildID = guild.id;
   const id =

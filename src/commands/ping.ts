@@ -24,5 +24,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setFooter({ text: replace("(madeWith)") })
     .setColor(await colorize({ user, avatar, hue: 270 }));
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.reply({ embeds: [embed], flags: "Ephemeral" });
 }
