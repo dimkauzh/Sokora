@@ -17,7 +17,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import ms from "ms";
+import ms from "enhanced-ms";
 import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
 import { genColor } from "utils/colorGen";
@@ -62,7 +62,7 @@ async function generateEmbed(params: {
     ];
 
     if (!user) val.unshift(`**User**: <@${c.user}>`);
-    if (c.expiresAt) val.push(`**Duration**: ${ms(Number(c.expiresAt), { long: true })}`);
+    if (c.expiresAt) val.push(`**Duration**: ${ms(Number(c.expiresAt), "fullPrecision")}`);
 
     return {
       name: `${actionsEmojis[c.type as ModType]} • ${capitalize(c.type.toLowerCase())} #${c.id}`,

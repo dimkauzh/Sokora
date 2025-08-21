@@ -4,7 +4,7 @@ import { getUserSettingsTable } from "database/userSettings";
 import { ActivityType, Client, Partials } from "discord.js";
 import { registerGuildCommands } from "handlers/commands";
 import { loadAuditEvents, loadEasterEggs, loadEvents } from "handlers/events";
-import ms from "ms";
+import ms from "enhanced-ms";
 import { rescheduleUnbans } from "utils/unbanScheduler";
 
 export const client = new Client({

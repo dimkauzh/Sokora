@@ -10,7 +10,7 @@ export function newline(str: string, chars: number, startWith: string = ""): str
     let word = string.concat(" ");
     if (word.trim().startsWith("**")) {
       word = `\n${word}`;
-      length -= (word.length + startWith.length);
+      length -= word.length + startWith.length;
     }
     length += word.length;
     while (length > chars + i) {

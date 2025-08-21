@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
-import ms from "ms";
+import ms from "enhanced-ms";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("slowdown")
@@ -50,7 +50,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const time = interaction.options.getString("time")!;
   const reason = interaction.options.getString("reason");
-  let title = `Set the slowdown to ${ms(ms(time), { long: true })}`;
+  let title = `Set the slowdown to ${ms(ms(time), "fullPrecision")}`;
   if (!ms(time)) title = "Removed the slowdown";
 
   if (

@@ -1,5 +1,5 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
-import ms from "ms";
+import ms from "enhanced-ms";
 import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
@@ -18,7 +18,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       [
         `\`Latency\` **${Date.now() - interaction.createdTimestamp}ms**.`,
         `\`API Latency\` **${client.ws.ping}ms**.`,
-        `\`Bot uptime\` **${ms(client.uptime, { long: true })}**.`,
+        `\`Bot uptime\` **${ms(client.uptime, "fullPrecision")}**.`,
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
