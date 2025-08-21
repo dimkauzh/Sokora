@@ -20,6 +20,7 @@ export const settingsDefinition: SettingsDefinition = {
         type: "BOOL",
         desc: "Whether or not should the bot remind you when you can vote in Top.gg. **This setting will DM you.**",
         val: false,
+        emoji: "⏰",
       },
     },
   },

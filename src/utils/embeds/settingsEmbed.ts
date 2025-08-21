@@ -141,7 +141,8 @@ export async function settingsEmbed(
   table: "server" | "user",
 ) {
   const guild = interaction.guild;
-  const id = table == "server" ? guild!.id : interaction.user.id;
+  const user = interaction.user;
+  const id = table == "server" ? guild!.id : user.id;
   const key = interaction.options.getSubcommand();
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
@@ -165,6 +166,8 @@ export async function settingsEmbed(
     const setting = await getSettingPlease(id, key, name, table);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
+    let text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
+
     const invitePermission =
       (name == "server_invite" || name == "invite_channel") &&
       !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("CreateInstantInvite");
@@ -172,11 +175,17 @@ export async function settingsEmbed(
     if (invitePermission) {
       await resetSetting(guild!.id, "serverboard", "server_invite");
       await resetSetting(guild!.id, "serverboard", "invite_channel");
+      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`;
     }
 
-    const text = invitePermission
-      ? `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`
-      : `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
+    const dmChannel = (await interaction.client.users.fetch(user.id)).dmChannel;
+    const dmPermission =
+      table == "user" && name == "remind" && (!dmChannel || !dmChannel.isSendable());
+
+    if (dmPermission) {
+      await setUserSetting(user.id, "topgg", "remind", null);
+      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.", 90, "-# ")}`;
+    }
 
     if (reset) {
       data = { type: "reset", id: name };
@@ -273,7 +282,7 @@ export async function settingsEmbed(
         break;
     }
 
-    if (invitePermission) (component as ButtonBuilder).setDisabled(true);
+    if (invitePermission || dmPermission) component.setDisabled(true);
     return { text, data, component };
   };
 
