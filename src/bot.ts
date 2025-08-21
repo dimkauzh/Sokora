@@ -1,7 +1,7 @@
-import { Api } from "@top-gg/sdk";
 import { Chart, registerables } from "chart.js";
 import { getUserSettingsTable, setUserSetting } from "database/userSettings";
 import { ActivityType, Client, Partials } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
 import { registerGuildCommands } from "handlers/commands";
 import { loadAuditEvents, loadEasterEggs, loadEvents } from "handlers/events";
@@ -32,32 +32,40 @@ export const subscribedUsers = new Set(
 client.once("clientReady", async () => {
   if (process.env.TOPGG_TOKEN)
     setInterval(async () => {
-      const topgg = new Api(process.env.TOPGG_TOKEN!);
-      try {
-        await topgg.postStats({
-          serverCount: (await client.guilds.fetch()).size,
-        });
-        console.log("Posted statistics to top.gg!");
-      } catch (error) {
-        console.error(`Failed to start top.gg autoposter: ${error}`);
-      }
+      // const topgg = new Api(process.env.TOPGG_TOKEN!);
+      //try {
+      //  await topgg.postStats({
+      //    serverCount: (await client.guilds.fetch()).size,
+      //  });
+      //  console.log("Posted statistics to top.gg!");
+      //} catch (error) {
+      //  console.error(`Failed to start top.gg autoposter: ${error}`);
+      //}
 
       const users = client.users;
       for (const user of subscribedUsers) {
         try {
-          if (await topgg.hasVoted(user)) continue;
-          const dmChannel = (await users.fetch(user)).dmChannel;
+          // if (await topgg.hasVoted(user)) continue;
+          const dmChannel = await (await users.fetch(user)).createDM();
           if (!dmChannel || !dmChannel.isSendable()) continue;
 
           await users.send(
-            JSON.parse(user),
+            user,
             "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
           );
-        } catch {
+        } catch (error) {
+          await errorEmbed({
+            client,
+            error,
+            title: "top.gg reminding error.",
+            log: true,
+            forward: true,
+            fileName: "bot.ts",
+          });
           await setUserSetting(user, "topgg", "remind", false);
         }
       }
-    }, ms("6h"));
+    }, ms("10s"));
 
   await Promise.all([
     loadEvents(client),

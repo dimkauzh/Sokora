@@ -31,8 +31,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
           // log it instead of deleting it
           // so we can eventually find what specific error
           // we should use to delete a public server
-          console.error("Serverboard error", error);
-          console.error("The above will lead to not showing the guild in the serverboard.");
+          await errorEmbed({
+            interaction,
+            error,
+            title: "Serverboard error.",
+            log: true,
+            forward: true,
+            fileName: "serverboard.ts",
+          });
           // await deletePublicServer(entry.guildID);
           return null;
         }

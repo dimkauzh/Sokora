@@ -75,24 +75,24 @@ async function construct(
 }
 
 async function getSettingPlease(
-  guildID: string,
+  id: string,
   key: string,
   setting: string,
   table: "server" | "user",
 ) {
-  if (table == "server") return await getSetting(guildID, key, setting);
-  else return await getUserSetting(guildID, key, setting);
+  if (table == "server") return await getSetting(id, key, setting);
+  else return await getUserSetting(id, key, setting);
 }
 
 async function setSettingPlease(
-  guildID: string,
+  id: string,
   key: string,
   setting: string,
   value: any,
   table: "server" | "user",
 ) {
-  if (table == "server") return await setSetting(guildID, key, setting, value);
-  else return await setUserSetting(guildID, key, setting, value);
+  if (table == "server") return await setSetting(id, key, setting, value);
+  else return await setUserSetting(id, key, setting, value);
 }
 
 type opt =
@@ -167,25 +167,6 @@ export async function settingsEmbed(
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
     let text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
-
-    const invitePermission =
-      (name == "server_invite" || name == "invite_channel") &&
-      !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("CreateInstantInvite");
-
-    if (invitePermission) {
-      await resetSetting(guild!.id, "serverboard", "server_invite");
-      await resetSetting(guild!.id, "serverboard", "invite_channel");
-      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`;
-    }
-
-    const dmChannel = (await interaction.client.users.fetch(user.id)).dmChannel;
-    const dmPermission =
-      table == "user" && name == "remind" && (!dmChannel || !dmChannel.isSendable());
-
-    if (dmPermission) {
-      await setUserSetting(user.id, "topgg", "remind", null);
-      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.", 90, "-# ")}`;
-    }
 
     if (reset) {
       data = { type: "reset", id: name };
@@ -282,7 +263,25 @@ export async function settingsEmbed(
         break;
     }
 
-    if (invitePermission || dmPermission) component.setDisabled(true);
+    if (
+      (name == "server_invite" || name == "invite_channel") &&
+      !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("CreateInstantInvite")
+    ) {
+      await resetSetting(guild!.id, "serverboard", "server_invite");
+      await resetSetting(guild!.id, "serverboard", "invite_channel");
+      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`;
+      component.setDisabled(true);
+    }
+
+    if (table == "user") {
+      const dmChannel = await (await interaction.client.users.fetch(id)).createDM();
+      if (name == "remind" && (!dmChannel || !dmChannel.isSendable())) {
+        await setUserSetting(id, "topgg", "remind", false);
+        text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.", 90, "-# ")}`;
+        component.setDisabled(true);
+      }
+    }
+
     return { text, data, component };
   };
 
@@ -347,7 +346,10 @@ export async function settingsEmbed(
       new TextDisplayBuilder().setContent(settingsDef.description),
     );
 
-  const reply = await interaction.reply({ components: [container], flags: "IsComponentsV2" });
+  const reply = await interaction.reply({
+    components: [container],
+    flags: table == "user" ? ["IsComponentsV2", "Ephemeral"] : "IsComponentsV2",
+  });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
     if (i.message.id != (await reply.fetch()).id)
@@ -400,6 +402,7 @@ export async function settingsEmbed(
         await setSettingPlease(id, key, cID, !(await getSettingPlease(id, key, cID, table)), table);
         break;
       case "channel":
+        console.log((i as ChannelSelectMenuInteraction).values);
         await setSettingPlease(id, key, cID, (i as ChannelSelectMenuInteraction).values, table);
         break;
       case "user":

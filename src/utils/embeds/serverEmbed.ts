@@ -121,43 +121,43 @@ export async function serverEmbed(options: Options) {
     })
     .setColor(await colorize({ avatar: icon, hue: 200 }));
 
-  async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
-    await resetSetting(guild.id, "serverboard", "server_invite");
-    await resetSetting(guild.id, "serverboard", "invite_channel");
-    const errEmbed = new EmbedBuilder()
-      .setAuthor({
-        name: `${dot}Serverboard is misconfigured in your server!`,
-        iconURL: icon,
-      })
-      .setFields({
-        name: "⁉️ • What happened",
-        value: [
-          "Sokora does not have the **Create Invite** and/or **Manage Server** permissions to create an invitation, but `serverboard.server_invite` is enabled.",
-          `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
-        ].join("\n"),
-      })
-      .setColor(genColor(60));
-
-    await logChannel(guild, { embeds: [errEmbed] }, true, {
-      silent: false,
-      user: owner.user,
-      options: {
-        embeds: [
-          errEmbed.setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` }),
-        ],
-      },
-    });
-
-    return embed;
-  }
-
-  if (
-    !members.get(client)?.permissions.has("CreateInstantInvite") ||
-    !members.get(client)?.permissions.has("ManageGuild")
-  )
-    return noPerms();
-
   if (invite?.show) {
+    async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
+      await resetSetting(guild.id, "serverboard", "server_invite");
+      await resetSetting(guild.id, "serverboard", "invite_channel");
+      const errEmbed = new EmbedBuilder()
+        .setAuthor({
+          name: `${dot}Serverboard is misconfigured in your server!`,
+          iconURL: icon,
+        })
+        .setFields({
+          name: "⁉️ • What happened",
+          value: [
+            "Sokora does not have the **Create Invite** and/or **Manage Server** permissions to create an invitation, but `serverboard.server_invite` is enabled.",
+            `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
+          ].join("\n"),
+        })
+        .setColor(genColor(60));
+
+      await logChannel(guild, { embeds: [errEmbed] }, true, {
+        silent: false,
+        user: owner.user,
+        options: {
+          embeds: [
+            errEmbed.setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` }),
+          ],
+        },
+      });
+
+      return embed;
+    }
+
+    if (
+      !members.get(client)?.permissions.has("CreateInstantInvite") ||
+      !members.get(client)?.permissions.has("ManageGuild")
+    )
+      return noPerms();
+
     const invites = await guild.invites.fetch();
     const previousInvite = invites.find(invite => invite.inviter?.id == client);
     const possiblyFetchedInviteChannel = await guild.channels.fetch(
