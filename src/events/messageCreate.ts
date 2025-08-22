@@ -8,6 +8,7 @@ import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { mention } from "utils/mention";
+import { safeChannel } from "utils/safeChannel";
 import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();
@@ -110,7 +111,7 @@ export default (async function run(message) {
     .setColor(genColor(200));
 
   if (levelChannelId) {
-    const channel = guild.channels.cache.get(`${levelChannelId}`) as TextChannel;
+    const channel = (await safeChannel(guild, `${levelChannelId}`)) as TextChannel;
     if (
       await channelCheck({
         channel,

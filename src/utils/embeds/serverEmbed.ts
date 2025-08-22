@@ -167,7 +167,6 @@ export async function serverEmbed(options: Options) {
             channel =>
               channel.type == ChannelType.GuildText ||
               channel.type == ChannelType.GuildAnnouncement ||
-              channel.type == ChannelType.GuildForum ||
               channel.type == ChannelType.GuildVoice ||
               channel.type == ChannelType.GuildStageVoice,
           )

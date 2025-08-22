@@ -13,6 +13,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { channelCheck } from "./channelCheck";
+import { safeChannel } from "./safeChannel";
 
 /**
  * Sends a message in the log channel. (if there is one set)
@@ -40,9 +41,7 @@ export async function logChannel(
   const logChannel = await getSetting(guild.id, "moderation", "channel");
 
   if (logChannel) {
-    channel = (await guild.channels.cache
-      .get(`${logChannel}`)
-      ?.fetch()
+    channel = (await safeChannel(guild, `${logChannel}`)
       .then((channel: Channel) => {
         if (
           !(

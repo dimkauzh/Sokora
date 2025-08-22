@@ -43,7 +43,7 @@ export async function channelCheck(options: {
     return false;
   }
 
-  function isValid(channel: any): channel is TextChannel | NewsChannel {
+  function isValid(channel: Channel): channel is TextChannel | NewsChannel {
     return channel.type == ChannelType.GuildText || channel.type == ChannelType.GuildAnnouncement;
   }
 

@@ -194,7 +194,6 @@ export async function settingsEmbed(
           .setMaxValues(maxValues)
           .setChannelTypes([
             ChannelType.GuildAnnouncement,
-            ChannelType.GuildForum,
             ChannelType.GuildStageVoice,
             ChannelType.GuildText,
             ChannelType.GuildVoice,
