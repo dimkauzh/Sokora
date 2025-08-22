@@ -45,6 +45,7 @@ client.once("clientReady", async () => {
           ?.filter(i => i.value == "1")
           .map(i => i.userID),
       );
+
       for (const user of subscribedUsers) {
         try {
           if (await topgg.hasVoted(user)) continue;
@@ -66,7 +67,7 @@ client.once("clientReady", async () => {
           await setUserSetting(user, "topgg", "remind", false);
         }
       }
-    }, ms("10s"));
+    }, ms("6h"));
 
   await Promise.all([
     loadEvents(client),

@@ -348,7 +348,7 @@ export async function settingsEmbed(
 
   const reply = await interaction.reply({
     components: [container],
-    flags: table == "user" ? ["IsComponentsV2", "Ephemeral"] : "IsComponentsV2",
+    flags: ["Ephemeral", "IsComponentsV2"],
   });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
