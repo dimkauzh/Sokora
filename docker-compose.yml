@@ -1,0 +1,9 @@
+services:
+  app:
+    build: .
+    container_name: sokora
+    restart: unless-stopped
+    volumes:
+      - ./data.db:/app/data.db
+      - ./.env:/app/.env
+
