@@ -281,6 +281,8 @@ export async function getSetting<
         return (Number(value) == 1 ? true : false) as SqlType<typeof set.type>;
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
+      case "CHANNEL":
+        return value.replace("<#", "").replace(">", "");
       default:
         return value as SqlType<typeof set.type>;
     }
