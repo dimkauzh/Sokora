@@ -6,4 +6,3 @@ services:
     volumes:
       - ./data.db:/app/data.db
       - ./.env:/app/.env
-

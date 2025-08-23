@@ -42,7 +42,6 @@ import { genColorCV2 } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
-import { newline } from "utils/newline";
 import { safeReply } from "utils/safeReply";
 import { errorEmbedCV2 } from "./errorEmbed";
 
@@ -75,24 +74,24 @@ async function construct(
 }
 
 async function getSettingPlease(
-  guildID: string,
+  id: string,
   key: string,
   setting: string,
   table: "server" | "user",
 ) {
-  if (table == "server") return await getSetting(guildID, key, setting);
-  else return await getUserSetting(guildID, key, setting);
+  if (table == "server") return await getSetting(id, key, setting);
+  else return await getUserSetting(id, key, setting);
 }
 
 async function setSettingPlease(
-  guildID: string,
+  id: string,
   key: string,
   setting: string,
   value: any,
   table: "server" | "user",
 ) {
-  if (table == "server") return await setSetting(guildID, key, setting, value);
-  else return await setUserSetting(guildID, key, setting, value);
+  if (table == "server") return setSetting(id, key, setting, value);
+  else return await setUserSetting(id, key, setting, value);
 }
 
 type opt =
@@ -141,7 +140,8 @@ export async function settingsEmbed(
   table: "server" | "user",
 ) {
   const guild = interaction.guild;
-  const id = table == "server" ? guild!.id : interaction.user.id;
+  const user = interaction.user;
+  const id = table == "server" ? guild!.id : user.id;
   const key = interaction.options.getSubcommand();
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
@@ -165,18 +165,7 @@ export async function settingsEmbed(
     const setting = await getSettingPlease(id, key, name, table);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
-    const invitePermission =
-      (name == "server_invite" || name == "invite_channel") &&
-      !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("CreateInstantInvite");
-
-    if (invitePermission) {
-      await resetSetting(guild!.id, "serverboard", "server_invite");
-      await resetSetting(guild!.id, "serverboard", "invite_channel");
-    }
-
-    const text = invitePermission
-      ? `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline("This setting requires Sokora to be granted the **Create Invite** permission.", 90, "-# ")}`
-      : `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n${newline(settingObject.desc, 90, "-# ")}`;
+    let text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
 
     if (reset) {
       data = { type: "reset", id: name };
@@ -204,7 +193,6 @@ export async function settingsEmbed(
           .setMaxValues(maxValues)
           .setChannelTypes([
             ChannelType.GuildAnnouncement,
-            ChannelType.GuildForum,
             ChannelType.GuildStageVoice,
             ChannelType.GuildText,
             ChannelType.GuildVoice,
@@ -273,7 +261,28 @@ export async function settingsEmbed(
         break;
     }
 
-    if (invitePermission) (component as ButtonBuilder).setDisabled(true);
+    if (
+      (name == "server_invite" || name == "invite_channel") &&
+      (!guild!.members.cache
+        .get(interaction.client.user.id)
+        ?.permissions.has("CreateInstantInvite") ||
+        !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("ManageGuild"))
+    ) {
+      resetSetting(guild!.id, "serverboard", "server_invite");
+      resetSetting(guild!.id, "serverboard", "invite_channel");
+      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# The **Create Invite** and/or the **Manage Server** permissions are required for this setting to work.`;
+      component.setDisabled(true);
+    }
+
+    if (table == "user") {
+      const dmChannel = await (await interaction.client.users.fetch(id)).createDM();
+      if (name == "remind" && (!dmChannel || !dmChannel.isSendable())) {
+        await setUserSetting(id, "topgg", "remind", false);
+        text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
+        component.setDisabled(true);
+      }
+    }
+
     return { text, data, component };
   };
 
@@ -338,7 +347,10 @@ export async function settingsEmbed(
       new TextDisplayBuilder().setContent(settingsDef.description),
     );
 
-  const reply = await interaction.reply({ components: [container], flags: "IsComponentsV2" });
+  const reply = await interaction.reply({
+    components: [container],
+    flags: ["Ephemeral", "IsComponentsV2"],
+  });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
     if (i.message.id != (await reply.fetch()).id)

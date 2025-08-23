@@ -58,5 +58,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
       },
     ]);
 
-  await interaction.reply({ embeds: [embed] });
+  await interaction.reply({ embeds: [embed], flags: "Ephemeral" });
 }

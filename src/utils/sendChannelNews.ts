@@ -7,10 +7,11 @@ import {
   type Role,
   type TextChannel,
 } from "discord.js";
+import { channelCheck } from "./channelCheck";
 import { genColor } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
-import { channelCheck } from "./channelCheck";
+import { safeChannel } from "./safeChannel";
 
 /**
  * Sends news to a channel.
@@ -44,9 +45,11 @@ export async function sendChannelNews(
     .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
     .setColor(genColor(200));
 
-  const channel = guild.channels.cache.get(
+  const channel = (await safeChannel(
+    guild,
     ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
-  ) as TextChannel;
+  )) as TextChannel;
+
   if (
     !(await channelCheck({
       channel,

@@ -93,7 +93,6 @@ export async function errorEmbed(options: {
         files: files,
         flags: "Ephemeral",
       },
-      error: true,
     });
 }
 
@@ -176,6 +175,5 @@ export async function errorEmbedCV2(options: {
     return await safeReply({
       interaction,
       replyOptions: { components: [container], flags: ["Ephemeral", "IsComponentsV2"] },
-      error: true,
     });
 }

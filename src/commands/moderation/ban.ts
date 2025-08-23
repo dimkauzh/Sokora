@@ -2,7 +2,7 @@ import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
-import ms from "ms";
+import ms from "enhanced-ms";
 import { scheduleUnban } from "utils/unbanScheduler";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -66,7 +66,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         interaction,
         user,
         action: "Banned",
-        duration,
+        duration: duration ? ms(duration) : undefined,
         dm: true,
         dbAction: "BAN",
         expiresAt: duration ? ms(duration) : undefined,

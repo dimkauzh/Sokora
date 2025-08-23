@@ -1,5 +1,15 @@
-import { ChannelType, EmbedBuilder, Invite, type Guild } from "discord.js";
-import { colorize } from "../colorGen";
+import { resetSetting } from "database/settings";
+import {
+  ChannelType,
+  EmbedBuilder,
+  NewsChannel,
+  StageChannel,
+  TextChannel,
+  VoiceChannel,
+  type Guild,
+} from "discord.js";
+import { logChannel } from "utils/logChannel";
+import { colorize, genColor } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
 import { pluralOrNot } from "../pluralOrNot";
@@ -23,7 +33,10 @@ type Options = {
 export async function serverEmbed(options: Options) {
   const { page, pages, guild, invite } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
-  const boosters = guild.members.cache.filter(member => member.premiumSince);
+  const members = guild.members.cache;
+  const boosters = members.filter(member => member.premiumSince);
+  const client = guild.client.user.id;
+  const owner = await guild.fetchOwner();
   const icon = guild.iconURL()!;
 
   const roles = guild.roles.cache;
@@ -40,7 +53,7 @@ export async function serverEmbed(options: Options) {
   const channelCount = channelSizes.text + channelSizes.voice;
 
   const generalValues = [
-    `Owned by **${(await guild.fetchOwner()).user.displayName}**`,
+    `Owned by **${owner.user.displayName}**`,
     `Created on **<t:${Math.round(guild.createdAt.valueOf() / 1000)}:D>**`,
   ];
 
@@ -80,9 +93,10 @@ export async function serverEmbed(options: Options) {
       }`,
     );
 
+  const dot = dotCheck({ string: icon, doubleSpace: true });
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${pages ? `#${page}  •  ` : dotCheck({ string: icon, doubleSpace: true })}${guild.name}`,
+      name: `${pages ? `#${page}  •  ` : dot}${guild.name}`,
       iconURL: icon,
     })
     .setDescription(guild.description ? `> ${guild.description}` : null)
@@ -108,13 +122,44 @@ export async function serverEmbed(options: Options) {
     .setColor(await colorize({ avatar: icon, hue: 200 }));
 
   if (invite?.show) {
-    const previousInvite: Invite | undefined = (await guild.invites.fetch()).find(
-      invite =>
-        invite.inviter?.id == guild.client.user.id &&
-        invite.maxUses == null &&
-        invite.expiresAt == null,
-    );
+    async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
+      resetSetting(guild.id, "serverboard", "server_invite");
+      resetSetting(guild.id, "serverboard", "invite_channel");
+      const errEmbed = new EmbedBuilder()
+        .setAuthor({
+          name: `${dot}Serverboard is misconfigured in your server!`,
+          iconURL: icon,
+        })
+        .setFields({
+          name: "⁉️ • What happened",
+          value: [
+            "Sokora does not have the **Create Invite** and/or **Manage Server** permissions to create an invitation, but `serverboard.server_invite` is enabled.",
+            `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
+          ].join("\n"),
+        })
+        .setColor(genColor(60));
 
+      await logChannel(guild, { embeds: [errEmbed] }, true, {
+        silent: false,
+        user: owner.user,
+        options: {
+          embeds: [
+            errEmbed.setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` }),
+          ],
+        },
+      });
+
+      return embed;
+    }
+
+    if (
+      !members.get(client)?.permissions.has("CreateInstantInvite") ||
+      !members.get(client)?.permissions.has("ManageGuild")
+    )
+      return noPerms();
+
+    const invites = await guild.invites.fetch();
+    const previousInvite = invites.find(invite => invite.inviter?.id == client);
     const possiblyFetchedInviteChannel = await guild.channels.fetch(
       invite.channel ??
         guild.channels.cache
@@ -122,7 +167,6 @@ export async function serverEmbed(options: Options) {
             channel =>
               channel.type == ChannelType.GuildText ||
               channel.type == ChannelType.GuildAnnouncement ||
-              channel.type == ChannelType.GuildForum ||
               channel.type == ChannelType.GuildVoice ||
               channel.type == ChannelType.GuildStageVoice,
           )
@@ -137,16 +181,12 @@ export async function serverEmbed(options: Options) {
         : guild.rulesChannel;
 
     if (!inviteChannel) return embed;
+    if (!inviteChannel.permissionsFor(client)?.has("CreateInstantInvite"))
+      return noPerms(inviteChannel);
 
     const inviteUrl = previousInvite
       ? previousInvite.url
-      : await inviteChannel.createInvite({
-          maxAge: undefined,
-          maxUses: undefined,
-          reason: "Serverboard invite",
-          temporary: false,
-          unique: true,
-        });
+      : await inviteChannel.createInvite({ maxAge: 0, reason: "Serverboard invite" });
 
     embed.addFields({
       name: `🚪 • Join in!`,

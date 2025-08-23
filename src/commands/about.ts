@@ -67,5 +67,5 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setStyle(ButtonStyle.Link),
   );
 
-  await interaction.reply({ embeds: [embed], components: [row] });
+  await interaction.reply({ embeds: [embed], components: [row], flags: "Ephemeral" });
 }

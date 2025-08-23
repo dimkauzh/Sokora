@@ -1,10 +1,11 @@
 import { Api } from "@top-gg/sdk";
 import { Chart, registerables } from "chart.js";
-import { getUserSettingsTable } from "database/userSettings";
+import { getUserSettingsTable, setUserSetting } from "database/userSettings";
 import { ActivityType, Client, Partials } from "discord.js";
+import { errorEmbed } from "embeds/errorEmbed";
+import ms from "enhanced-ms";
 import { registerGuildCommands } from "handlers/commands";
 import { loadAuditEvents, loadEasterEggs, loadEvents } from "handlers/events";
-import ms from "ms";
 import { rescheduleUnbans } from "utils/unbanScheduler";
 
 export const client = new Client({
@@ -13,6 +14,7 @@ export const client = new Client({
   },
   partials: [Partials.Message, Partials.Reaction, Partials.User],
   intents: [
+    "DirectMessages",
     "Guilds",
     "GuildMembers",
     "GuildMessages",
@@ -24,32 +26,48 @@ export const client = new Client({
   ],
 });
 
-export const subscribedUsers = new Set(
-  (await getUserSettingsTable("topgg", "remind"))?.filter(i => i.value == "1").map(i => i.userID),
-);
-
-client.once("ready", async () => {
-  if (process.env.TOPGG_TOKEN) {
-    const topgg = new Api(process.env.TOPGG_TOKEN!);
-    try {
-      await topgg.postStats({
-        serverCount: (await client.guilds.fetch()).size,
-      });
-      console.log("Posted statistics to top.gg!");
-    } catch (error) {
-      console.error(`Failed to start top.gg autoposter: ${error}`);
-    }
-
+client.once("clientReady", async () => {
+  if (process.env.TOPGG_TOKEN)
     setInterval(async () => {
-      for (const user of subscribedUsers) {
-        if (await topgg.hasVoted(user)) continue;
-        await client.users.send(
-          JSON.parse(user),
-          "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
-        );
+      const topgg = new Api(process.env.TOPGG_TOKEN!);
+      try {
+        await topgg.postStats({
+          serverCount: (await client.guilds.fetch()).size,
+        });
+        console.log("Posted statistics to top.gg!");
+      } catch (error) {
+        console.error(`Failed to start top.gg autoposter: ${error}`);
       }
-    }, ms("3h"));
-  }
+
+      const users = client.users;
+      const subscribedUsers = new Set(
+        (await getUserSettingsTable("topgg", "remind"))
+          ?.filter(i => i.value == "1")
+          .map(i => i.userID),
+      );
+
+      for (const user of subscribedUsers) {
+        try {
+          if (await topgg.hasVoted(user)) continue;
+          const dmChannel = await (await users.fetch(JSON.parse(user))).createDM();
+          if (!dmChannel || !dmChannel.isSendable()) continue;
+
+          await dmChannel.send(
+            "Reminder that **you can vote for Sokora** on [top.gg](https://top.gg/bot/873918300726394960/vote) - go vote!!",
+          );
+        } catch (error) {
+          await errorEmbed({
+            client,
+            error,
+            title: "top.gg reminding error.",
+            log: true,
+            forward: true,
+            fileName: "bot.ts",
+          });
+          await setUserSetting(user, "topgg", "remind", false);
+        }
+      }
+    }, ms("6h"));
 
   await Promise.all([
     loadEvents(client),

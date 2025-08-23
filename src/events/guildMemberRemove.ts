@@ -1,14 +1,13 @@
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
-import { subscribedUsers } from "src/bot";
 import { channelCheck } from "utils/channelCheck";
 import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replaceVariables } from "utils/replace";
+import { safeChannel } from "utils/safeChannel";
 import { Event } from "utils/types";
 
 export default (async function run(member: GuildMember) {
-  subscribedUsers.delete(member.id);
   const guild = member.guild;
   const guildID = guild.id;
   const id =
@@ -18,10 +17,7 @@ export default (async function run(member: GuildMember) {
   if (!id) return;
   const user = member.user;
   const avatar = user.displayAvatarURL();
-  const channel = (await guild.channels.cache
-    .find(channel => channel.id == id)
-    ?.fetch()) as TextChannel;
-
+  const channel = (await safeChannel(guild, id)) as TextChannel;
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}${user.displayName} left`,

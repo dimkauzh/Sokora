@@ -5,6 +5,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
+import { safeChannel } from "utils/safeChannel";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("lock")
@@ -28,8 +29,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const channelOption = interaction.options.getChannel("channel")!;
   const reason = interaction.options.getString("reason");
-  let channel = guild.channels.cache.get(interaction.channel!.id)!;
-  if (channelOption) channel = guild.channels.cache.get(channelOption.id)!;
+  let channel = await safeChannel(guild, interaction.channel!.id);
+  if (channelOption) channel = await safeChannel(guild, channelOption.id);
 
   if (
     await errorCheck("Manage Roles", {

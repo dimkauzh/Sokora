@@ -6,6 +6,7 @@ import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { replaceVariables } from "utils/replace";
+import { safeChannel } from "utils/safeChannel";
 import { Event } from "utils/types";
 
 export default (async function run(member) {
@@ -34,10 +35,7 @@ export default (async function run(member) {
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(await colorize({ user, avatar, hue: 200 }));
 
-  const channel = (await guild.channels.cache
-    .find(channel => channel.id == id)
-    ?.fetch()) as TextChannel;
-
+  const channel = (await safeChannel(guild, id)) as TextChannel;
   if (
     await channelCheck({
       guild,

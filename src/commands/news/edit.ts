@@ -15,6 +15,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
+import { safeChannel } from "utils/safeChannel";
 import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -92,9 +93,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setFooter({ text: `Edited news from ${guild.name} • ID: ${news.id}` })
       .setColor(genColor(200));
 
-    const channel = guild.channels.cache.get(
+    const channel = (await safeChannel(
+      guild,
       ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
-    ) as TextChannel;
+    )) as TextChannel;
 
     await channel.messages.edit(news.messageID, {
       embeds: [embed],

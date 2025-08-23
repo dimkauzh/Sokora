@@ -39,11 +39,11 @@ export async function channelCheck(options: {
 
   async function reset() {
     await dm?.send({ embeds: [embed] });
-    await resetSetting(guild.id, setting.category, setting.setting);
+    resetSetting(guild.id, setting.category, setting.setting);
     return false;
   }
 
-  function isValid(channel: any): channel is TextChannel | NewsChannel {
+  function isValid(channel: Channel): channel is TextChannel | NewsChannel {
     return channel.type == ChannelType.GuildText || channel.type == ChannelType.GuildAnnouncement;
   }
 
@@ -63,7 +63,7 @@ export async function channelCheck(options: {
         : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that no longer exists! **This setting will be reset to default.**`,
     })
     .setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` })
-    .setColor(genColor(0));
+    .setColor(genColor(60));
 
   const dm = await (await guild.fetchOwner())?.createDM().catch(() => null);
   if (!channel || !isValid(channel)) return await reset();

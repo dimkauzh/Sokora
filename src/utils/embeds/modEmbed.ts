@@ -5,7 +5,7 @@ import {
   type PermissionResolvable,
   type User,
 } from "discord.js";
-import ms from "ms";
+import ms from "enhanced-ms";
 import { mention } from "utils/mention";
 import { safeReply } from "utils/safeReply";
 import { genColor } from "../colorGen";
@@ -18,7 +18,7 @@ type Options = {
   action?: string;
   channel?: string;
   user?: User;
-  duration?: string | null;
+  duration?: number | null;
   dm?: boolean;
   dbAction?: ModType;
   expiresAt?: number;
@@ -150,7 +150,6 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     customText,
     silent,
   } = options;
-
   const guild = interaction.guild!;
   const name = user?.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
@@ -160,7 +159,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
   if (reason) generalValues.push(`**Reason**: ${reason}`);
   else generalValues.push("*No reason provided*");
 
-  if (duration) generalValues.push(`**Duration**: ${ms(ms(duration), { long: true })}`);
+  if (duration) generalValues.push(`**Duration**: ${ms(Number(duration), "fullPrecision")}`);
   if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
 
   if (previousID) {
