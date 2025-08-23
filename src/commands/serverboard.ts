@@ -1,4 +1,4 @@
-import { listPublicServers } from "database/settings";
+import { deletePublicServer, listPublicServers } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -28,9 +28,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             inviteChannelId: entry.inviteChannelId,
           };
         } catch (error) {
-          // log it instead of deleting it
-          // so we can eventually find what specific error
-          // we should use to delete a public server
+          // error: unknown guild
           await errorEmbed({
             interaction,
             error,
@@ -39,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             forward: true,
             fileName: "serverboard.ts",
           });
-          // await deletePublicServer(entry.guildID);
+          await deletePublicServer(entry.guildID);
           return null;
         }
       }),
