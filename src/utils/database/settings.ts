@@ -262,7 +262,7 @@ export async function getSetting<
     return null;
   }
 
-  const res = getQuery.all(JSON.stringify(guildID), `${key}.${setting}`) as TypeOfDefinition<
+  const res = getQuery.all(guildID, `${key}.${setting}`) as TypeOfDefinition<
     typeof tableDefinition
   >[];
   const set = settingsDefinition[key].settings[setting];
@@ -281,8 +281,6 @@ export async function getSetting<
         return (Number(value) == 1 ? true : false) as SqlType<typeof set.type>;
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
-      case "CHANNEL":
-        return value.replace("<#", "").replace(">", "");
       default:
         return value as SqlType<typeof set.type>;
     }
@@ -307,27 +305,27 @@ export async function getSettingCategory<K extends keyof typeof settingsDefiniti
   return array;
 }
 
-export async function setSetting<
+export function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S, value: any) {
   const set = Array.isArray(value) ? dekominator(value) : value;
-  deleteQuery.all(JSON.stringify(guildID), `${key}.${setting}`);
-  insertQuery.run(JSON.stringify(guildID), `${key}.${setting}`, set);
+  deleteQuery.all(guildID, `${key}.${setting}`);
+  insertQuery.run(guildID, `${key}.${setting}`, set);
 }
 
-export async function resetSetting<
+export function resetSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S) {
-  deleteQuery.run(JSON.stringify(guildID), `${key}.${setting}`);
+  deleteQuery.run(guildID, `${key}.${setting}`);
 }
 
-export async function resetSettingCategory<K extends keyof typeof settingsDefinition>(
+export function resetSettingCategory<K extends keyof typeof settingsDefinition>(
   guildID: string,
   key: K,
 ) {
-  deleteCategoryQuery.run(JSON.stringify(guildID), `%${key}%`);
+  deleteCategoryQuery.run(guildID, `%${key}%`);
 }
 
 export function listPublicServers(): Promise<
@@ -338,14 +336,14 @@ export function listPublicServers(): Promise<
   }[]
 > {
   const publicGuildSet = new Set(
-    (listPublicQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(entry =>
-      JSON.parse(entry.guildID),
+    (listPublicQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
+      entry => entry.guildID,
     ),
   );
 
   const inviteGuildsSet = new Set(
     (listPublicWithInvitesEnabledQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
-      entry => JSON.parse(entry.guildID),
+      entry => entry.guildID,
     ),
   );
 
@@ -363,7 +361,7 @@ export function listPublicServers(): Promise<
 
 export async function deletePublicServer(guildId: string) {
   try {
-    deletePublicQuery.all(JSON.stringify(guildId));
+    deletePublicQuery.all(guildId);
   } catch (error) {
     return await errorEmbed({
       client,

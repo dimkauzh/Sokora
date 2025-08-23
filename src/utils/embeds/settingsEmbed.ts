@@ -90,7 +90,7 @@ async function setSettingPlease(
   value: any,
   table: "server" | "user",
 ) {
-  if (table == "server") return await setSetting(id, key, setting, value);
+  if (table == "server") return setSetting(id, key, setting, value);
   else return await setUserSetting(id, key, setting, value);
 }
 
@@ -268,8 +268,8 @@ export async function settingsEmbed(
         ?.permissions.has("CreateInstantInvite") ||
         !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("ManageGuild"))
     ) {
-      await resetSetting(guild!.id, "serverboard", "server_invite");
-      await resetSetting(guild!.id, "serverboard", "invite_channel");
+      resetSetting(guild!.id, "serverboard", "server_invite");
+      resetSetting(guild!.id, "serverboard", "invite_channel");
       text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# The **Create Invite** and/or the **Manage Server** permissions are required for this setting to work.`;
       component.setDisabled(true);
     }
