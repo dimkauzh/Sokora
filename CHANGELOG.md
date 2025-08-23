@@ -3,6 +3,21 @@
 
 # Sokora Changelog
 
+## 0.3.1
+
+## Changed
+
+- Made /help, /about, /changelog, /credits, /ping, /settings and /user settings ephemeral (only visible to you)
+- Sokora alerts server owners if they enable but misconfigure showing a server invite in serverboard
+
+## Fixed
+
+- Fixed issues with timestamps
+- Fixed some moderation commands "failing" (even though they did the job)
+- Fixed invites for serverboard sometimes silently failing to create or crashing /serverboard
+- Fixed topgg reminders
+- Some internal fixes
+
 ## 0.3.0
 
 ### Added
