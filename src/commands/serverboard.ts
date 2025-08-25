@@ -28,7 +28,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
             inviteChannelId: entry.inviteChannelId,
           };
         } catch (error) {
-          // error: unknown guild
+          if (String(error).toLowerCase().includes("unknown guild")) {
+            await deletePublicServer(entry.guildID);
+            return null;
+          }
           await errorEmbed({
             interaction,
             error,

@@ -47,7 +47,7 @@ export default (async function run(message) {
           return await errorEmbed({
             client,
             error,
-            title: `Error running easter egg ${easterEgg.name}`,
+            title: `Error running easter egg ${easterEgg.name}.`,
             log: true,
             forward: true,
             fileName: "messageCreate.ts",

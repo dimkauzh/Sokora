@@ -78,7 +78,7 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
     if (action == "Ban" && isBanned)
       return await errorEmbed({
         interaction,
-        title: `You can't ban this user.`,
+        title: "You can't ban this user.",
         reason: "This user is already banned.",
       });
     else if (action == "Unban" && !isBanned)

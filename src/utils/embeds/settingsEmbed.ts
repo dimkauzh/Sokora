@@ -37,7 +37,7 @@ import {
   type StringSelectMenuInteraction,
   type UserSelectMenuInteraction,
 } from "discord.js";
-import { auditEventNames, easterEggNames } from "handlers/events";
+import { easterEggNames } from "handlers/events";
 import { genColorCV2 } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
@@ -146,6 +146,7 @@ export async function settingsEmbed(
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
   const resetButtons = ["reset_start", "reset_category", "cancel", "yes", "no"];
+  const eventNames = ["Message update", "Message delete"];
   const color = genColorCV2(200)!;
   let settingName = "";
   let reset = false;
@@ -224,9 +225,9 @@ export async function settingsEmbed(
         data = { type: "log", id: name };
         component = new StringSelectMenuBuilder()
           .setCustomId(data.id)
-          .setMaxValues(auditEventNames.length)
+          .setMaxValues(eventNames.length)
           .setOptions(
-            auditEventNames.map(option =>
+            eventNames.map(option =>
               new StringSelectMenuOptionBuilder()
                 .setLabel(option)
                 .setValue(option)

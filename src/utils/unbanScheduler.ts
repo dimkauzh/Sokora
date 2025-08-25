@@ -20,7 +20,7 @@ export function scheduleUnban(
     async () => {
       try {
         const guild = await client.guilds.fetch(guildID);
-        const user = guild.bans.cache.get(userID)?.user;
+        const user = (await guild.bans.fetch(userID)).user;
         if (!user) {
           removeModeration(guildID, userID);
           return await errorEmbed({
@@ -33,7 +33,7 @@ export function scheduleUnban(
           });
         }
 
-        const moderator = guild.members.cache.get(modID);
+        const moderator = await guild.members.fetch(modID);
         if (!moderator) {
           removeModeration(guildID, userID);
           return await errorEmbed({
@@ -77,7 +77,7 @@ export function scheduleUnban(
         return await errorEmbed({
           client,
           error,
-          title: `Failed to unban user ${userID} in guild ${guildID}`,
+          title: `Failed to unban user ${userID} in guild ${guildID}.`,
           log: true,
           forward: true,
           fileName: "unbanScheduler.ts",

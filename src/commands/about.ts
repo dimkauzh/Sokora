@@ -23,7 +23,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b);
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
-
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}About Sokora`,

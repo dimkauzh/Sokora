@@ -38,7 +38,7 @@ export default (async function run(oldMessage, newMessage) {
     return await errorEmbed({
       client: newMessage.client,
       error,
-      title: "Error fetching meta image",
+      title: "Error fetching meta image.",
       forward: true,
       fileName: "messageUpdate.ts",
     });
