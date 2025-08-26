@@ -7,7 +7,7 @@
 
 ## Changed
 
-- User can't use any commands in DMs (thanks @zayaan)
+- User can't use any commands in DMs (thanks @userandaname)
 - You can use /user info for people outside of the server
 
 ## Fixed
