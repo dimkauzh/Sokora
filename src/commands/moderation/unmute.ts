@@ -2,6 +2,7 @@ import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
+import { safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("unmute")
@@ -24,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const reason = interaction.options.getString("reason");
   const guild = interaction.guild!;
-  const target = guild.members.cache.get(user.id);
+  const target = await safeMember(guild, user.id);
 
   if (
     await errorCheck("Moderate Members", {

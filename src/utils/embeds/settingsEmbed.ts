@@ -42,7 +42,7 @@ import { genColorCV2 } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
-import { safeReply } from "utils/safeReply";
+import { safeReply } from "utils/safeThings";
 import { errorEmbedCV2 } from "./errorEmbed";
 
 async function construct(

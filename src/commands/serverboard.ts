@@ -41,7 +41,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
             forward: true,
             fileName: "serverboard.ts",
           });
-          await deletePublicServer(entry.guildID);
           return null;
         }
       }),

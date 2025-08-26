@@ -21,7 +21,6 @@
     "paths": {
       "database/*": ["./src/utils/database/*"],
       "embeds/*": ["./src/utils/embeds/*"],
-      "audit/*": ["./src/events/auditLogs/*"],
       "events/*": ["./src/events/*"],
       "handlers/*": ["./src/handlers/*"],
       "utils/*": ["./src/utils/*"],

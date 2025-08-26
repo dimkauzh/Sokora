@@ -9,6 +9,7 @@ import {
   type Guild,
 } from "discord.js";
 import { logChannel } from "utils/logChannel";
+import { safeMember } from "utils/safeThings";
 import { colorize, genColor } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
@@ -33,8 +34,7 @@ type Options = {
 export async function serverEmbed(options: Options) {
   const { page, pages, guild, invite } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
-  const members = guild.members.cache;
-  const boosters = members.filter(member => member.premiumSince);
+  const boosters = guild.members.cache.filter(member => member.premiumSince);
   const client = guild.client.user.id;
   const owner = await guild.fetchOwner();
   const icon = guild.iconURL()!;
@@ -152,9 +152,10 @@ export async function serverEmbed(options: Options) {
       return embed;
     }
 
+    const clientMember = await safeMember(guild, client);
     if (
-      !members.get(client)?.permissions.has("CreateInstantInvite") ||
-      !members.get(client)?.permissions.has("ManageGuild")
+      !clientMember.permissions.has("CreateInstantInvite") ||
+      !clientMember.permissions.has("ManageGuild")
     )
       return noPerms();
 

@@ -13,7 +13,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { channelCheck } from "./channelCheck";
-import { safeChannel } from "./safeChannel";
+import { safeChannel, safeMember } from "./safeThings";
 
 /**
  * Sends a message in the log channel. (if there is one set)
@@ -78,7 +78,7 @@ export async function logChannel(
       if (dmOptions.silent) return;
 
       channel = (await dmOptions.user.createDM().catch(() => null)) as DMChannel;
-      if (!channel || !guild.members.cache.get(dmOptions.user.id) || dmOptions.user.bot) return;
+      if (!channel || !(await safeMember(guild, dmOptions.user.id)) || dmOptions.user.bot) return;
       return await channel.send(dmOptions.options);
     } catch (error) {
       return await errorEmbed({ client: guild.client, error, log: true });

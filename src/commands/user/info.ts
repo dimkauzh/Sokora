@@ -10,6 +10,7 @@ import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";
+import { safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("info")
@@ -19,7 +20,7 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const user = interaction.options.getUser("user") ?? interaction.user;
-  const target = guild.members.cache.get(user.id);
+  const target = await safeMember(guild, user.id);
   const avatar = target?.displayAvatarURL() ?? user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({

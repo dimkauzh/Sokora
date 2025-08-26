@@ -2,6 +2,7 @@ import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
+import { safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("kick")
@@ -42,7 +43,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       { interaction, user, action: "Kicked", dm: true, dbAction: "KICK", silent },
       reason,
     );
-    await guild.members.cache.get(user.id)?.kick(reason ?? undefined);
+    await (await safeMember(guild, user.id)).kick(reason ?? undefined);
   } catch (error) {
     return await errorEmbed({ interaction, error, forward: true, fileName: "kick.ts" });
   }

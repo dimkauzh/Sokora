@@ -4,6 +4,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
+import { safeMember } from "./safeThings";
 
 export function scheduleUnban(
   client: Client,
@@ -33,7 +34,7 @@ export function scheduleUnban(
           });
         }
 
-        const moderator = await guild.members.fetch(modID);
+        const moderator = await safeMember(guild, modID);
         if (!moderator) {
           return await errorEmbed({
             client,

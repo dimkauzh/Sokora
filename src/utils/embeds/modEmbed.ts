@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import ms from "enhanced-ms";
 import { mention } from "utils/mention";
-import { safeReply } from "utils/safeReply";
+import { safeMember, safeReply } from "utils/safeThings";
 import { genColor } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
@@ -45,9 +45,8 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
   const { allErrors, botError, channelError, ownerError, outsideError, banCheckError } =
     errorOptions;
   const guild = interaction.guild!;
-  const members = guild.members.cache!;
-  const member = members.get(interaction.user.id)!;
-  const client = members.get(interaction.client.user.id)!;
+  const member = await safeMember(guild, interaction.user.id);
+  const client = await safeMember(guild, interaction.client.user.id);
   const permission = permissionAction.replace(/\s/g, "") as PermissionResolvable;
 
   if (botError)
@@ -91,12 +90,12 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
   }
 
   if (!allErrors || !user || !action) return;
-  const target = members.get(user.id)!;
+  const target = (await safeMember(guild, user.id))!;
   const name = user.displayName;
   const highestModPos = member.roles.highest.position;
 
   if (outsideError)
-    if (!guild.members.cache.has(user.id))
+    if (!target)
       return await errorEmbed({
         interaction,
         title: `You can't ${action.toLowerCase()} ${name}.`,
@@ -192,7 +191,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
   if (dbAction) {
     if (!action) return;
     try {
-      const moderator = guild.members.cache.get(interaction.user.id);
+      const moderator = await safeMember(guild, interaction.user.id);
       if (!moderator)
         return await errorEmbed({
           interaction,

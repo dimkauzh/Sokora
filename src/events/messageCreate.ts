@@ -8,7 +8,7 @@ import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { mention } from "utils/mention";
-import { safeChannel } from "utils/safeChannel";
+import { safeChannel } from "utils/safeThings";
 import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();

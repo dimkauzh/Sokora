@@ -15,7 +15,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
-import { safeChannel } from "utils/safeChannel";
+import { safeChannel, safeMember } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -27,7 +27,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageGuild"))
+  if (!(await safeMember(guild, interaction.user.id)).permissions.has("ManageGuild"))
     return await errorEmbed({
       interaction,
       title: "You can't execute this command.",
