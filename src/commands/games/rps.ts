@@ -57,7 +57,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     })
     .setDescription(
       opponent.bot
-        ? `Choose your weapon!`
+        ? "Choose your weapon!"
         : `${user.username} has challenged ${opponent.username} to a game!\nBoth players, make your choice!`,
     )
     .setColor(genColor(60));

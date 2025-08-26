@@ -12,8 +12,10 @@ export const data = new SlashCommandSubcommandBuilder()
   .setDescription("Show a list of (variables) used to dynamically show data on certain messages.");
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const example = `Welcome to (servername), **(name)**!`;
-  const exampleTwo = `Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!`;
+  const example = "Welcome to (servername), **(name)**!";
+  const exampleTwo =
+    "Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!";
+
   const avatar = interaction.client.user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
@@ -26,34 +28,34 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setColor(genColor(200))
     .setFields([
       {
-        name: "👀  • Simple example",
+        name: "👀 • Simple example",
         value: [
           `A simple example: \`${example}\` will result in:`,
           `> ${await replaceVariables(example, interaction.guild!, interaction.user)}`,
         ].join("\n"),
       },
       {
-        name: "🎛  • Another example",
+        name: "🎛 • Another example",
         value: [
           `Adding more stuff:\n\`${exampleTwo}\`\nwill result in:`,
           `> ${await replaceVariables(exampleTwo, interaction.guild!, interaction.user)}`,
         ].join("\n"),
       },
       {
-        name: "📜  • All variables",
+        name: "📜 • All variables",
         value: [
-          `\`(name)\` - display name of the user who joined`,
-          `\`(username)\` - username of the user who joined`,
-          `\`(count)\` - member count`,
-          `\`(servername)\` - name of this server`,
+          "`(name)` - display name of the user who joined",
+          "`(username)` - username of the user who joined",
+          "`(count)` - member count",
+          "`(servername)` - name of this server",
           `\`(serverowner)\` - ${
             interaction.member?.user.id == interaction.guild?.ownerId
               ? "your name!"
               : "name of this server's owner"
           }`,
-          `\`(currentdate)\` - current date in the 'July 10, 2025' format`,
-          `\`(currentdate, simple)\` - current date in the '7/10/25' format`,
-          `\`(currentdate, detailed)\` - current date in the 'July 10, 2025, at 1:11 PM' format`,
+          "`(currentdate)` - current date in the 'July 10, 2025' format",
+          "`(currentdate, simple)` - current date in the '7/10/25' format",
+          "`(currentdate, detailed)` - current date in the 'July 10, 2025, at 1:11 PM' format",
         ].join("\n"),
       },
     ]);

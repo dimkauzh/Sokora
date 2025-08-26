@@ -35,7 +35,6 @@ export function scheduleUnban(
 
         const moderator = await guild.members.fetch(modID);
         if (!moderator) {
-          removeModeration(guildID, userID);
           return await errorEmbed({
             client,
             title: `Failed to unban user ${userID} in guild ${guildID}.`,
@@ -94,7 +93,6 @@ export function scheduleUnban(
 
 export async function rescheduleUnbans(client: Client) {
   const now = Date.now();
-
   for (const ban of getPendingBans(now)) {
     if (!ban.expiresAt) continue;
     if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
