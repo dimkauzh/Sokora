@@ -1,5 +1,5 @@
 import { getSetting } from "database/settings";
-import { EmbedBuilder, type GuildMember, type TextChannel } from "discord.js";
+import { EmbedBuilder, type TextChannel } from "discord.js";
 import { channelCheck } from "utils/channelCheck";
 import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
@@ -7,7 +7,7 @@ import { replaceVariables } from "utils/replace";
 import { safeChannel } from "utils/safeChannel";
 import { Event } from "utils/types";
 
-export default (async function run(member: GuildMember) {
+export default (async function run(member) {
   const guild = member.guild;
   const guildID = guild.id;
   const id =

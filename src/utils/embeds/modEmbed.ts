@@ -63,7 +63,8 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
       return await errorEmbed({
         interaction,
         title: "The bot can't execute this command.",
-        reason: `The bot is missing the **View Channel** permission. If you want to run this command, you might want to give the bot this permission from the channel settings.`,
+        reason:
+          "The bot is missing the **View Channel** permission. If you want to run this command, you might want to give the bot this permission from the channel settings.",
       });
 
   if (!member.permissions.has(permission))
