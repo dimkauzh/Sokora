@@ -14,7 +14,8 @@ import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("about")
-  .setDescription("Shows information about Sokora.");
+  .setDescription("Shows information about Sokora.")
+  .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const client = interaction.client;

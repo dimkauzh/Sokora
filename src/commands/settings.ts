@@ -10,7 +10,8 @@ import { settingsEmbed } from "embeds/settingsEmbed";
 export const data = new SlashCommandBuilder()
   .setName("settings")
   .setDescription("Configure Sokora to your liking.")
-  .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator);
+  .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
+  .setContexts(0);
 
 settingsKeys.forEach(key =>
   data.addSubcommand(

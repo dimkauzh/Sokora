@@ -6,7 +6,8 @@ import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("ping")
-  .setDescription("Shows the current ping and uptime of Sokora.");
+  .setDescription("Shows the current ping and uptime of Sokora.")
+  .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const client = interaction.client;

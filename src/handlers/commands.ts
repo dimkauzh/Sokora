@@ -36,7 +36,8 @@ async function createSubCommand(name: string, client: Client) {
   const autocomplete: any[] = [];
   const command = new SlashCommandBuilder()
     .setName(name.toLowerCase())
-    .setDescription("This command has no description.");
+    .setDescription("This command has no description.")
+    .setContexts(0);
 
   for (const subCommandFile of readdirSync(join(commandsPath, name), {
     withFileTypes: true,
