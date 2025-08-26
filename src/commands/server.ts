@@ -3,7 +3,8 @@ import { serverEmbed } from "embeds/serverEmbed";
 
 export const data = new SlashCommandBuilder()
   .setName("server")
-  .setDescription("Shows this server's info.");
+  .setDescription("Shows this server's info.")
+  .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const embed = await serverEmbed({ guild: interaction.guild!, roles: true });

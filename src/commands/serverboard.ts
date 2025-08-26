@@ -15,7 +15,8 @@ import { replace } from "utils/replace";
 export const data = new SlashCommandBuilder()
   .setName("serverboard")
   .setDescription("Shows the servers that have Sokora.")
-  .addNumberOption(number => number.setName("page").setDescription("The page you want to see."));
+  .addNumberOption(number => number.setName("page").setDescription("The page you want to see."))
+  .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guildList: { guild: Guild; showInvite: boolean; inviteChannelId: string | null }[] = (

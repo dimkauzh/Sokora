@@ -15,7 +15,8 @@ import { replace } from "utils/replace";
 export const data = new SlashCommandBuilder()
   .setName("leaderboard")
   .setDescription("Displays the guild leaderboard.")
-  .addNumberOption(option => option.setName("page").setDescription("Page number to display."));
+  .addNumberOption(option => option.setName("page").setDescription("Page number to display."))
+  .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guildID = interaction.guild?.id;
