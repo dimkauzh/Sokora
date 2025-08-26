@@ -3,6 +3,23 @@
 
 # Sokora Changelog
 
+## 0.3.2
+
+## Changed
+
+- User can't use any commands in DMs (thanks @zayaan)
+- You can use /user info for people outside of the server
+
+## Fixed
+
+- Top.gg reminders are fixed once more, now they should send **only** when you didn't vote
+- Attempt to fix tempbans not unbanning the user due to Sokora not finding them through the cache (by fetching the ban list instead)
+- "Unknown guild" error in serverboard
+
+## Removed
+
+- Executor in message delete events
+
 ## 0.3.1
 
 ## Changed
