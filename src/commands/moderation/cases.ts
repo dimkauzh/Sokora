@@ -24,6 +24,7 @@ import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 import { replace } from "utils/replace";
+import { safeMember } from "utils/safeThings";
 
 async function generateEmbed(params: {
   cases: TypeOfDefinition<ModerationCase>[];
@@ -134,7 +135,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ModerateMembers"))
+  if (!(await safeMember(guild, interaction.user.id)).permissions.has("ModerateMembers"))
     return await errorEmbed({
       interaction,
       title: "You can't execute this command.",

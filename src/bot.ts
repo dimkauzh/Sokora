@@ -5,7 +5,7 @@ import { ActivityType, Client, Partials } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
 import { registerGuildCommands } from "handlers/commands";
-import { loadAuditEvents, loadEasterEggs, loadEvents } from "handlers/events";
+import { loadEasterEggs, loadEvents } from "handlers/events";
 import { rescheduleUnbans } from "utils/unbanScheduler";
 
 export const client = new Client({
@@ -31,25 +31,20 @@ client.once("clientReady", async () => {
     setInterval(async () => {
       const topgg = new Api(process.env.TOPGG_TOKEN!);
       try {
-        await topgg.postStats({
-          serverCount: (await client.guilds.fetch()).size,
-        });
+        await topgg.postStats({ serverCount: (await client.guilds.fetch()).size });
         console.log("Posted statistics to top.gg!");
       } catch (error) {
         console.error(`Failed to start top.gg autoposter: ${error}`);
       }
 
-      const users = client.users;
-      const subscribedUsers = new Set(
+      for (const user of new Set(
         (await getUserSettingsTable("topgg", "remind"))
           ?.filter(i => i.value == "1")
-          .map(i => i.userID),
-      );
-
-      for (const user of subscribedUsers) {
+          .map(i => i.userID.replaceAll('"', "")),
+      )) {
         try {
-          if (await topgg.hasVoted(user)) continue;
-          const dmChannel = await (await users.fetch(JSON.parse(user))).createDM();
+          if ((await topgg.hasVoted(user)) == true) continue;
+          const dmChannel = await (await client.users.fetch(user)).createDM();
           if (!dmChannel || !dmChannel.isSendable()) continue;
 
           await dmChannel.send(
@@ -72,7 +67,6 @@ client.once("clientReady", async () => {
   await Promise.all([
     loadEvents(client),
     loadEasterEggs(),
-    loadAuditEvents(client),
     registerGuildCommands(client),
     rescheduleUnbans(client),
   ]).then(() =>

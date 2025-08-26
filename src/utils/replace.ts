@@ -1,6 +1,7 @@
 import type { Guild, User } from "discord.js";
 import { mention } from "./mention";
 import { randomize } from "./randomize";
+import { safeMember } from "./safeThings";
 import type { Replacements } from "./types";
 
 let emojis = ["💖", "💝", "💓", "💗", "💘", "💟", "💕", "💞"];
@@ -40,7 +41,7 @@ export async function replaceVariables(text: string, guild: Guild, user: User): 
     { text: "(servername)", replacement: guild.name },
     {
       text: "(serverowner)",
-      replacement: (await guild.members.fetch(guild.ownerId)).displayName,
+      replacement: (await safeMember(guild, guild.ownerId)).displayName,
     },
     { text: "(currentdate)", replacement: mention(Date.now(), "DEFAULT_TIMESTAMP") },
     { text: "(currentdate, simple)", replacement: mention(Date.now(), "SIMPLE_TIMESTAMP") },

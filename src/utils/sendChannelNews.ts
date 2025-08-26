@@ -11,7 +11,7 @@ import { channelCheck } from "./channelCheck";
 import { genColor } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
-import { safeChannel } from "./safeChannel";
+import { safeChannel } from "./safeThings";
 
 /**
  * Sends news to a channel.

@@ -6,7 +6,7 @@ import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { replaceVariables } from "utils/replace";
-import { safeChannel } from "utils/safeChannel";
+import { safeChannel } from "utils/safeThings";
 import { Event } from "utils/types";
 
 export default (async function run(member) {

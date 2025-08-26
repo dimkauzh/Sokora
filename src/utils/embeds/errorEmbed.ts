@@ -11,7 +11,7 @@ import {
   type ButtonInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { safeReply } from "utils/safeReply";
+import { safeReply } from "utils/safeThings";
 import { genColor, genColorCV2 } from "../colorGen";
 import { errorType } from "../errorType";
 

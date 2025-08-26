@@ -1,4 +1,3 @@
-import { executor } from "audit/messageDelete";
 import { getSetting } from "database/settings";
 import { AttachmentBuilder, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -32,34 +31,25 @@ export default (async function run(message) {
     if (!(await getSetting(guild.id, "moderation", "events"))?.toString().includes("messageDelete"))
       return;
 
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    let exec = executor;
-    if (exec?.id == author.id) exec = null;
-    const avatar = exec ? exec.displayAvatarURL() : author.displayAvatarURL();
     let media;
-
     try {
       media = await fetchMedia(message);
     } catch (error) {
       return await errorEmbed({
         client,
         error,
-        title: "Error fetching meta image",
+        title: "Error fetching meta image.",
         forward: true,
         fileName: "messageDelete.ts",
       });
     }
 
     const { image, video, thumbnail } = media;
+    const avatar = author.displayAvatarURL();
     const content = message.content;
     const embed = new EmbedBuilder()
       .setAuthor({
-        name: [
-          `${dotCheck({ string: avatar, doubleSpace: true })}`,
-          exec
-            ? `${exec.username} deleted a message from ${author.username}`
-            : `${author.username} deleted a message`,
-        ].join(""),
+        name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.username} deleted a message`,
         iconURL: avatar,
       })
       .setDescription(
@@ -72,9 +62,7 @@ export default (async function run(message) {
       .setThumbnail(thumbnail)
       .setImage(image)
       .setTimestamp(new Date())
-      .setFooter({
-        text: `Author ID: ${author.id}${exec ? ` • Executor ID: ${exec.id}` : ""}`,
-      })
+      .setFooter({ text: `Author ID: ${author.id}` })
       .setColor(genColor(0));
 
     const files: AttachmentBuilder[] = [];

@@ -3,6 +3,7 @@ import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from 
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
 import ms from "enhanced-ms";
+import { safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("mute")
@@ -48,7 +49,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "The duration is invalid or is above the 28 day limit.",
     });
 
-  if (guild.members.cache.get(user.id)?.isCommunicationDisabled())
+  if ((await safeMember(guild, user.id)).isCommunicationDisabled())
     return await errorEmbed({
       interaction,
       title: `You can't mute ${user.username}.`,
@@ -76,9 +77,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       },
       reason,
     );
-    await guild.members.cache
-      .get(user.id)
-      ?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined });
+    await (
+      await safeMember(guild, user.id)
+    )?.edit({ communicationDisabledUntil: time, reason: reason ?? undefined });
   } catch (error) {
     await errorEmbed({ interaction, error, forward: true, fileName: "mute.ts" });
   }

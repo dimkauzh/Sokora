@@ -14,7 +14,8 @@ import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
   .setName("about")
-  .setDescription("Shows information about Sokora.");
+  .setDescription("Shows information about Sokora.")
+  .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const client = interaction.client;
@@ -23,7 +24,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b);
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
-
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}About Sokora`,

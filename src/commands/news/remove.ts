@@ -8,6 +8,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
+import { safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("remove")
@@ -21,7 +22,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!guild.members.cache.get(interaction.user.id)?.permissions.has("ManageGuild"))
+  if (!(await safeMember(guild, interaction.user.id)).permissions.has("ManageGuild"))
     return await errorEmbed({
       interaction,
       title: "You can't execute this command.",

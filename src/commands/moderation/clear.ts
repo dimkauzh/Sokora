@@ -7,7 +7,7 @@ import {
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
 import { pluralOrNot } from "utils/pluralOrNot";
-import { safeChannel } from "utils/safeChannel";
+import { safeChannel } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("clear")

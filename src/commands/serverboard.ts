@@ -1,4 +1,4 @@
-import { listPublicServers } from "database/settings";
+import { deletePublicServer, listPublicServers } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -15,7 +15,8 @@ import { replace } from "utils/replace";
 export const data = new SlashCommandBuilder()
   .setName("serverboard")
   .setDescription("Shows the servers that have Sokora.")
-  .addNumberOption(number => number.setName("page").setDescription("The page you want to see."));
+  .addNumberOption(number => number.setName("page").setDescription("The page you want to see."))
+  .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guildList: { guild: Guild; showInvite: boolean; inviteChannelId: string | null }[] = (
@@ -28,9 +29,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
             inviteChannelId: entry.inviteChannelId,
           };
         } catch (error) {
-          // log it instead of deleting it
-          // so we can eventually find what specific error
-          // we should use to delete a public server
+          if (String(error).toLowerCase().includes("unknown guild")) {
+            await deletePublicServer(entry.guildID);
+            return null;
+          }
           await errorEmbed({
             interaction,
             error,
@@ -39,7 +41,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
             forward: true,
             fileName: "serverboard.ts",
           });
-          // await deletePublicServer(entry.guildID);
           return null;
         }
       }),

@@ -8,53 +8,37 @@ import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { mention } from "utils/mention";
-import { safeChannel } from "utils/safeChannel";
+import { safeChannel } from "utils/safeThings";
 import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();
 export default (async function run(message) {
-  const client = message.client;
   const author = message.author;
+  const guild = message.guild;
   if (author.bot) return;
-  const guild = message.guild!;
-  const avatar = author.displayAvatarURL();
+  if (!guild) return;
 
   if (await getSetting(guild.id, "easter", "enabled")) {
     const enabledEggs = (await getSetting(guild.id, "easter", "enabled_eggs")) as string;
     const allowedChannels = (await getSetting(guild.id, "easter", "allowed_channels")) as string;
-    const isChannelAllowed =
-      !allowedChannels || kominator(allowedChannels).includes(message.channel.id);
 
-    if (isChannelAllowed) {
+    if (!allowedChannels || kominator(allowedChannels).includes(message.channel.id))
       for (const easterEgg of easterEggs) {
-        const shouldRunEgg = !enabledEggs || kominator(enabledEggs).includes(easterEgg.name);
-
-        if (!shouldRunEgg) continue;
+        if (!(!enabledEggs || kominator(enabledEggs).includes(easterEgg.name))) continue;
         try {
-          if (typeof easterEgg.run != "function") {
-            await errorEmbed({
-              client,
-              title: `Easter egg ${easterEgg.name} does not have a valid run function: ${easterEgg}.`,
-              log: true,
-              forward: true,
-              fileName: "messageCreate.ts",
-            });
-            continue;
-          }
-
-          if (Math.random() <= 0.15) await easterEgg.run(message);
+          if (typeof easterEgg.run == "function")
+            if (Math.random() <= 0.15) await easterEgg.run(message);
         } catch (error) {
           return await errorEmbed({
-            client,
+            client: message.client,
             error,
-            title: `Error running easter egg ${easterEgg.name}`,
+            title: `Error running easter egg ${easterEgg.name}.`,
             log: true,
             forward: true,
             fileName: "messageCreate.ts",
           });
         }
       }
-    }
   }
 
   if (!(await getSetting(guild.id, "leveling", "enabled"))) return;
@@ -65,10 +49,8 @@ export default (async function run(message) {
   const cooldown = (await getSetting(guild.id, "leveling", "cooldown")) as number;
   if (cooldown > 0) {
     const key = `${guild.id}-${author.id}`;
-    const lastExpTime = cooldowns.get(key) || 0;
     const now = Date.now();
-
-    if (now - lastExpTime < cooldown * 1000) return;
+    if (now - (cooldowns.get(key) || 0) < cooldown * 1000) return;
     cooldowns.set(key, now);
   }
 
@@ -92,6 +74,7 @@ export default (async function run(message) {
 
   setLevel(guild.id, author.id, newLevelData.level, newLevelData.xp);
   if (newLevelData.level == level || newLevelData.level < level) return;
+  const avatar = author.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.displayName} leveled up!`,
@@ -101,10 +84,7 @@ export default (async function run(message) {
       [
         `**Congratulations, ${author.displayName}**!`,
         `You made it to **level ${newLevelData.level}**.`,
-        `You need ${
-          100 * difficulty * (newLevelData.level + 1) ** 2 -
-          80 * difficulty * newLevelData.level ** 2
-        } XP to level up again.`,
+        `You need ${100 * difficulty * (newLevelData.level + 1) ** 2 - 80 * difficulty * newLevelData.level ** 2} XP to level up again.`,
       ].join("\n"),
     )
     .setTimestamp()

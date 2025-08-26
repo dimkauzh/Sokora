@@ -1,4 +1,5 @@
 import {
+  ApplicationCommandDataResolvable,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
@@ -8,7 +9,9 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
 
-export const commands: { data: SlashCommandBuilder; run: any; autocomplete: any }[] = [];
+export const commands: { data: ApplicationCommandDataResolvable; run: any; autocomplete: any }[] =
+  [];
+
 export const subCommands: {
   data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;
   run: any;
@@ -33,7 +36,8 @@ async function createSubCommand(name: string, client: Client) {
   const autocomplete: any[] = [];
   const command = new SlashCommandBuilder()
     .setName(name.toLowerCase())
-    .setDescription("This command has no description.");
+    .setDescription("This command has no description.")
+    .setContexts(0);
 
   for (const subCommandFile of readdirSync(join(commandsPath, name), {
     withFileTypes: true,
