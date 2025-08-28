@@ -146,7 +146,7 @@ export async function settingsEmbed(
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
   const resetButtons = ["reset_start", "reset_category", "cancel", "yes", "no"];
-  const eventNames = ["Message update", "Message delete"];
+  const eventNames = ["messageUpdate", "messageDelete"];
   const color = genColorCV2(200)!;
   let settingName = "";
   let reset = false;
