@@ -10,7 +10,7 @@ export const data = new SlashCommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
-  const avatar = user.displayAvatarURL();
+  const avatar = user.displayAvatarURL()
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}Entities involved`,
@@ -19,7 +19,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(
       [
         "**Founder**: Goos",
-        "**Developers**: Froxcey, Golem64, Koslz, Nikkerudon, Zayaan AR",
+        "**Developers**: Froxcey, Golem64, Koslz, Nikkerudon",
         "**Designer lead**: ZakaHaceCosas",
         "**Designers**: ArtyH, Pjanda",
         "**Translators**: Dimkauzh, flojo, Golem64, GraczNet, Nikkerudon, SaFire, TrulyBlue, ZakaHaceCosas",
