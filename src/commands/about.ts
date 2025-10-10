@@ -21,7 +21,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const client = interaction.client;
   const user = client.user;
   const guilds = client.guilds.cache;
-  const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b);
+  const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b).toLocaleString("en-US");
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()
@@ -37,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         name: "📃 • General",
         value: [
           `Version **${version}**, *Antei*`,
-          `**${members}** ${pluralOrNot("member", members)} • **${guilds.size}** ${pluralOrNot(
+          `**${members}** ${pluralOrNot("member", members)} • **${guilds.size.toLocaleString("en-US")}** ${pluralOrNot(
             "guild",
             guilds.size,
           )}${!shards ? "" : ` • **${shards}** ${pluralOrNot("shard", shards)}`}`,
