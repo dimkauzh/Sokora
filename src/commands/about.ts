@@ -21,7 +21,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const client = interaction.client;
   const user = client.user;
   const guilds = client.guilds.cache;
-  const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b).toLocaleString("en-US");
+  const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b);
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()
@@ -37,7 +37,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         name: "📃 • General",
         value: [
           `Version **${version}**, *Antei*`,
-          `**${members}** ${pluralOrNot("member", members)} • **${guilds.size.toLocaleString("en-US")}** ${pluralOrNot(
+          `**${members.toLocaleString("en-US")}** ${pluralOrNot("member", members)} • **${guilds.size.toLocaleString("en-US")}** ${pluralOrNot(
             "guild",
             guilds.size,
           )}${!shards ? "" : ` • **${shards}** ${pluralOrNot("shard", shards)}`}`,
@@ -46,7 +46,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       {
         name: "🔗 • Links",
         value: [
-          "[Discord](https://discord.gg/c6C25P4BuY) • [GitHub](https://www.github.com/SokoraDesu) • [YouTube](https://www.youtube.com/@SokoraDesu) • [Mastodon](https://mastodon.online/@NebulaTheBot@mastodon.social) • [Matrix](https://matrix.to/#/#sokora:matrix.org) • [Revolt](https://rvlt.gg/28TS9aXy)",
+          "[Discord](https://discord.gg/c6C25P4BuY) • [GitHub](https://www.github.com/SokoraDesu) • [YouTube](https://www.youtube.com/@SokoraDesu) • [Mastodon](https://mastodon.online/@NebulaTheBot@mastodon.social)",
           "Also, please read the [ToS](https://sokora.org/terms) and the [privacy policy](https://sokora.org/privacy).",
         ].join("\n"),
       },

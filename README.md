@@ -12,7 +12,7 @@
 
 ## Welcome to Sokora, a beautifully-crafted bot
 
-Sokora is a multipurpose Discord bot that lets you manage your servers easily. It has moderation, levelling, and news functionality among other features, and even a set of easter eggs for the chat to stay fun.
+Sokora is a multipurpose Discord bot that lets you manage your servers easily. It has moderation, leveling, and news functionality among other features, and even a set of easter eggs for the chat to stay fun.
 
 **Please note that Sokora is currently unstable, so it might have issues.**
 

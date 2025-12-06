@@ -59,7 +59,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     if ((await getSetting(`${guild.id}`, "leveling", "enabled")) && !user.bot)
       serverInfo.push(
-        `Level **${level}** • ${xp && xp > 0 ? `**${xp.toLocaleString("en-US")}**/**${nextLevelXp}** *(level ${level + 1})* XP` : `**No XP** out of **${nextLevelXp}** XP!`}`,
+        `Level **${level}** • ${xp && xp > 0 ? `**${xp.toLocaleString("en-US")}**/*${nextLevelXp} (level ${level + 1})* XP` : `**No XP** out of **${nextLevelXp}** XP!`}`,
       );
 
     if (memberRoles.length)
