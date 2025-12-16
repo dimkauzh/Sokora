@@ -19,6 +19,7 @@ import {
   ChannelSelectMenuBuilder,
   ChannelType,
   ContainerBuilder,
+  LabelBuilder,
   MessageActionRowComponentBuilder,
   ModalBuilder,
   RoleSelectMenuBuilder,
@@ -383,7 +384,7 @@ export async function settingsEmbed(
         resetCategory = true;
         break;
       case "yes":
-        if (resetCategory) await resetSettingCategory(id, key);
+        if (resetCategory) resetSettingCategory(id, key);
         else await setSettingPlease(id, key, settingName, null, table);
         reset = false;
         confirm = false;
@@ -417,14 +418,13 @@ export async function settingsEmbed(
         const modal = new ModalBuilder()
           .setCustomId(i.customId)
           .setTitle(`•  ${humanizeSettings(i.customId)}`)
-          .addComponents(
-            new ActionRowBuilder<TextInputBuilder>().addComponents(
+          .addLabelComponents(
+            new LabelBuilder().setLabel("Value").setTextInputComponent(
               new TextInputBuilder()
                 .setCustomId("setting")
                 .setPlaceholder("Type in the value")
                 .setMaxLength(4000)
                 .setStyle(TextInputStyle.Paragraph)
-                .setLabel("Value")
                 .setRequired(true)
                 .setValue(`${await getSettingPlease(id, key, cID, table)}`),
             ),
@@ -441,9 +441,7 @@ export async function settingsEmbed(
                 .setAccentColor(genColorCV2(hue)!);
             }
 
-            const value = modalInteraction.fields.fields.find(
-              field => field.customId == "setting",
-            )?.value;
+            const value = modalInteraction.fields.getTextInputValue("setting");
             const length = value!.length;
             let settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`;
             let valueText = `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`;

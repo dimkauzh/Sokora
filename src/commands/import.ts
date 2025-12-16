@@ -1,3 +1,4 @@
+import { Leveler, SUPPORTS_LEVELS } from "@hokkiai/djs-level-importer";
 import { getLevel, setLevel } from "database/leveling";
 import {
   ActionRowBuilder,
@@ -11,7 +12,6 @@ import {
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
-import { Leveler, SUPPORTS_LEVELS } from "@hokkiai/djs-level-importer";
 
 export const data = new SlashCommandBuilder()
   .setName("import")
@@ -36,8 +36,7 @@ function safeStringify(obj: any) {
 }
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const client = interaction.client;
-  const user = client.user;
+  const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
   const option = interaction.options.getString("src") as "MEE6" | "Tatsu";
   const obtainable =
@@ -51,6 +50,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           "- User level",
           "-# Settings like difficulty (which dictate the amount of XP needed to levelup) can't be imported from MEE6's APIs. Levels might immediately change when chatting if you don't manually change the difficulty (and the current one differs too much from this one, which isn't necessarily the case).",
         ].join("\n");
+
   if (!interaction.guild) return;
   try {
     await interaction.deferReply();
@@ -60,6 +60,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
     const levels =
       option === "MEE6" ? await leveler.GetLeaderboard(0) : await leveler.GetLeaderboard(1);
+
     const embed = new EmbedBuilder()
       .setAuthor({
         name: `${dotCheck({ string: avatar, doubleSpace: true })}Auto import results for ${option}`,
@@ -69,7 +70,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         `Thanks for switching to Sokora! We will import leveling info from **${option}** that we can gather. This includes a total of **${levels.length} entries**.\n\nData we can import from ${option} is:\n${obtainable}\n\nYou may now import data by **merging** (adding imported XP to Sokora's XP) or by **overwriting** (removing Sokora's leveling data, then adding imported XP data). You can also review the JSON data that is to be imported, just in case.`,
       )
       .setFooter({
-        text: "Powered by 'djs-level-importer', an open-source library by Sokora and others.",
+        text: `Powered by "djs-level-importer", an open-source library by Sokora and others.`,
       })
       .setColor(await colorize({ user, avatar, hue: 90 }));
 
@@ -85,11 +86,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         .setStyle(ButtonStyle.Primary),
     );
 
-    const reply = await interaction.editReply({
-      embeds: [embed],
-      components: [row],
-    });
-
+    const reply = await interaction.editReply({ embeds: [embed], components: [row] });
     const collector = reply.createMessageComponentCollector({ time: 45000 });
     collector.on("collect", async (i: ButtonInteraction) => {
       if (i.message.id != (await reply.fetch()).id)
@@ -106,7 +103,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         });
 
       collector.resetTimer({ time: 45000 });
-      if (i.customId == "check") {
+      if (i.customId == "check")
         await i.update({
           embeds: [
             new EmbedBuilder()
@@ -128,57 +125,39 @@ export async function run(interaction: ChatInputCommandInteraction) {
           ],
           components: [row],
         });
-      } else if (i.customId == "merge") {
-        const res = [];
-        await i.update({
-          embeds: [new EmbedBuilder().setTitle("Updating data for all users...")],
-        });
-        for (const user of interaction.guild!.members.cache) {
-          if (user[1].user.bot) continue;
-          const imported = levels.find(lev => lev.uid == user[1].id);
-          if (!imported) {
-            res.push(
-              `${user[1].user.username} wasn't imported (had no data saved in the imported dataset)`,
-            );
-            continue;
-          }
-          const prev = getLevel(interaction.guildId!, user[1].id);
-          const newLevel = prev[0] + (SUPPORTS_LEVELS(imported) ? imported.lvl : 0);
-          const newXp = prev[1] + imported.current_xp;
-          setLevel(interaction.guildId!, user[1].id, newLevel, newXp);
+
+      const res = [];
+      await i.update({
+        embeds: [
+          new EmbedBuilder().setTitle(
+            `${i.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`,
+          ),
+        ],
+      });
+
+      for (const user of interaction.guild!.members.cache) {
+        if (user[1].user.bot) continue;
+        const imported = levels.find(lev => lev.uid == user[1].id);
+        if (!imported) {
           res.push(
-            `${user[1].user.username} updated from LVL ${prev[0]} and XP ${prev[1]} to **LVL ${newLevel} and XP ${newXp}**.`,
+            `${user[1].user.username} wasn't imported (had no data saved in the imported dataset)`,
           );
+          continue;
         }
-        await i.editReply({
-          embeds: [new EmbedBuilder().setTitle("Done!").setDescription(res.join("\n"))],
-        });
-      } else if (i.customId == "overwrite") {
-        const res = [];
-        await i.update({
-          embeds: [new EmbedBuilder().setTitle("Overwriting data for all users...")],
-        });
-        for (const user of interaction.guild!.members.cache) {
-          if (user[1].user.bot) continue;
-          const imported = levels.find(lev => lev.uid == user[1].id);
-          if (!imported) {
-            res.push(
-              `${user[1].user.username} wasn't imported (had no data saved in the imported dataset)`,
-            );
-            continue;
-          }
-          const prev = getLevel(interaction.guildId!, user[1].id);
-          const newLevel = SUPPORTS_LEVELS(imported) ? imported.lvl : 0;
-          const newXp = imported.current_xp;
-          setLevel(interaction.guildId!, user[1].id, newLevel, newXp);
-          res.push(
-            `${user[1].user.username} updated from LVL ${prev[0]} and XP ${prev[1]} to **LVL ${newLevel} and XP ${newXp}**.`,
-          );
-        }
-        await i.editReply({
-          embeds: [new EmbedBuilder().setTitle("Done!").setDescription(res.join("\n"))],
-        });
+        const prev = getLevel(interaction.guildId!, user[1].id);
+        const newLevel =
+          i.customId == "merge" ? prev[0] : 0 + (SUPPORTS_LEVELS(imported) ? imported.lvl : 0);
+
+        const newXp = i.customId == "merge" ? prev[1] : 0 + imported.current_xp;
+        setLevel(interaction.guildId!, user[1].id, newLevel, newXp);
+        res.push(
+          `${user[1].user.username} updated from LVL ${prev[0]} and XP ${prev[1]} to **LVL ${newLevel} and XP ${newXp}**.`,
+        );
       }
+
+      await i.editReply({
+        embeds: [new EmbedBuilder().setTitle("Done!").setDescription(res.join("\n"))],
+      });
     });
 
     collector.on("end", async () => {
