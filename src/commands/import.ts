@@ -63,11 +63,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     const embed = new EmbedBuilder()
       .setAuthor({
-        name: `${dotCheck({ string: avatar, doubleSpace: true })}Auto import results for ${option}`,
+        name: `${dotCheck({ string: avatar, doubleSpace: true })}Import from ${option}`,
         iconURL: avatar,
       })
       .setDescription(
-        `Thanks for switching to Sokora! We will import leveling info from **${option}** that we can gather. This includes a total of **${levels.length} entries**.\n\nData we can import from ${option} is:\n${obtainable}\n\nYou may now import data by **merging** (adding imported XP to Sokora's XP) or by **overwriting** (removing Sokora's leveling data, then adding imported XP data). You can also review the JSON data that is to be imported, just in case.`,
+        [
+          `Thanks for switching to Sokora! We will import leveling info from **${option}** that we can gather. This includes a total of **${levels.length} entries**.`,
+          `Data we can import from ${option} is:\n${obtainable}`,
+          `You may now import data by **merging** (adding imported XP to Sokora's XP) or by **overwriting** (removing Sokora's leveling data, then adding imported XP data). You can also review the JSON data that is to be imported, just in case.`,
+        ].join("\n\n"),
       )
       .setFooter({
         text: `Powered by "djs-level-importer", an open-source library by Sokora and others.`,
@@ -106,7 +110,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       if (i.customId == "check")
         await i.update({
           embeds: [
-            new EmbedBuilder()
+            embed
               .setTitle(`This is what we'll import from ${option}.`)
               .setDescription(
                 [
@@ -117,11 +121,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
                     ? ""
                     : "-# `next_level_xp` exists, but because Sokora's difficulty system is over-engineered compared to other bots' leveling, we can't convert their difficulty into Sokora's difficulty system.",
                 ].join("\n"),
-              )
-              .setFooter({
-                text: "Powered by 'djs-level-importer', an open-source library by Sokora and others.",
-              })
-              .setColor(await colorize({ user, avatar, hue: 90 })),
+              ),
           ],
           components: [row],
         });
@@ -129,7 +129,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       const res = [];
       await i.update({
         embeds: [
-          new EmbedBuilder().setTitle(
+          embed.setTitle(
             `${i.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`,
           ),
         ],
@@ -155,9 +155,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         );
       }
 
-      await i.editReply({
-        embeds: [new EmbedBuilder().setTitle("Done!").setDescription(res.join("\n"))],
-      });
+      await i.editReply({ embeds: [embed.setTitle("Done!").setDescription(res.join("\n"))] });
     });
 
     collector.on("end", async () => {
@@ -184,7 +182,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ].join("\n\n"),
       )
       .setFooter({
-        text: "Powered by 'djs-level-importer', an open-source library by Sokora and others.",
+        text: `Powered by "djs-level-importer", an open-source library by Sokora and others.`,
       })
       .setColor(await colorize({ user, avatar, hue: 0 }));
 
