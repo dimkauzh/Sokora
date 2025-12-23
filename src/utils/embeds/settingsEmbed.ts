@@ -416,8 +416,8 @@ export async function settingsEmbed(
       case "number":
       case "text": {
         const modal = new ModalBuilder()
-          .setCustomId(i.customId)
-          .setTitle(`•  ${humanizeSettings(i.customId)}`)
+          .setCustomId(cID)
+          .setTitle(`•  ${humanizeSettings(cID)}`)
           .addLabelComponents(
             new LabelBuilder().setLabel("Value").setTextInputComponent(
               new TextInputBuilder()

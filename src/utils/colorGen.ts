@@ -32,7 +32,10 @@ export function genColorCV2(hue: number) {
  * @param {?string} url Image URL.
  * @returns {Promise<ColorResolvable | undefined>} The color in HEX, or undefined if both URLs are missing.
  */
-export async function genImageColor(url: string): Promise<ColorResolvable | undefined> {
+export async function genImageColor(
+  url: string,
+  cv2?: boolean,
+): Promise<ColorResolvable | [number, number, number] | null | undefined> {
   if (!url) return;
 
   const imageBuffer = await (await fetch(url)).arrayBuffer();
@@ -40,13 +43,25 @@ export async function genImageColor(url: string): Promise<ColorResolvable | unde
     await new Vibrant(await sharp(imageBuffer).toFormat("jpg").toBuffer()).getPalette()
   ).Vibrant!;
   const hsl = kominator(Bun.color([r, g, b], "hsl")!);
-  const h = Math.round(parseInt(hsl[0].replace("hsl(", "")) + 15 * Math.random());
-  const l = Math.round(parseFloat(hsl[2].replace(")", "")) * 100 + 15 * Math.random());
+  const h = parseInt(hsl[0].replace("hsl(", "")) + 15 * Math.random();
+  const s = parseFloat(hsl[1]) * 100 + 20 * Math.random();
+  const l = parseFloat(hsl[2].replace(")", "")) * 100 + 15 * Math.random();
 
-  return Bun.color(`hsl(${h}, 100%, ${l}%)`, "hex") as ColorResolvable;
+  if (cv2) return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "[rgb]");
+  return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "hex") as ColorResolvable;
 }
 
-export async function colorize(options: { user?: User; avatar?: string; hue?: number }) {
-  const { user, avatar, hue } = options;
-  return user?.hexAccentColor ?? (await genImageColor(avatar!)) ?? genColor(hue!);
+export async function colorize(options: {
+  user?: User;
+  avatar?: string;
+  hue?: number;
+  cv2?: boolean;
+}) {
+  const { user, avatar, hue, cv2 } = options;
+
+  return (
+    user?.hexAccentColor ??
+    (await genImageColor(avatar!, cv2)) ??
+    (cv2 ? genColorCV2(hue!) : genColor(hue!))
+  );
 }

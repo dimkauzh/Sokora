@@ -7,6 +7,7 @@ import {
   ButtonStyle,
   ChatInputCommandInteraction,
   EmbedBuilder,
+  PermissionsBitField,
   SlashCommandBuilder,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -23,6 +24,7 @@ export const data = new SlashCommandBuilder()
       .setChoices({ name: "MEE6", value: "MEE6" }, { name: "Tatsu", value: "Tatsu" })
       .setRequired(true),
   )
+  .setDefaultMemberPermissions(PermissionsBitField.Flags.Administrator)
   .setContexts(0);
 
 function safeStringify(obj: any) {
@@ -129,9 +131,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       const res = [];
       await i.update({
         embeds: [
-          embed.setTitle(
-            `${i.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`,
-          ),
+          embed
+            .setTitle(`${i.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`)
+            .setDescription(null),
         ],
       });
 
