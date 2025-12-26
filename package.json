@@ -16,7 +16,7 @@
     "lint": "eslint --cache ."
   },
   "dependencies": {
-    "@hokkiai/djs-level-importer": "^1.1.0",
+    "@hokkiai/djs-level-importer": "latest",
     "@top-gg/sdk": "^3.1.6",
     "chart.js": "^4.5.1",
     "chartjs-node-canvas": "^5.0.0",
