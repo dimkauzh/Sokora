@@ -5,6 +5,7 @@ import {
   ContainerBuilder,
   EmbedBuilder,
   FileBuilder,
+  Message,
   SeparatorBuilder,
   TextDisplayBuilder,
   codeBlock,
@@ -149,7 +150,7 @@ export async function errorEmbedCV2(options: {
             stack
               ? stack.length <= 4096
                 ? codeBlock(stack)
-                : "The error stacktrace is an attachment below this embed due to it being too large."
+                : "The error stacktrace is an attachment due to it being too large."
               : "No error stacktrace."
           }`,
         ),
@@ -174,6 +175,46 @@ export async function errorEmbedCV2(options: {
   if (interaction)
     return await safeReply({
       interaction,
-      replyOptions: { components: [container], flags: ["Ephemeral", "IsComponentsV2"] },
+      replyOptions: {
+        components: [container],
+        files: files,
+        flags: ["Ephemeral", "IsComponentsV2"],
+      },
     });
+}
+
+export async function buttonCheck(options: {
+  i: ButtonInteraction;
+  interaction: ChatInputCommandInteraction;
+  reply: Message;
+  cv2: boolean;
+}) {
+  const { i, interaction, reply, cv2 } = options;
+  if (i.message.id != (await reply.fetch()).id) {
+    if (cv2)
+      return await errorEmbedCV2({
+        interaction: i,
+        title:
+          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
+      });
+
+    return await errorEmbed({
+      interaction: i,
+      title:
+        "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
+    });
+  }
+
+  if (i.user.id != interaction.user.id) {
+    if (cv2)
+      return await errorEmbedCV2({
+        interaction: i,
+        title: "You are not the person who executed this command.",
+      });
+
+    return await errorEmbed({
+      interaction: i,
+      title: "You are not the person who executed this command.",
+    });
+  }
 }

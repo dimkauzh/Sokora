@@ -22,6 +22,7 @@ import {
   LabelBuilder,
   MessageActionRowComponentBuilder,
   ModalBuilder,
+  RGBTuple,
   RoleSelectMenuBuilder,
   SectionBuilder,
   SeparatorBuilder,
@@ -39,7 +40,7 @@ import {
   type UserSelectMenuInteraction,
 } from "discord.js";
 import { easterEggNames } from "handlers/events";
-import { genColorCV2 } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
@@ -148,7 +149,7 @@ export async function settingsEmbed(
   const settingsObj = settingsDef.settings;
   const resetButtons = ["reset_start", "reset_category", "cancel", "yes", "no"];
   const eventNames = ["messageUpdate", "messageDelete"];
-  const color = genColorCV2(200)!;
+  const color = (await colorize({ hue: 200, cv2: true })) as RGBTuple;
   let settingName = "";
   let reset = false;
   let confirm = false;
@@ -433,12 +434,16 @@ export async function settingsEmbed(
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
           if (modalInteraction.isModalSubmit()) {
-            function constructModalContainer(settingText: string, valueText: string, hue: number) {
+            async function constructModalContainer(
+              settingText: string,
+              valueText: string,
+              hue: number,
+            ) {
               return new ContainerBuilder()
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
                 .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
                 .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
-                .setAccentColor(genColorCV2(hue)!);
+                .setAccentColor((await colorize({ hue, cv2: true })) as RGBTuple);
             }
 
             const value = modalInteraction.fields.getTextInputValue("setting");
@@ -457,7 +462,7 @@ export async function settingsEmbed(
             await safeReply({
               interaction: modalInteraction,
               replyOptions: {
-                components: [constructModalContainer(settingText, valueText, hue)],
+                components: [await constructModalContainer(settingText, valueText, hue)],
                 flags: ["Ephemeral", "IsComponentsV2"],
               },
             });

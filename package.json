@@ -5,7 +5,7 @@
     "The Sokora team",
     "The GitHub contributors"
   ],
-  "version": "0.3.3",
+  "version": "0.4",
   "main": "./src/index.ts",
   "type": "module",
   "scripts": {
@@ -22,7 +22,7 @@
     "chartjs-node-canvas": "^5.0.0",
     "discord.js": "^14.25.1",
     "enhanced-ms": "^4.2.0",
-    "ky": "^1.14.1",
+    "ky": "^1.14.2",
     "mathjs": "^15.1.0",
     "node-vibrant": "^4.0.3",
     "sharp": "^0.34.5"

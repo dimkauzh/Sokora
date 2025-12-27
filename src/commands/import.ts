@@ -2,19 +2,26 @@ import { Leveler, SupportedBots, SUPPORTS_LEVELS } from "@hokkiai/djs-level-impo
 import { getLevel, setLevel } from "database/leveling";
 import {
   ActionRowBuilder,
+  AttachmentBuilder,
   ButtonBuilder,
   ButtonInteraction,
   ButtonStyle,
   ChatInputCommandInteraction,
+  codeBlock,
   ContainerBuilder,
+  FileBuilder,
+  LabelBuilder,
+  ModalBuilder,
   PermissionsBitField,
   RGBTuple,
   SectionBuilder,
   SeparatorBuilder,
   SlashCommandBuilder,
   TextDisplayBuilder,
+  TextInputBuilder,
+  TextInputStyle,
 } from "discord.js";
-import { errorEmbedCV2 } from "embeds/errorEmbed";
+import { buttonCheck } from "embeds/errorEmbed";
 import { colorize } from "utils/colorGen";
 
 export const data = new SlashCommandBuilder()
@@ -37,56 +44,80 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const avatar = user.displayAvatarURL();
   if (!interaction.guild) return;
   await interaction.deferReply();
-  const color = (await colorize({ user, avatar, hue: 90, cv2: true })) as RGBTuple;
 
-  const container = new ContainerBuilder()
-    .addSectionComponents(
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent("Tatsu\n-# Import from [Tatsu](https://tatsu.gg/)"),
-        )
-        .setButtonAccessory(
+  async function containerHelper(
+    container: ContainerBuilder,
+    options: { content?: string; buttons?: boolean; error?: boolean },
+  ) {
+    const { content, buttons, error } = options;
+    if (content) container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
+    container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+    if (buttons)
+      container.addActionRowComponents(
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
-            .setCustomId(SupportedBots[SupportedBots.TATSU])
-            .setLabel("Import")
+            .setCustomId("merge")
+            .setLabel("Merge data")
+            .setStyle(ButtonStyle.Success),
+          new ButtonBuilder()
+            .setCustomId("overwrite")
+            .setLabel("Overwrite data")
+            .setStyle(ButtonStyle.Danger),
+          new ButtonBuilder()
+            .setCustomId("check")
+            .setLabel("Check JSON data first")
             .setStyle(ButtonStyle.Primary),
         ),
-      new SectionBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent("MEE6\n-# Import from [MEE6](http://mee6.xyz/)"),
-        )
-        .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(SupportedBots[SupportedBots.MEE6])
-            .setLabel("Import")
-            .setStyle(ButtonStyle.Primary),
-        ),
-    )
+      );
 
-    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        "-# Powered by `djs-level-importer`, an open-source library by Sokora and others.",
+    const color = (await colorize({ user, avatar, hue: 300, cv2: true })) as RGBTuple;
+    const errorColor = (await colorize({ user, avatar, hue: 0, cv2: true })) as RGBTuple;
+    container
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          "-# Powered by `djs-level-importer`, an open-source library by Sokora and others.",
+        ),
+      )
+      .setAccentColor(error ? errorColor : color);
+
+    return container;
+  }
+
+  const container = new ContainerBuilder().addSectionComponents(
+    new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent("Tatsu\n-# Import from [Tatsu](https://tatsu.gg/)"),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setCustomId(SupportedBots[SupportedBots.TATSU])
+          .setLabel("Import")
+          .setStyle(ButtonStyle.Primary),
       ),
-    )
-    .setAccentColor(color);
+    new SectionBuilder()
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent("MEE6\n-# Import from [MEE6](http://mee6.xyz/)"),
+      )
+      .setButtonAccessory(
+        new ButtonBuilder()
+          .setCustomId(SupportedBots[SupportedBots.MEE6])
+          .setLabel("Import")
+          .setStyle(ButtonStyle.Primary),
+      ),
+    new SectionBuilder()
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent("lurking"))
+      .setButtonAccessory(
+        new ButtonBuilder().setCustomId("lurkr").setLabel("Import").setStyle(ButtonStyle.Primary),
+      ),
+  );
 
-  const reply = await interaction.editReply({ components: [container], flags: ["IsComponentsV2"] });
+  const reply = await interaction.editReply({
+    components: [await containerHelper(container, {})],
+    flags: ["IsComponentsV2"],
+  });
   const collector = reply.createMessageComponentCollector({ time: 120000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbedCV2({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbedCV2({
-        interaction: i,
-        title: "You are not the person who executed this command.",
-      });
-
+    await buttonCheck({ i, interaction, reply, cv2: true });
     collector.resetTimer({ time: 120000 });
     const cID = i.customId;
     const bots =
@@ -108,6 +139,26 @@ export async function run(interaction: ChatInputCommandInteraction) {
           };
 
     try {
+      if (cID == "lurkr") {
+        // todo: make this not suck
+        const modal = new ModalBuilder()
+          .setCustomId(cID)
+          .setTitle(`•  API key to import`)
+          .addLabelComponents(
+            new LabelBuilder()
+              .setLabel("Value")
+              .setTextInputComponent(
+                new TextInputBuilder()
+                  .setCustomId("setting")
+                  .setPlaceholder("Type in the value")
+                  .setMaxLength(4000)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setRequired(true),
+              ),
+          );
+
+        await i.showModal(modal);
+      }
       const leveler = new Leveler({
         guild: interaction.guildId!,
         tatsu_api: process.env["TATSU_TOKEN"],
@@ -117,187 +168,117 @@ export async function run(interaction: ChatInputCommandInteraction) {
           ? await leveler.GetLeaderboard(SupportedBots.MEE6)
           : await leveler.GetLeaderboard(SupportedBots.TATSU);
 
-      const container1 = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            [
-              `Thanks for switching to Sokora! We will import leveling info from **${bots.name}** that we can gather. This includes a total of **${levels.length} entries**.`,
-              `Data we can import from ${bots.name} is:\n${bots.data}`,
-              `You may now import data by **merging** (adding imported XP to Sokora's XP) or by **overwriting** (removing Sokora's leveling data, then adding imported XP data). You can also review the JSON data that is to be imported, just in case.`,
-            ].join("\n\n"),
-          ),
-        )
-        .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-        .addActionRowComponents(
-          new ActionRowBuilder<ButtonBuilder>().addComponents(
-            new ButtonBuilder()
-              .setCustomId("merge")
-              .setLabel("Merge data")
-              .setStyle(ButtonStyle.Success),
-            new ButtonBuilder()
-              .setCustomId("overwrite")
-              .setLabel("Overwrite data")
-              .setStyle(ButtonStyle.Danger),
-            new ButtonBuilder()
-              .setCustomId("check")
-              .setLabel("Check JSON data first")
-              .setStyle(ButtonStyle.Primary),
-          ),
-        )
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            "-# Powered by `djs-level-importer`, an open-source library by Sokora and others.",
-          ),
-        )
-        .setAccentColor(color);
+      const container1 = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          [
+            `Thanks for switching to Sokora! We will import leveling info from **${bots.name}** that we can gather. This includes a total of **${levels.length} entries**.`,
+            `Data we can import from ${bots.name} is:\n${bots.data}`,
+            `You may now import data by **merging** (adding imported XP to Sokora's XP) or by **overwriting** (removing Sokora's leveling data, then adding imported XP data). You can also review the JSON data that is to be imported, just in case.`,
+          ].join("\n\n"),
+        ),
+      );
 
       const reply1 = await interaction.editReply({
-        components: [container1],
+        components: [await containerHelper(container1, { buttons: true })],
         flags: "IsComponentsV2",
       });
       collector.stop("bot_chosen");
+
       const collector1 = reply1.createMessageComponentCollector({ time: 45000 });
       collector1.on("collect", async (i: ButtonInteraction) => {
-        if (i.message.id != (await reply1.fetch()).id)
-          return await errorEmbedCV2({
-            interaction: i,
-            title:
-              "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-          });
-
-        if (i.user.id != interaction.user.id)
-          return await errorEmbedCV2({
-            interaction: i,
-            title: "You are not the person who executed this command.",
-          });
-
+        await buttonCheck({ i, interaction, reply: reply1, cv2: true });
         collector1.resetTimer({ time: 45000 });
-        if (i.customId == "check")
-          await i.update({
-            components: [
-              new ContainerBuilder()
-                .addTextDisplayComponents(
-                  new TextDisplayBuilder().setContent(
-                    [
-                      `## This is what we'll import from ${bots.name}`,
-                      "```json",
-                      safeStringify(levels),
-                      "```",
-                      cID === SupportedBots[SupportedBots.TATSU]
-                        ? ""
-                        : "-# `next_level_xp` exists, but because Sokora's difficulty system is over-engineered compared to other bots' leveling, we can't convert their difficulty into Sokora's difficulty system.",
-                    ].join("\n"),
-                  ),
-                )
-                .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-                .addActionRowComponents(
-                  new ActionRowBuilder<ButtonBuilder>().addComponents(
-                    new ButtonBuilder()
-                      .setCustomId("merge")
-                      .setLabel("Merge data")
-                      .setStyle(ButtonStyle.Success),
-                    new ButtonBuilder()
-                      .setCustomId("overwrite")
-                      .setLabel("Overwrite data")
-                      .setStyle(ButtonStyle.Danger),
-                    new ButtonBuilder()
-                      .setCustomId("check")
-                      .setLabel("Check JSON data first")
-                      .setStyle(ButtonStyle.Primary),
-                  ),
-                )
-                .addTextDisplayComponents(
-                  new TextDisplayBuilder().setContent(
-                    "-# Powered by `djs-level-importer`, an open-source library by Sokora and others.",
-                  ),
-                )
-                .setAccentColor(color),
-            ],
-            flags: "IsComponentsV2",
-          });
-        else if (i.customId == "merge" || i.customId == "overwrite") {
-          const res = [];
+        let content;
 
-          await i.update({
-            components: [
-              new ContainerBuilder()
-                .addTextDisplayComponents(
-                  new TextDisplayBuilder().setContent(
-                    `# ${i.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`,
-                  ),
-                )
-                .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-                .addTextDisplayComponents(
-                  new TextDisplayBuilder().setContent(
-                    "-# Powered by `djs-level-importer`, an open-source library by Sokora and others.",
-                  ),
-                )
-                .setAccentColor(color),
-            ],
-            flags: "IsComponentsV2",
-          });
-
-          for (const user of interaction.guild!.members.cache) {
-            if (user[1].user.bot) continue;
-            const imported = levels.find(lev => lev.uid == user[1].id);
-            if (!imported) {
-              res.push(
-                `${user[1].user.username} wasn't imported (had no data saved in the imported dataset)`,
-              );
-              continue;
-            }
-            const prev = getLevel(interaction.guildId!, user[1].id);
-            console.log(user[1].user.username, prev);
-            const newLevel =
-              (i.customId == "merge" ? prev[0] : 0) +
-              (SUPPORTS_LEVELS(imported) ? imported.lvl : prev[0]);
-            const newXp = (i.customId == "merge" ? prev[1] : 0) + imported.current_xp;
-            setLevel(interaction.guildId!, user[1].id, newLevel, newXp);
-            res.push(
-              `${user[1].user.username} updated from ${prev[1]} XP (level ${prev[0]}) to **XP ${newXp} (level ${newLevel})**.`,
+        switch (i.customId) {
+          case "check": {
+            const levelData = safeStringify(levels);
+            const checkContainer = new ContainerBuilder().addTextDisplayComponents(
+              new TextDisplayBuilder().setContent(
+                `## This is what we'll import from ${bots.name}\n${
+                  levelData.length <= 4096
+                    ? codeBlock(levelData)
+                    : "The level data is an attachment due to it being too large."
+                }`,
+              ),
             );
-          }
 
-          await i.editReply({
-            components: [
-              new ContainerBuilder()
-                .addTextDisplayComponents(
-                  new TextDisplayBuilder().setContent(`# Done!\n${res.join("\n")}`),
-                )
-                .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-                .addTextDisplayComponents(
-                  new TextDisplayBuilder().setContent(
-                    "-# Powered by `djs-level-importer`, an open-source library by Sokora and others.",
-                  ),
-                )
-                .setAccentColor(color),
-            ],
-            flags: "IsComponentsV2",
-          });
+            const files: AttachmentBuilder[] = [];
+            if (levelData.length >= 4096) {
+              files.push(
+                new AttachmentBuilder(Buffer.from(levelData, "utf8"), { name: "levels.txt" }),
+              );
+              checkContainer.addFileComponents(new FileBuilder().setURL("attachment://levels.txt"));
+            }
+
+            await i.update({
+              components: [await containerHelper(checkContainer, { buttons: true })],
+              files: files,
+              flags: "IsComponentsV2",
+            });
+            break;
+          }
+          case "merge":
+          case "overwrite": {
+            content = `# ${i.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`;
+            const res = [];
+            await i.update({
+              components: [await containerHelper(new ContainerBuilder(), { content })],
+              flags: "IsComponentsV2",
+            });
+
+            for (const user of interaction.guild!.members.cache) {
+              if (user[1].user.bot) continue;
+              const imported = levels.find(lev => lev.uid == user[1].id);
+              if (!imported) {
+                res.push(
+                  `${user[1].user.username} wasn't imported (had no data saved in the imported dataset)`,
+                );
+                continue;
+              }
+              const prev = getLevel(interaction.guildId!, user[1].id);
+              console.log(user[1].user.username, prev);
+              const newLevel =
+                (i.customId == "merge" ? prev[0] : 0) +
+                (SUPPORTS_LEVELS(imported) ? imported.lvl : prev[0]);
+
+              const newXp = (i.customId == "merge" ? prev[1] : 0) + imported.current_xp;
+              setLevel(interaction.guildId!, user[1].id, newLevel, newXp);
+              res.push(
+                `${user[1].user.username} updated from ${prev[1]} XP (level ${prev[0]}) to **XP ${newXp} (level ${newLevel})**.`,
+              );
+            }
+
+            content = `# Done!\n${res.join("\n")}`;
+            await i.editReply({
+              components: [await containerHelper(new ContainerBuilder(), { content })],
+              flags: "IsComponentsV2",
+            });
+          }
         }
       });
     } catch (error) {
-      const errorContainer = new ContainerBuilder()
-        .addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(
-            [
-              cID === SupportedBots[SupportedBots.MEE6]
-                ? "Open the leaderboard settings in the MEE6 dashboard and enable the option `Make my server's leaderboard public`. Otherwise we can't import data."
-                : "We don't really know what went wrong. Maybe try again?",
-              "If after doing that Sokora keeps failing to import your data, please send the error message (shown below) to Sokora's team so we can try to fix this.",
-              `\`\`\`yaml\n${error instanceof Error ? (error.stack ?? error.message) : String(error)}\`\`\``,
-            ].join("\n\n"),
-          ),
-        )
-        .setAccentColor((await colorize({ user, avatar, hue: 0, cv2: true })) as RGBTuple);
+      const errorContainer = new ContainerBuilder().addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          [
+            cID === SupportedBots[SupportedBots.MEE6]
+              ? "Open the leaderboard settings in the MEE6 dashboard and enable the option `Make my server's leaderboard public`. Otherwise we can't import data."
+              : "We don't really know what went wrong. Maybe try again?",
+            "If after doing that Sokora keeps failing to import your data, please send the error message (shown below) to Sokora's team so we can try to fix this.",
+            `\`\`\`yaml\n${error instanceof Error ? (error.stack ?? error.message) : String(error)}\`\`\``,
+          ].join("\n\n"),
+        ),
+      );
 
-      return await interaction.editReply({ components: [errorContainer], flags: "IsComponentsV2" });
+      return await interaction.editReply({
+        components: [await containerHelper(errorContainer, { error: true })],
+        flags: "IsComponentsV2",
+      });
     }
   });
 
   collector.on("end", async (_, reason) => {
     if (reason === "bot_chosen") return;
-
     try {
       await interaction.deleteReply();
     } catch (error) {
