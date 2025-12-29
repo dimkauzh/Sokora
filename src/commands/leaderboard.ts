@@ -23,7 +23,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!guildID)
     return await errorEmbed({ interaction, title: "This command can only be used in a server." });
 
-  const leaderboardData = getGuildLeaderboard(guildID);
+  const leaderboardData = await getGuildLeaderboard(guildID);
   if (!leaderboardData.length)
     return await errorEmbed({
       interaction,

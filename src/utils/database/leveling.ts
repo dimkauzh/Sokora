@@ -7,7 +7,6 @@ const tableDefinition = {
   definition: {
     guild: "TEXT",
     user: "TEXT",
-    level: "INTEGER",
     xp: "INTEGER",
   },
 } satisfies TableDefinition;
@@ -16,37 +15,56 @@ const database = getDatabase(tableDefinition);
 
 const getQuery = database.query("SELECT * FROM leveling WHERE guild = $1 AND user = $2;");
 const deleteQuery = database.query("DELETE FROM leveling WHERE guild = $1 AND user = $2;");
-const insertQuery = database.query(
-  "INSERT INTO leveling (guild, user, level, xp) VALUES (?1, ?2, ?3, ?4);",
-);
-
+const insertQuery = database.query("INSERT INTO leveling (guild, user, xp) VALUES (?1, ?2, ?3);");
 const getGuildQuery = database.query("SELECT * FROM leveling WHERE guild = $1;");
 
-/** `[level, xp]` */
-export function getLevel(guildID: string, userID: string): [number, number] {
+export function getUserXp(guildID: string, userID: string): number {
   const res = getQuery.all(guildID, userID) as TypeOfDefinition<typeof tableDefinition>[];
-  if (!res.length) return [0, 0];
-  return [res[0].level, res[0].xp];
+  if (!res.length) return 0;
+  return res[0].xp;
 }
 
-export function setLevel(guildID: string | number, userID: string, level: number, xp: number) {
+export function setUserXp(guildID: string | number, userID: string, xp: number) {
   if (getQuery.all(guildID, userID).length) deleteQuery.run(guildID, userID);
-  insertQuery.run(guildID, userID, level, xp);
+  insertQuery.run(guildID, userID, xp);
 }
 
-export function getGuildLeaderboard(guildID: string): TypeOfDefinition<typeof tableDefinition>[] {
-  return getGuildQuery.all(guildID) as TypeOfDefinition<typeof tableDefinition>[];
-}
-
-export async function getLevelXp(
+export async function getGuildLeaderboard(
   guildID: string,
-  userID: string,
-  next: boolean,
-  overrideLevel?: number,
-): Promise<number> {
+): Promise<{ guild: string; user: string; xp: number; level: number }[]> {
+  const xpData = getGuildQuery.all(guildID) as TypeOfDefinition<typeof tableDefinition>[];
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
-  const [lvl] = overrideLevel ? [overrideLevel] : getLevel(guildID, userID);
-  const n = next ? 1 : 0;
-  if (typeof difficulty !== "number") throw `Difficulty value is not a number.`;
-  return difficulty * ((100 * (lvl + n)) ^ (2 - 80 * lvl ** 2));
+  return xpData.map(x => {
+    return { ...x, level: calculateLevel({ xp: x.xp, difficulty }) };
+  });
+}
+
+const formula = (difficulty: number, level: number) =>
+  difficulty * (20 * level ** 2 + 200 * level + 100);
+
+export function calculateLevel(arg: { difficulty: number; xp: number }) {
+  const { difficulty, xp } = arg;
+  let level = 0;
+  let baseXp = 0;
+
+  while (baseXp < xp) {
+    level++;
+    baseXp = formula(difficulty, level);
+  }
+
+  return level;
+}
+
+export async function getXpForNextLevel(guildID: string, userID: string): Promise<number> {
+  const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
+  const xp = getUserXp(guildID, userID);
+  const lvl = calculateLevel({ difficulty, xp });
+  return formula(difficulty, lvl + 1);
+}
+
+export async function getXpForCurrentLevel(guildID: string, userID: string): Promise<number> {
+  const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
+  const xp = getUserXp(guildID, userID);
+  const lvl = calculateLevel({ difficulty, xp });
+  return formula(difficulty, lvl);
 }

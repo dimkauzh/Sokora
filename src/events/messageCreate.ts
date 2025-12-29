@@ -1,4 +1,4 @@
-import { getLevel, getLevelXp, setLevel } from "database/leveling";
+import { calculateLevel, getUserXp, getXpForNextLevel, setUserXp } from "database/leveling";
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -55,18 +55,13 @@ export default (async function run(message) {
   }
 
   const xpGain = (await getSetting(guild.id, "leveling", "xp_gain")) as number;
+  const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
   const levelChannelId = await getSetting(guild.id, "leveling", "channel");
-  const [level, xp] = getLevel(guild.id, author.id);
-  const newLevelData = { level: level ?? 0, xp: xp + xpGain };
-
-  while (newLevelData.xp < (await getLevelXp(guild.id, author.id, true, newLevelData.level)))
-    newLevelData.level--;
-
-  while (newLevelData.xp >= (await getLevelXp(guild.id, author.id, true, newLevelData.level)))
-    newLevelData.level++;
-
-  setLevel(guild.id, author.id, newLevelData.level, newLevelData.xp);
-  if (newLevelData.level == level || newLevelData.level < level) return;
+  const xp = getUserXp(guild.id, author.id);
+  const newXp = xp + xpGain;
+  setUserXp(guild.id, author.id, newXp);
+  const newLevel = calculateLevel({ xp: newXp, difficulty });
+  if (newLevel <= calculateLevel({ xp, difficulty })) return;
   const avatar = author.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
@@ -76,13 +71,8 @@ export default (async function run(message) {
     .setDescription(
       [
         `**Congratulations, ${author.displayName}**!`,
-        `You made it to **level ${newLevelData.level}**.`,
-        `You need ${await getLevelXp(
-          guild.id,
-          author.id,
-          true,
-          newLevelData.level,
-        )} XP to level up again.`,
+        `You made it to **level ${newLevel}**.`,
+        `You need ${await getXpForNextLevel(guild.id, author.id)} XP to level up again.`,
       ].join("\n"),
     )
     .setTimestamp()

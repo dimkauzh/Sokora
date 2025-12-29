@@ -1,5 +1,6 @@
-import { Leveler, SupportedBots, SUPPORTS_LEVELS } from "@hokkiai/djs-level-importer";
-import { getLevel, setLevel } from "database/leveling";
+import { Leveler, SupportedBots } from "@hokkiai/djs-level-importer";
+import { calculateLevel, getUserXp, setUserXp } from "database/leveling";
+import { getSetting } from "database/settings";
 import {
   ActionRowBuilder,
   AttachmentBuilder,
@@ -105,9 +106,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .setStyle(ButtonStyle.Primary),
       ),
     new SectionBuilder()
-      .addTextDisplayComponents(new TextDisplayBuilder().setContent("lurking"))
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent("Lurkr\n-# Import from [Lurkr](https://lurkr.gg/)"),
+      )
       .setButtonAccessory(
-        new ButtonBuilder().setCustomId("lurkr").setLabel("Import").setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId(SupportedBots[SupportedBots.LURKR])
+          .setLabel("Import")
+          .setStyle(ButtonStyle.Primary),
       ),
   );
 
@@ -120,23 +126,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await buttonCheck({ i, interaction, reply, cv2: true });
     collector.resetTimer({ time: 120000 });
     const cID = i.customId;
-    const bots =
-      cID === SupportedBots[SupportedBots.TATSU]
-        ? {
-            name: "Tatsu",
-            data: [
-              "- User XP",
-              "-# Note that Tatsu doesn't have a levelup mechanism, so user levels will remain as they are.",
-            ].join("\n"),
-          }
-        : {
-            name: "MEE6",
-            data: [
-              "- User XP",
-              "- User level",
-              "-# Settings like difficulty (which dictate the amount of XP needed to levelup) can't be imported from MEE6's APIs. Levels might immediately change when chatting if you don't manually change the difficulty (and the current one differs too much from this one, which isn't necessarily the case).",
-            ].join("\n"),
-          };
+    const bots = {
+      name: cID,
+      data: [
+        "- User XP",
+        cID === SupportedBots[SupportedBots.TATSU]
+          ? "-# Note: Tatsu doesn't have role rewards."
+          : "- Role rewards",
+        "-# Settings like difficulty (which dictate the amount of XP needed to levelup) can't be imported. Levels might immediately change when chatting if you don't manually change the difficulty (and the current one differs too much from this one, which isn't necessarily the case).",
+      ].join("\n"),
+    };
 
     try {
       if (cID == "lurkr") {
@@ -227,6 +226,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
               flags: "IsComponentsV2",
             });
 
+            const difficulty = (await getSetting(
+              interaction.guild!.id,
+              "leveling",
+              "difficulty",
+            )) as number;
             for (const user of interaction.guild!.members.cache) {
               if (user[1].user.bot) continue;
               const imported = levels.find(lev => lev.uid == user[1].id);
@@ -236,16 +240,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 );
                 continue;
               }
-              const prev = getLevel(interaction.guildId!, user[1].id);
-              console.log(user[1].user.username, prev);
-              const newLevel =
-                (i.customId == "merge" ? prev[0] : 0) +
-                (SUPPORTS_LEVELS(imported) ? imported.lvl : prev[0]);
-
-              const newXp = (i.customId == "merge" ? prev[1] : 0) + imported.current_xp;
-              setLevel(interaction.guildId!, user[1].id, newLevel, newXp);
+              const prevXp = getUserXp(interaction.guildId!, user[1].id);
+              const newXp = (i.customId == "merge" ? prevXp : 0) + imported.current_xp;
+              setUserXp(interaction.guildId!, user[1].id, newXp);
               res.push(
-                `${user[1].user.username} updated from ${prev[1]} XP (level ${prev[0]}) to **XP ${newXp} (level ${newLevel})**.`,
+                `${user[1].user.username} updated from ${prevXp} XP (level ${calculateLevel({ xp: prevXp, difficulty })}) to **XP ${newXp} (level ${calculateLevel({ xp: newXp, difficulty })})**.`,
               );
             }
 
