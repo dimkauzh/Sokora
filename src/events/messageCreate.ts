@@ -1,4 +1,4 @@
-import { getLevel, setLevel } from "database/leveling";
+import { getLevel, getLevelXp, setLevel } from "database/leveling";
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -56,20 +56,13 @@ export default (async function run(message) {
 
   const xpGain = (await getSetting(guild.id, "leveling", "xp_gain")) as number;
   const levelChannelId = await getSetting(guild.id, "leveling", "channel");
-  const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
   const [level, xp] = getLevel(guild.id, author.id);
   const newLevelData = { level: level ?? 0, xp: xp + xpGain };
 
-  while (
-    newLevelData.xp <
-    100 * difficulty * (newLevelData.level + 1) ** 2 - 80 * difficulty * newLevelData.level ** 2
-  )
+  while (newLevelData.xp < (await getLevelXp(guild.id, author.id, true, newLevelData.level)))
     newLevelData.level--;
 
-  while (
-    newLevelData.xp >=
-    100 * difficulty * (newLevelData.level + 1) ** 2 - 80 * difficulty * newLevelData.level ** 2
-  )
+  while (newLevelData.xp >= (await getLevelXp(guild.id, author.id, true, newLevelData.level)))
     newLevelData.level++;
 
   setLevel(guild.id, author.id, newLevelData.level, newLevelData.xp);
@@ -84,7 +77,12 @@ export default (async function run(message) {
       [
         `**Congratulations, ${author.displayName}**!`,
         `You made it to **level ${newLevelData.level}**.`,
-        `You need ${100 * difficulty * (newLevelData.level + 1) ** 2 - 80 * difficulty * newLevelData.level ** 2} XP to level up again.`,
+        `You need ${await getLevelXp(
+          guild.id,
+          author.id,
+          true,
+          newLevelData.level,
+        )} XP to level up again.`,
       ].join("\n"),
     )
     .setTimestamp()

@@ -1,4 +1,5 @@
 import { getDatabase } from ".";
+import { getSetting } from "./settings";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
@@ -21,6 +22,7 @@ const insertQuery = database.query(
 
 const getGuildQuery = database.query("SELECT * FROM leveling WHERE guild = $1;");
 
+/** `[level, xp]` */
 export function getLevel(guildID: string, userID: string): [number, number] {
   const res = getQuery.all(guildID, userID) as TypeOfDefinition<typeof tableDefinition>[];
   if (!res.length) return [0, 0];
@@ -34,4 +36,17 @@ export function setLevel(guildID: string | number, userID: string, level: number
 
 export function getGuildLeaderboard(guildID: string): TypeOfDefinition<typeof tableDefinition>[] {
   return getGuildQuery.all(guildID) as TypeOfDefinition<typeof tableDefinition>[];
+}
+
+export async function getLevelXp(
+  guildID: string,
+  userID: string,
+  next: boolean,
+  overrideLevel?: number,
+): Promise<number> {
+  const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
+  const [lvl] = overrideLevel ? [overrideLevel] : getLevel(guildID, userID);
+  const n = next ? 1 : 0;
+  if (typeof difficulty !== "number") throw `Difficulty value is not a number.`;
+  return difficulty * ((100 * (lvl + n)) ^ (2 - 80 * lvl ** 2));
 }

@@ -1,4 +1,4 @@
-import { getLevel } from "database/leveling";
+import { getLevel, getLevelXp } from "database/leveling";
 import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
@@ -48,11 +48,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
     memberRoles.pop();
     const rolesLength = memberRoles.length;
-    const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
     const [level, xp] = getLevel(guild.id, target.id);
-    const nextLevelXp = Math.floor(
-      100 * difficulty * (level + 1) ** 2 - 80 * difficulty * level ** 2,
-    )?.toLocaleString("en-US");
+    const nextLevelXp = Math.floor(await getLevelXp(guild.id, user.id, true))?.toLocaleString(
+      "en-US",
+    );
 
     if (target.premiumSinceTimestamp)
       serverInfo.push(`Boosting since **<t:${target.premiumSinceTimestamp}:D>**`);
