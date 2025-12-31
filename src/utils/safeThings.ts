@@ -23,6 +23,16 @@ export async function safeChannel(guild: Guild, id: string) {
 }
 
 /**
+ * Ensures that the role that you're getting will be gotten.
+ * @param guild The guild where the role resides.
+ * @param id The ID of the role.
+ * @returns A role.
+ */
+export async function safeRole(guild: Guild, id: string) {
+  return (guild.roles.cache.get(id) ?? (await guild.roles.fetch(id)))!;
+}
+
+/**
  * Ensures that the user that you're getting will be gotten.
  * @param guild The guild where the user resides.
  * @param id The ID of the user.

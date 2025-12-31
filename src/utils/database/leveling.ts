@@ -1,5 +1,6 @@
+import { kominator } from "utils/kominator";
 import { getDatabase } from ".";
-import { getSetting } from "./settings";
+import { getSetting, setSetting } from "./settings";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
@@ -67,4 +68,46 @@ export async function getXpForCurrentLevel(guildID: string, userID: string): Pro
   const xp = getUserXp(guildID, userID);
   const lvl = calculateLevel({ difficulty, xp });
   return formula(difficulty, lvl);
+}
+
+type LevelReward = { id: string; level: number; channel: boolean };
+
+export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
+  const content = await getSetting(guildID, "leveling", "rewards");
+  if (!content || typeof content !== "string") return null;
+  return content.split(",").map(s => {
+    const channel = s.includes("#");
+    if (channel) {
+      const [level, id] = s.split("#");
+      return { level: Number(level), id, channel };
+    } else {
+      const [level, id] = s.split("@");
+      return { level: Number(level), id, channel };
+    }
+  });
+}
+
+export async function addLevelRewards(guildID: string, rewards: LevelReward[]): Promise<void> {
+  const encodedRewards = rewards
+    .map(reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`)
+    .join(",");
+  const content = await getSetting(guildID, "leveling", "rewards");
+  if (!content || typeof content !== "string") {
+    setSetting(guildID, "leveling", "rewards", encodedRewards);
+  } else {
+    setSetting(guildID, "leveling", "rewards", encodedRewards + "," + content);
+  }
+}
+
+export async function removeLevelRewards(guildID: string, rewards: LevelReward[]): Promise<void> {
+  const encodedRewards = rewards.map(
+    reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`,
+  );
+  const content = await getSetting(guildID, "leveling", "rewards");
+  if (!content || typeof content !== "string") return;
+  const newRewards = [];
+  for (const reward of kominator(content)) {
+    if (!encodedRewards.includes(reward)) newRewards.push(reward);
+  }
+  setSetting(guildID, "leveling", "rewards", newRewards.join(","));
 }

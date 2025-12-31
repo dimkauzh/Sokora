@@ -1,6 +1,12 @@
-import { calculateLevel, getUserXp, getXpForNextLevel, setUserXp } from "database/leveling";
+import {
+  calculateLevel,
+  getLevelRewards,
+  getUserXp,
+  getXpForNextLevel,
+  setUserXp,
+} from "database/leveling";
 import { getSetting } from "database/settings";
-import { EmbedBuilder, type TextChannel } from "discord.js";
+import { EmbedBuilder, PermissionsBitField, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggs } from "handlers/events";
 import { channelCheck } from "utils/channelCheck";
@@ -8,7 +14,7 @@ import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { mention } from "utils/mention";
-import { safeChannel } from "utils/safeThings";
+import { safeChannel, safeMember, safeRole } from "utils/safeThings";
 import { Event } from "utils/types";
 
 const cooldowns = new Map<string, number>();
@@ -63,6 +69,39 @@ export default (async function run(message) {
   const newLevel = calculateLevel({ xp: newXp, difficulty });
   if (newLevel <= calculateLevel({ xp, difficulty })) return;
   const avatar = author.displayAvatarURL();
+  const rewards = (await getLevelRewards(guild.id))?.filter(r => r.level == newLevel);
+  const messageContent = [
+    `**Congratulations, ${author.displayName}**!`,
+    `You made it to **level ${newLevel}**.`,
+  ];
+  if (rewards && rewards.length > 0) {
+    for (const reward of rewards) {
+      if (reward.channel) {
+        const channel = await safeChannel(guild, reward.id);
+        // if i merge these if clauses typescript won't properly infer that permissionOverwrites exists...
+        if (!channel.isTextBased()) continue;
+        if (channel.isDMBased()) continue;
+        if (channel.isVoiceBased()) continue;
+        if (channel.isThread()) continue;
+        await channel.permissionOverwrites.set([
+          {
+            id: author.id,
+            allow: [PermissionsBitField.Flags.ViewChannel],
+          },
+        ]);
+        messageContent.push(
+          `**You've been rewarded access to the ${mention(channel.id, "CHANNEL")}> channel!** Congrats.`,
+        );
+      } else {
+        const role = await safeRole(guild, reward.id);
+        const member = await safeMember(guild, author.id);
+        await member.roles.add(role);
+        messageContent.push(
+          `**You've been rewarded the ${mention(role.id, "ROLE")} role!** Congrats.`,
+        );
+      }
+    }
+  }
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.displayName} leveled up!`,
@@ -70,8 +109,7 @@ export default (async function run(message) {
     })
     .setDescription(
       [
-        `**Congratulations, ${author.displayName}**!`,
-        `You made it to **level ${newLevel}**.`,
+        ...messageContent,
         `You need ${await getXpForNextLevel(guild.id, author.id)} XP to level up again.`,
       ].join("\n"),
     )
