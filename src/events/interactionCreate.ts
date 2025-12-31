@@ -13,6 +13,7 @@ export default (async function run(interaction) {
       : subCommand.data.name == interaction.options.getSubcommandGroup(false),
   )[0];
 
+  // todo: this somehow errors but my parents invited me to new years table so i cannot fix it right now please someone whoever is reading this help me i swear to god
   if (!subCommand)
     command = commands.filter(command => command.data.name == interaction.commandName)[0];
   else command = subCommand;

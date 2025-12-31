@@ -266,10 +266,10 @@ export async function settingsEmbed(
 
     if (
       (name == "server_invite" || name == "invite_channel") &&
-      (!guild!.members.cache
-        .get(interaction.client.user.id)
-        ?.permissions.has("CreateInstantInvite") ||
-        !guild!.members.cache.get(interaction.client.user.id)?.permissions.has("ManageGuild"))
+      (!(await safeMember(guild!, interaction.client.user.id))?.permissions.has(
+        "CreateInstantInvite",
+      ) ||
+        !(await safeMember(guild!, interaction.client.user.id))?.permissions.has("ManageGuild"))
     ) {
       resetSetting(guild!.id, "serverboard", "server_invite");
       resetSetting(guild!.id, "serverboard", "invite_channel");

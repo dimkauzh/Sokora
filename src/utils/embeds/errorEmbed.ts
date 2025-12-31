@@ -14,7 +14,7 @@ import {
   type ButtonInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { safeReply } from "utils/safeThings";
+import { safeChannel, safeReply } from "utils/safeThings";
 import { colorize } from "../colorGen";
 import { errorType } from "../errorType";
 
@@ -80,7 +80,8 @@ export async function errorEmbed(options: {
     files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
 
   if (forward) {
-    const channel = (client ? client : interaction!.client).channels.cache.get(
+    const channel = await safeChannel(
+      client ?? interaction!.client,
       process.env.DEV_ERROR_CHANNEL_ID!,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
@@ -166,7 +167,8 @@ export async function errorEmbedCV2(options: {
   }
 
   if (forward) {
-    const channel = (client ? client : interaction!.client).channels.cache.get(
+    const channel = await safeChannel(
+      client ?? interaction!.client,
       process.env.DEV_ERROR_CHANNEL_ID!,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;

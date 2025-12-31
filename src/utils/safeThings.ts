@@ -2,6 +2,7 @@ import {
   AnySelectMenuInteraction,
   ButtonInteraction,
   ChatInputCommandInteraction,
+  Client,
   Guild,
   InteractionEditReplyOptions,
   InteractionReplyOptions,
@@ -14,12 +15,12 @@ import {
 
 /**
  * Ensures that the channel that you're getting will be gotten.
- * @param guild The guild where the channel resides.
+ * @param option The guild or the client where the channel resides.
  * @param id The ID of the channel.
  * @returns A channel.
  */
-export async function safeChannel(guild: Guild, id: string) {
-  return (guild.channels.cache.get(id) ?? (await guild.channels.fetch(id)))!;
+export async function safeChannel(option: Guild | Client, id: string) {
+  return (option.channels.cache.get(id) ?? (await option.channels.fetch(id)))!;
 }
 
 /**
@@ -33,13 +34,33 @@ export async function safeRole(guild: Guild, id: string) {
 }
 
 /**
- * Ensures that the user that you're getting will be gotten.
- * @param guild The guild where the user resides.
- * @param id The ID of the user.
- * @returns A user.
+ * Ensures that the member that you're getting will be gotten.
+ * @param guild The guild where the member resides.
+ * @param id The ID of the member.
+ * @returns A member.
  */
 export async function safeMember(guild: Guild, id: string) {
   return guild.members.cache.get(id) ?? (await guild.members.fetch(id));
+}
+
+/**
+ * Ensures that the user that you're getting will be gotten.
+ * @param client The client where the user resides.
+ * @param id The ID of the user.
+ * @returns A user.
+ */
+export async function safeUser(client: Client, id: string) {
+  return client.users.cache.get(id) ?? (await client.users.fetch(id));
+}
+
+/**
+ * Ensures that the guild that you're getting will be gotten.
+ * @param client The client where the guild resides.
+ * @param id The ID of the guild.
+ * @returns A guild.
+ */
+export async function safeGuild(client: Client, id: string) {
+  return client.guilds.cache.get(id) ?? (await client.guilds.fetch(id));
 }
 
 /**

@@ -24,7 +24,7 @@ import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 import { replace } from "utils/replace";
-import { safeMember } from "utils/safeThings";
+import { safeGuild, safeMember } from "utils/safeThings";
 
 async function generateEmbed(params: {
   cases: TypeOfDefinition<ModerationCase>[];
@@ -53,7 +53,7 @@ async function generateEmbed(params: {
 
   const start = (page - 1) * 5;
   const displayedCases = cases.sort((a, b) => Number(b.id) - Number(a.id)).slice(start, start + 5);
-  const avatar = user ? user.avatarURL() : client.guilds.cache.get(guildID)?.iconURL();
+  const avatar = user ? user.avatarURL() : (await safeGuild(client, guildID))?.iconURL();
   let fields = displayedCases.map(c => {
     const val = [
       `**Moderator**: <@${c.moderator}>`,
