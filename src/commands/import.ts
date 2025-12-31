@@ -181,14 +181,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         components: [await containerHelper(container1, { buttons: true })],
         flags: "IsComponentsV2",
       });
-      collector.stop("bot_chosen");
 
+      collector.stop("bot_chosen");
       const collector1 = reply1.createMessageComponentCollector({ time: 45000 });
       collector1.on("collect", async (i: ButtonInteraction) => {
         await buttonCheck({ i, interaction, reply: reply1, cv2: true });
         collector1.resetTimer({ time: 45000 });
         let content;
-
         switch (i.customId) {
           case "check": {
             const levelData = safeStringify(levels);

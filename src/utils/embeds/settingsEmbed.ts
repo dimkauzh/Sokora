@@ -45,7 +45,7 @@ import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
 import { safeReply } from "utils/safeThings";
-import { errorEmbedCV2 } from "./errorEmbed";
+import { buttonCheck } from "./errorEmbed";
 
 async function construct(
   settingsObj: Record<string, any>,
@@ -356,19 +356,7 @@ export async function settingsEmbed(
   });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbedCV2({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbedCV2({
-        interaction: i,
-        title: "You aren't the person who executed this command.",
-      });
-
+    await buttonCheck({ i, interaction, reply, cv2: true });
     collector.resetTimer({ time: 60000 });
     const cID = i.customId;
     let disableCategory = false;

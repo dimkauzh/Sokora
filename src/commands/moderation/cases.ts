@@ -16,7 +16,7 @@ import {
   User,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
 import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
@@ -52,8 +52,7 @@ async function generateEmbed(params: {
   ];
 
   const start = (page - 1) * 5;
-  const end = start + 5;
-  const displayedCases = cases.sort((a, b) => Number(b.id) - Number(a.id)).slice(start, end);
+  const displayedCases = cases.sort((a, b) => Number(b.id) - Number(a.id)).slice(start, start + 5);
   const avatar = user ? user.avatarURL() : client.guilds.cache.get(guildID)?.iconURL();
   let fields = displayedCases.map(c => {
     const val = [
@@ -184,23 +183,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbed({
-        interaction: i,
-        title: "You are not the person who executed this command.",
-      });
-
+    await buttonCheck({ i, interaction, reply, cv2: false });
     collector.resetTimer({ time: 30000 });
+
     if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;
     else page = page < totalPages ? page + 1 : 1;
-
     await i.update({
       embeds: [await generateEmbed({ cases, page, totalPages, guildID, type, user })],
       components: [row],

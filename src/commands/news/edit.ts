@@ -1,8 +1,8 @@
 import { get, updateNews } from "database/news";
 import { getSetting } from "database/settings";
 import {
-  ActionRowBuilder,
   EmbedBuilder,
+  LabelBuilder,
   ModalBuilder,
   SlashCommandSubcommandBuilder,
   TextInputBuilder,
@@ -38,30 +38,31 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const news = get(guild.id, id);
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
 
-  const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("title")
-      .setMaxLength(30)
-      .setStyle(TextInputStyle.Short)
-      .setLabel("Title")
-      .setValue(news.title)
-      .setRequired(true),
-  );
-
-  const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("body")
-      .setMaxLength(4000)
-      .setStyle(TextInputStyle.Paragraph)
-      .setLabel("Content (supports Markdown)")
-      .setValue(news.body)
-      .setRequired(true),
-  );
-
   const editModal = new ModalBuilder()
     .setCustomId("editnews")
     .setTitle(`•  Edit news: ${news.title}`)
-    .addComponents(firstActionRow, secondActionRow);
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Title")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("title")
+            .setMaxLength(30)
+            .setStyle(TextInputStyle.Short)
+            .setValue(news.title)
+            .setRequired(true),
+        ),
+      new LabelBuilder()
+        .setLabel("Content (supports Markdown)")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("body")
+            .setMaxLength(4000)
+            .setStyle(TextInputStyle.Paragraph)
+            .setValue(news.body)
+            .setRequired(true),
+        ),
+    );
 
   try {
     await interaction.showModal(editModal);

@@ -1,6 +1,5 @@
 import { resetSetting } from "database/settings";
 import {
-  ChannelType,
   EmbedBuilder,
   NewsChannel,
   StageChannel,
@@ -164,13 +163,7 @@ export async function serverEmbed(options: Options) {
     const possiblyFetchedInviteChannel = await guild.channels.fetch(
       invite.channel ??
         guild.channels.cache
-          .filter(
-            channel =>
-              channel.type == ChannelType.GuildText ||
-              channel.type == ChannelType.GuildAnnouncement ||
-              channel.type == ChannelType.GuildVoice ||
-              channel.type == ChannelType.GuildStageVoice,
-          )
+          .filter(channel => channel.isTextBased() && !channel.isThread())
           .find(channel => channel.position == 0)!.id,
     );
 

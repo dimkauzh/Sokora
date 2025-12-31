@@ -48,14 +48,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "The channel is not locked.",
     });
 
-  if (
-    !(
-      channel.type == ChannelType.GuildText ||
-      channel.type == ChannelType.GuildAnnouncement ||
-      channel.type == ChannelType.GuildVoice ||
-      channel.type == ChannelType.GuildStageVoice
-    )
-  )
+  if (channel.isThread())
     return await errorEmbed({
       interaction,
       title: "You have provided a channel that can't be locked in the first place.",

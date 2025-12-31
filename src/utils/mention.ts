@@ -32,10 +32,8 @@ export function mention(
     case "DETAILED_TIMESTAMP":
     case "SIMPLE_TIMESTAMP": {
       const num = Number(who);
-      if (isNaN(num)) {
-        // just return the string untouched if it's not okay
-        return who.toString();
-      }
+      // just return the string untouched if it's not okay
+      if (isNaN(num)) return who.toString();
       switch (type) {
         case "DEFAULT_TIMESTAMP":
           return `<t:${Math.floor(num / 1000)}:D>`;

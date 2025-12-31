@@ -54,16 +54,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let title = `Set the slowdown to ${ms(ms(time), "fullPrecision")}`;
   if (!ms(time)) title = "Removed the slowdown";
 
-  if (
-    !(
-      channel.type == ChannelType.GuildText ||
-      channel.type == ChannelType.GuildAnnouncement ||
-      channel.type == ChannelType.GuildVoice ||
-      channel.type == ChannelType.GuildStageVoice ||
-      channel.type == ChannelType.PublicThread ||
-      channel.type == ChannelType.PrivateThread
-    )
-  )
+  if (!channel.isTextBased())
     return await errorEmbed({
       interaction,
       title: "You have provided a channel that can't be slowed down.",

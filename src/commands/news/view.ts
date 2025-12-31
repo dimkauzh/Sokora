@@ -8,7 +8,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
@@ -79,19 +79,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (page < 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbed({
-        interaction: i,
-        title: "You aren't the person who executed this command.",
-      });
-
+    await buttonCheck({ i, interaction, reply, cv2: false });
     collector.resetTimer({ time: 30000 });
     switch (i.customId) {
       case "left":

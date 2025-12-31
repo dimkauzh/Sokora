@@ -8,7 +8,7 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
 import { replace } from "utils/replace";
 
@@ -87,25 +87,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const reply = await interaction.reply({
     embeds: [await getEmbed()],
-    components: pages != 1 ? [row] : [],
+    components: pages > 1 ? [row] : [],
   });
-  if (pages == 1) return;
 
+  if (pages == 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbed({
-        interaction: i,
-        title: "You aren't the person who executed this command.",
-      });
-
+    await buttonCheck({ i, interaction, reply, cv2: false });
     collector.resetTimer({ time: 30000 });
     switch (i.customId) {
       case "left":

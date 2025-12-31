@@ -36,6 +36,7 @@ export async function genImageColor(
   url: string,
   cv2?: boolean,
 ): Promise<ColorResolvable | [number, number, number] | null | undefined> {
+  // todo: make this support OKLCH like the rest of the functions
   if (!url) return;
 
   const imageBuffer = await (await fetch(url)).arrayBuffer();
@@ -51,6 +52,7 @@ export async function genImageColor(
   return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "hex") as ColorResolvable;
 }
 
+// todo: replace single functions like genColor with this
 export async function colorize(options: {
   user?: User;
   avatar?: string;

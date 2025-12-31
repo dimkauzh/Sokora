@@ -10,7 +10,7 @@ export function kominator(string: string | undefined): string[] {
 }
 
 /**
- * Joins an array using commands.
+ * Joins an array using commas.
  * @param {string[]} strings Array to join.
  * @returns A string with all elements of the array, joined.
  */

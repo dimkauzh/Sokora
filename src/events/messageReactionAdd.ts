@@ -5,6 +5,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { channelCheck } from "utils/channelCheck";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
+import { safeChannel } from "utils/safeThings";
 import { Event } from "utils/types";
 
 export default (async function run(reaction, user) {
@@ -50,7 +51,7 @@ export default (async function run(reaction, user) {
   const starboardChannelId = (await getSetting(guild.id, "starboard", "channel")) as string;
   if (!starboardChannelId) return;
 
-  const starboardChannel = guild.channels.cache.get(starboardChannelId);
+  const starboardChannel = await safeChannel(guild, starboardChannelId);
   if (
     !starboardChannel ||
     !starboardChannel.isTextBased() ||

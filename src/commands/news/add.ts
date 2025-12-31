@@ -1,7 +1,7 @@
 import { addNews, listAllQuery } from "database/news";
 import {
-  ActionRowBuilder,
   EmbedBuilder,
+  LabelBuilder,
   ModalBuilder,
   SlashCommandSubcommandBuilder,
   TextInputBuilder,
@@ -27,30 +27,31 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Manage Server** permission.",
     });
 
-  const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("title")
-      .setPlaceholder("Write a title")
-      .setMaxLength(30)
-      .setStyle(TextInputStyle.Short)
-      .setLabel("Title")
-      .setRequired(true),
-  );
-
-  const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("body")
-      .setPlaceholder("Insert your content here")
-      .setMaxLength(4000)
-      .setStyle(TextInputStyle.Paragraph)
-      .setLabel("Content (supports Markdown)")
-      .setRequired(true),
-  );
-
   const newsModal = new ModalBuilder()
     .setCustomId("addnews")
     .setTitle("•  Write your news.")
-    .addComponents(firstActionRow, secondActionRow);
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Title")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("title")
+            .setPlaceholder("Write a title")
+            .setMaxLength(30)
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true),
+        ),
+      new LabelBuilder()
+        .setLabel("Content (supports Markdown)")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("body")
+            .setPlaceholder("Insert your content here")
+            .setMaxLength(4000)
+            .setStyle(TextInputStyle.Paragraph)
+            .setRequired(true),
+        ),
+    );
 
   try {
     await interaction.showModal(newsModal);

@@ -48,7 +48,7 @@ export function calculateLevel(arg: { difficulty: number; xp: number }) {
   let level = 0;
   let baseXp = 0;
 
-  while (baseXp < xp) {
+  while (baseXp <= xp) {
     level++;
     baseXp = formula(difficulty, level);
   }

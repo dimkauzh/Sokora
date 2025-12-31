@@ -5,6 +5,7 @@ import {
   ContainerBuilder,
   EmbedBuilder,
   FileBuilder,
+  InteractionResponse,
   Message,
   SeparatorBuilder,
   TextDisplayBuilder,
@@ -25,7 +26,7 @@ import { errorType } from "../errorType";
  * @returns Embed with the error description.
  */
 export async function errorEmbed(options: {
-  interaction?: ChatInputCommandInteraction | ButtonInteraction;
+  interaction?: ChatInputCommandInteraction | ButtonInteraction | AnySelectMenuInteraction;
   client?: Client;
   error?: unknown | Error;
   title?: string;
@@ -184,12 +185,13 @@ export async function errorEmbedCV2(options: {
 }
 
 export async function buttonCheck(options: {
-  i: ButtonInteraction;
+  i: ButtonInteraction | AnySelectMenuInteraction;
   interaction: ChatInputCommandInteraction;
-  reply: Message;
+  reply: Message | InteractionResponse;
   cv2: boolean;
+  noExecuteError?: boolean;
 }) {
-  const { i, interaction, reply, cv2 } = options;
+  const { i, interaction, reply, cv2, noExecuteError } = options;
   if (i.message.id != (await reply.fetch()).id) {
     if (cv2)
       return await errorEmbedCV2({
@@ -205,6 +207,7 @@ export async function buttonCheck(options: {
     });
   }
 
+  if (noExecuteError) return;
   if (i.user.id != interaction.user.id) {
     if (cv2)
       return await errorEmbedCV2({

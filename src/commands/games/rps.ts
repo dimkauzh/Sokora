@@ -7,7 +7,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { genColor } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
@@ -75,13 +75,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   collector.on("collect", async (i: ButtonInteraction) => {
     if (!reply) return;
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
+    await buttonCheck({ i, interaction, reply, cv2: false, noExecuteError: true });
     if (i.user.id != opponent.id && i.user.id != user.id)
       return await errorEmbed({ interaction: i, title: "You aren't participating." });
 

@@ -67,22 +67,28 @@ export default (async function run(message) {
   const newXp = xp + xpGain;
   setUserXp(guild.id, author.id, newXp);
   const newLevel = calculateLevel({ xp: newXp, difficulty });
-  if (newLevel <= calculateLevel({ xp, difficulty })) return;
+  console.log(newLevel);
+  console.log(calculateLevel({ xp, difficulty }));
+  if (calculateLevel({ xp, difficulty }) >= newLevel) return;
   const avatar = author.displayAvatarURL();
-  const rewards = (await getLevelRewards(guild.id))?.filter(r => r.level == newLevel);
+  const rewards = (await getLevelRewards(guild.id))?.filter(r => r.level <= newLevel);
   const messageContent = [
     `**Congratulations, ${author.displayName}**!`,
     `You made it to **level ${newLevel}**.`,
   ];
-  if (rewards && rewards.length > 0) {
+
+  if (rewards && rewards.length > 0)
     for (const reward of rewards) {
       if (reward.channel) {
         const channel = await safeChannel(guild, reward.id);
-        // if i merge these if clauses typescript won't properly infer that permissionOverwrites exists...
-        if (!channel.isTextBased()) continue;
-        if (channel.isDMBased()) continue;
-        if (channel.isVoiceBased()) continue;
-        if (channel.isThread()) continue;
+        if (
+          !channel.isTextBased() ||
+          channel.isDMBased() ||
+          channel.isVoiceBased() ||
+          channel.isThread()
+        )
+          continue;
+
         await channel.permissionOverwrites.set([
           {
             id: author.id,
@@ -101,7 +107,7 @@ export default (async function run(message) {
         );
       }
     }
-  }
+
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}${author.displayName} leveled up!`,
@@ -110,7 +116,7 @@ export default (async function run(message) {
     .setDescription(
       [
         ...messageContent,
-        `You need ${await getXpForNextLevel(guild.id, author.id)} XP to level up again.`,
+        `You need **${(await getXpForNextLevel(guild.id, author.id)).toLocaleString("en-US")}** XP to level up again.`,
       ].join("\n"),
     )
     .setTimestamp()
@@ -126,9 +132,6 @@ export default (async function run(message) {
         setting: { category: "leveling", setting: "channel" },
       })
     )
-      await channel.send({
-        embeds: [embed],
-        content: mention(author.id, "USER"),
-      });
+      await channel.send({ embeds: [embed], content: mention(author.id, "USER") });
   }
 } as Event<"messageCreate">);

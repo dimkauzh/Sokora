@@ -7,7 +7,7 @@ import {
 } from "discord.js";
 import ms from "enhanced-ms";
 import { mention } from "utils/mention";
-import { safeMember, safeReply } from "utils/safeThings";
+import { safeChannel, safeMember, safeReply } from "utils/safeThings";
 import { genColor } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
@@ -58,7 +58,7 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
       });
 
   if (channelError)
-    if (!guild.channels.cache.get(channel!)?.permissionsFor(client).has("ViewChannel"))
+    if (!(await safeChannel(guild, channel!))?.permissionsFor(client).has("ViewChannel"))
       return await errorEmbed({
         interaction,
         title: "The bot can't execute this command.",

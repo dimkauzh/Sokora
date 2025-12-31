@@ -36,7 +36,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       {
         name: "📃 • General",
         value: [
-          `Version **${version}**, *Antei*`,
+          `Version **${version}**, *Heijun*`,
           `**${members.toLocaleString("en-US")}** ${pluralOrNot("member", members)} • **${guilds.size.toLocaleString("en-US")}** ${pluralOrNot(
             "guild",
             guilds.size,
