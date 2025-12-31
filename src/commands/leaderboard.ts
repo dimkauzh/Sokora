@@ -9,8 +9,9 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { replace } from "utils/replace";
+import { safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
   .setName("leaderboard")
@@ -19,7 +20,8 @@ export const data = new SlashCommandBuilder()
   .setContexts(0);
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const guildID = interaction.guild?.id;
+  const guild = interaction.guild;
+  const guildID = guild?.id;
   if (!guildID)
     return await errorEmbed({ interaction, title: "This command can only be used in a server." });
 
@@ -44,12 +46,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const embed = new EmbedBuilder()
       .setAuthor({ name: "Leaderboard" })
       .setFooter({ text: `Page ${page} of ${totalPages}` })
-      .setColor(genColor(200));
+      .setColor(await colorize({ hue: 200 }));
 
     for (let i = 0; i < pageData.length; i++) {
       const userData = pageData[i];
       embed.addFields({
-        name: `#${start + i + 1} • ${(await interaction.client.users.fetch(userData.user)).tag}`,
+        name: `#${start + i + 1} • ${(await safeMember(guild, userData.user)).user.tag}`,
         value: `Level **${Math.floor(userData.level)}** • **${Math.floor(userData.xp)}** XP`,
       });
     }

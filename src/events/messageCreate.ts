@@ -10,7 +10,7 @@ import { EmbedBuilder, PermissionsBitField, type TextChannel } from "discord.js"
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggs } from "handlers/events";
 import { channelCheck } from "utils/channelCheck";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { mention } from "utils/mention";
@@ -65,11 +65,9 @@ export default (async function run(message) {
   const levelChannelId = await getSetting(guild.id, "leveling", "channel");
   const xp = getUserXp(guild.id, author.id);
   const newXp = xp + xpGain;
-  setUserXp(guild.id, author.id, newXp);
   const newLevel = calculateLevel({ xp: newXp, difficulty });
-  console.log(newLevel);
-  console.log(calculateLevel({ xp, difficulty }));
-  if (calculateLevel({ xp, difficulty }) >= newLevel) return;
+  setUserXp(guild.id, author.id, newXp);
+  if (newLevel <= calculateLevel({ xp, difficulty })) return;
   const avatar = author.displayAvatarURL();
   const rewards = (await getLevelRewards(guild.id))?.filter(r => r.level <= newLevel);
   const messageContent = [
@@ -79,6 +77,7 @@ export default (async function run(message) {
 
   if (rewards && rewards.length > 0)
     for (const reward of rewards) {
+      const member = await safeMember(guild, author.id);
       if (reward.channel) {
         const channel = await safeChannel(guild, reward.id);
         if (
@@ -95,16 +94,18 @@ export default (async function run(message) {
             allow: [PermissionsBitField.Flags.ViewChannel],
           },
         ]);
-        messageContent.push(
-          `**You've been rewarded access to the ${mention(channel.id, "CHANNEL")}> channel!** Congrats.`,
-        );
+
+        if (!channel.permissionsFor(member).has("ViewChannel"))
+          messageContent.push(
+            `**You've been rewarded access to the ${mention(channel.id, "CHANNEL")}> channel!** Congrats.`,
+          );
       } else {
         const role = await safeRole(guild, reward.id);
-        const member = await safeMember(guild, author.id);
         await member.roles.add(role);
-        messageContent.push(
-          `**You've been rewarded the ${mention(role.id, "ROLE")} role!** Congrats.`,
-        );
+        if (!member.roles.cache.has(role.id))
+          messageContent.push(
+            `**You've been rewarded the ${mention(role.id, "ROLE")} role!** Congrats.`,
+          );
       }
     }
 
@@ -120,7 +121,7 @@ export default (async function run(message) {
       ].join("\n"),
     )
     .setTimestamp()
-    .setColor(genColor(200));
+    .setColor(await colorize({ user: author, avatar, hue: 120 }));
 
   if (levelChannelId) {
     const channel = (await safeChannel(guild, `${levelChannelId}`)) as TextChannel;

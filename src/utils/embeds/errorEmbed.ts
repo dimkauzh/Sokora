@@ -7,6 +7,7 @@ import {
   FileBuilder,
   InteractionResponse,
   Message,
+  RGBTuple,
   SeparatorBuilder,
   TextDisplayBuilder,
   codeBlock,
@@ -14,7 +15,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { safeReply } from "utils/safeThings";
-import { genColor, genColorCV2 } from "../colorGen";
+import { colorize } from "../colorGen";
 import { errorType } from "../errorType";
 
 /**
@@ -55,7 +56,7 @@ export async function errorEmbed(options: {
   const embed = new EmbedBuilder()
     .setAuthor({ name: "Something went wrong!" })
     .setDescription(content.join("\n"))
-    .setColor(genColor(0));
+    .setColor(await colorize({ hue: 0 }));
 
   if (options.error) {
     embed.addFields(
@@ -136,7 +137,7 @@ export async function errorEmbedCV2(options: {
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(`Something went wrong!\n${content.join("\n")}`),
     )
-    .setAccentColor(genColorCV2(0)!);
+    .setAccentColor((await colorize({ hue: 0, cv2: true })) as RGBTuple);
 
   if (options.error) {
     container

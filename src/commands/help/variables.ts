@@ -3,7 +3,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replaceVariables } from "utils/replace";
 
@@ -25,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(
       "You can write the following variables in some places to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the specific message. Dynamic variables are currently supported for **join messages, leave messages, join DMs, and news.**",
     )
-    .setColor(genColor(200))
+    .setColor(await colorize({ hue: 200 }))
     .setFields([
       {
         name: "👀 • Simple example",

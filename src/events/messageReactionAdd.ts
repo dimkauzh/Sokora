@@ -3,7 +3,7 @@ import { getStarred, setStarred } from "database/starboard";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { channelCheck } from "utils/channelCheck";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { safeChannel } from "utils/safeThings";
 import { Event } from "utils/types";
@@ -79,7 +79,7 @@ export default (async function run(reaction, user) {
     .setDescription(message.content)
     .setTimestamp(message.createdAt)
     .setFooter({ text: `Message ID: ${message.id}` })
-    .setColor(genColor(80));
+    .setColor(await colorize({ hue: 80 }));
 
   const ref = message.reference ? await message.fetchReference() : null;
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -109,7 +109,7 @@ export default (async function run(reaction, user) {
         .setDescription(ref.content)
         .setTimestamp(ref.createdAt)
         .setFooter({ text: `Message ID: ${ref.id}` })
-        .setColor(genColor(75)),
+        .setColor(await colorize({ hue: 75 })),
     );
   }
 

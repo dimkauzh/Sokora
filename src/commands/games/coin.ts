@@ -3,7 +3,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -11,14 +11,15 @@ export const data = new SlashCommandSubcommandBuilder()
   .setDescription("Flip a coin.");
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const avatar = interaction.user.displayAvatarURL();
+  const user = interaction.user;
+  const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}Coin flip`,
       iconURL: avatar,
     })
     .setDescription(`The coin landed on **${Math.random() >= 0.5 ? "tails" : "heads"}**!`)
-    .setColor(genColor(120));
+    .setColor(await colorize({ user, avatar, hue: 120 }));
 
   await interaction.reply({ embeds: [embed] });
 }

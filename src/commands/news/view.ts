@@ -9,7 +9,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
@@ -42,7 +42,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (page > sortedNews.length) page = sortedNews.length;
   if (page < 1) page = 1;
 
-  function getEmbed() {
+  async function getEmbed() {
     const currentNews = sortedNews[page - 1];
     const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
@@ -57,7 +57,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setFooter({
         text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
       })
-      .setColor(genColor(200));
+      .setColor(await colorize({ hue: 100 }));
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -72,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   );
 
   const reply = await interaction.reply({
-    embeds: [getEmbed()],
+    embeds: [await getEmbed()],
     components: sortedNews.length > 1 ? [row] : [],
   });
 
@@ -85,12 +85,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
       case "left":
         page--;
         if (page < 1) page = sortedNews.length;
-        await i.update({ embeds: [getEmbed()], components: [row] });
+        await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
       case "right":
         page++;
         if (page > sortedNews.length) page = 1;
-        await i.update({ embeds: [getEmbed()], components: [row] });
+        await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
     }
   });

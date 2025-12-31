@@ -12,10 +12,10 @@ import {
   type TextChannel,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
-import { safeChannel, safeMember } from "utils/safeThings";
+import { safeChannel, safeMember, safeRole } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -75,7 +75,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     const role = (await getSetting(guild.id, "news", "role")) as string;
     let roleToSend: Role | undefined;
-    if (role) roleToSend = guild.roles.cache.get(role);
+    if (role) roleToSend = await safeRole(guild, role);
     const title = i.fields.getTextInputValue("title");
     const body = i.fields.getTextInputValue("body");
     const avatar = news.authorPFP;
@@ -92,7 +92,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(body)
       .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)
       .setFooter({ text: `Edited news from ${guild.name} • ID: ${news.id}` })
-      .setColor(genColor(200));
+      .setColor(await colorize({ hue: 200 }));
 
     const channel = (await safeChannel(
       guild,
@@ -106,7 +106,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     updateNews(guild.id, id, title, body);
     await i.reply({
-      embeds: [new EmbedBuilder().setTitle("News edited.").setColor(genColor(100))],
+      embeds: [new EmbedBuilder().setTitle("News edited.").setColor(await colorize({ hue: 100 }))],
       flags: "Ephemeral",
     });
   });

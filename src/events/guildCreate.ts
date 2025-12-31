@@ -1,14 +1,15 @@
 import { EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { commands } from "handlers/commands";
-import { genColor } from "utils/colorGen";
+import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 import type { Event } from "utils/types";
 
 export default (async function run(guild) {
   const client = guild.client;
-  const avatar = client.user.displayAvatarURL();
+  const user = client.user;
+  const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
       name: `${dotCheck({ string: avatar, doubleSpace: true })}Welcome to ${client.user.username}!`,
@@ -22,7 +23,7 @@ export default (async function run(guild) {
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setColor(genColor(200));
+    .setColor(await colorize({ user, avatar, hue: 200 }));
 
   await guild.commands.set(commands.map(command => command.data));
   try {

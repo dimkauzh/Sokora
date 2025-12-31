@@ -8,8 +8,8 @@ import {
   type Guild,
 } from "discord.js";
 import { logChannel } from "utils/logChannel";
-import { safeMember } from "utils/safeThings";
-import { colorize, genColor } from "../colorGen";
+import { safeChannel, safeMember } from "utils/safeThings";
+import { colorize } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
 import { pluralOrNot } from "../pluralOrNot";
@@ -136,7 +136,7 @@ export async function serverEmbed(options: Options) {
             `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
           ].join("\n"),
         })
-        .setColor(genColor(60));
+        .setColor(await colorize({ hue: 60 }));
 
       await logChannel(guild, { embeds: [errEmbed] }, true, {
         silent: false,
@@ -160,7 +160,8 @@ export async function serverEmbed(options: Options) {
 
     const invites = await guild.invites.fetch();
     const previousInvite = invites.find(invite => invite.inviter?.id == client);
-    const possiblyFetchedInviteChannel = await guild.channels.fetch(
+    const possibleInviteChannel = await safeChannel(
+      guild,
       invite.channel ??
         guild.channels.cache
           .filter(channel => channel.isTextBased() && !channel.isThread())
@@ -168,10 +169,10 @@ export async function serverEmbed(options: Options) {
     );
 
     const inviteChannel =
-      possiblyFetchedInviteChannel &&
-      possiblyFetchedInviteChannel.isTextBased() &&
-      !possiblyFetchedInviteChannel.isThread()
-        ? possiblyFetchedInviteChannel
+      possibleInviteChannel &&
+      possibleInviteChannel.isTextBased() &&
+      !possibleInviteChannel.isThread()
+        ? possibleInviteChannel
         : guild.rulesChannel;
 
     if (!inviteChannel) return embed;

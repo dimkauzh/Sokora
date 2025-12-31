@@ -8,7 +8,7 @@ import {
 import ms from "enhanced-ms";
 import { mention } from "utils/mention";
 import { safeChannel, safeMember, safeReply } from "utils/safeThings";
-import { genColor } from "../colorGen";
+import { colorize } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
 import { errorEmbed } from "./errorEmbed";
@@ -227,7 +227,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     .setDescription(generalValues.join("\n"))
     .setFooter({ text: user ? `User ID: ${user.id}` : `Channel ID: ${channel}` })
     .setTimestamp(new Date())
-    .setColor(genColor(100));
+    .setColor(await colorize({ hue: 100 }));
 
   async function replier() {
     if (silent)
@@ -248,7 +248,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
             })
             .setDescription(generalValues.join("\n"))
             .setTimestamp(new Date())
-            .setColor(genColor(0)),
+            .setColor(await colorize({ hue: 0 })),
         ],
       },
     }),

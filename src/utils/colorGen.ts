@@ -10,7 +10,7 @@ import { kominator } from "./kominator";
  */
 export function genColor(hue: number): ColorResolvable {
   return Bun.color(
-    `oklch(${60 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 15 * Math.random()})`,
+    `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 15 * Math.random()})`,
     "hex",
   ) as ColorResolvable;
 }
@@ -22,7 +22,7 @@ export function genColor(hue: number): ColorResolvable {
  */
 export function genColorCV2(hue: number) {
   return Bun.color(
-    `oklch(${60 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 15 * Math.random()})`,
+    `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 15 * Math.random()})`,
     "[rgb]",
   );
 }
@@ -52,7 +52,6 @@ export async function genImageColor(
   return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "hex") as ColorResolvable;
 }
 
-// todo: replace single functions like genColor with this
 export async function colorize(options: {
   user?: User;
   avatar?: string;
@@ -62,8 +61,8 @@ export async function colorize(options: {
   const { user, avatar, hue, cv2 } = options;
 
   return (
-    user?.hexAccentColor ??
     (await genImageColor(avatar!, cv2)) ??
+    user?.hexAccentColor ??
     (cv2 ? genColorCV2(hue!) : genColor(hue!))
   );
 }

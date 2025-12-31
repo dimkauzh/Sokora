@@ -44,7 +44,7 @@ import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
-import { safeReply } from "utils/safeThings";
+import { safeMember, safeReply } from "utils/safeThings";
 import { buttonCheck } from "./errorEmbed";
 
 async function construct(
@@ -278,7 +278,7 @@ export async function settingsEmbed(
     }
 
     if (table == "user") {
-      const dmChannel = await (await interaction.client.users.fetch(id)).createDM();
+      const dmChannel = await (await safeMember(guild!, id)).createDM();
       if (name == "remind" && (!dmChannel || !dmChannel.isSendable())) {
         await setUserSetting(id, "topgg", "remind", false);
         text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
