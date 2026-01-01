@@ -42,7 +42,7 @@ export async function logChannel(
   if (logChannel) {
     channel = (await safeChannel(guild, `${logChannel}`)
       .then((channel: Channel) => {
-        if (!channel.isTextBased) return null;
+        if (!channel.isTextBased()) return null;
         return channel as TextChannel;
       })
       .catch(() => null)) as TextChannel;
