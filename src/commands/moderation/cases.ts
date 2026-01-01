@@ -59,7 +59,7 @@ async function generateEmbed(params: {
     const val = [
       `**Moderator**: ${mention(c.moderator, "USER")}`,
       c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
-      `**Time of action**: ${mention(Math.floor(Number(c.timestamp) / 1000), "SIMPLE_TIMESTAMP")}`,
+      `**Time of action**: ${mention(Math.floor(Number(c.timestamp)), "SIMPLE_TIMESTAMP")}`,
     ];
 
     if (!user) val.unshift(`**User**: ${mention(c.user, "USER")}`);

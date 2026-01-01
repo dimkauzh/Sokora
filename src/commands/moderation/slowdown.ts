@@ -54,7 +54,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let title = `Set the slowdown to ${ms(ms(time), "fullPrecision")}`;
   if (!ms(time)) title = "Removed the slowdown";
 
-  if (!channel.isTextBased())
+  if (!channel.isTextBased() || channel.isDMBased())
     return await errorEmbed({
       interaction,
       title: "You have provided a channel that can't be slowed down.",
