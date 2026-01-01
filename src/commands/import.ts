@@ -84,39 +84,22 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return container;
   }
 
-  const container = new ContainerBuilder().addSectionComponents(
-    new SectionBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent("Tatsu\n-# Import from [Tatsu](https://tatsu.gg/)"),
-      )
-      .setButtonAccessory(
-        new ButtonBuilder()
-          .setCustomId(SupportedBots[SupportedBots.TATSU])
-          .setLabel("Import")
-          .setStyle(ButtonStyle.Primary),
-      ),
-    new SectionBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent("MEE6\n-# Import from [MEE6](http://mee6.xyz/)"),
-      )
-      .setButtonAccessory(
-        new ButtonBuilder()
-          .setCustomId(SupportedBots[SupportedBots.MEE6])
-          .setLabel("Import")
-          .setStyle(ButtonStyle.Primary),
-      ),
-    new SectionBuilder()
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent("Lurkr\n-# Import from [Lurkr](https://lurkr.gg/)"),
-      )
-      .setButtonAccessory(
-        new ButtonBuilder()
-          .setCustomId(SupportedBots[SupportedBots.LURKR])
-          .setLabel("Import")
-          .setStyle(ButtonStyle.Primary),
-      ),
-  );
+  const bots: { content: string; id: keyof typeof SupportedBots }[] = [
+    { content: "Tatsu\n-# Import from [Tatsu](https://tatsu.gg/)", id: "TATSU" },
+    { content: "MEE6\n-# Import from [MEE6](http://mee6.xyz/)", id: "MEE6" },
+    { content: "Lurkr\n-# Import from [Lurkr](https://lurkr.gg/)", id: "LURKR" },
+  ];
+  const containerComponents = [];
+  for (const bot of bots)
+    containerComponents.push(
+      new SectionBuilder()
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(bot.content))
+        .setButtonAccessory(
+          new ButtonBuilder().setCustomId(bot.id).setLabel("Import").setStyle(ButtonStyle.Primary),
+        ),
+    );
 
+  const container = new ContainerBuilder().addSectionComponents(containerComponents);
   const reply = await interaction.editReply({
     components: [await containerHelper(container, {})],
     flags: ["IsComponentsV2"],
@@ -138,7 +121,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     };
 
     try {
-      if (cID == "lurkr") {
+      if (cID == SupportedBots[SupportedBots.LURKR]) {
         // todo: make this not suck
         const modal = new ModalBuilder()
           .setCustomId(cID)
@@ -158,6 +141,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         await i.showModal(modal);
       }
+
       const leveler = new Leveler({
         guild: interaction.guildId!,
         tatsu_api: process.env["TATSU_TOKEN"],

@@ -9,6 +9,7 @@ export function getDatabase(definition: TableDefinition) {
   const defStr = Object.entries(definition.definition)
     .map(([field, type]) => field.concat(" ", type))
     .join(", ");
+
   database.run(`CREATE TABLE IF NOT EXISTS ${definition.name} (${defStr});`);
   return database;
 }

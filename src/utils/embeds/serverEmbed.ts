@@ -75,9 +75,7 @@ export async function serverEmbed(options: Options) {
 
   if (boostTier)
     statValues.push(
-      `${!boostTier ? "**No** level" : `Level **${boostTier}**`} • **${boostCount}**${
-        !boostTier ? "/2" : boostTier == 1 ? "/7" : boostTier == 2 ? "/14" : ""
-      } ${pluralOrNot("boost", boostCount!)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
+      `${!boostTier ? "**No** level" : `Level **${boostTier}**`} • **${boostCount}** ${pluralOrNot("boost", boostCount!)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
     );
 
   if (options.roles)
@@ -94,10 +92,7 @@ export async function serverEmbed(options: Options) {
 
   const dot = dotCheck({ string: icon, doubleSpace: true });
   const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${pages ? `#${page}  •  ` : dot}${guild.name}`,
-      iconURL: icon,
-    })
+    .setAuthor({ name: `${pages ? `#${page}  •  ` : dot}${guild.name}`, iconURL: icon })
     .setDescription(guild.description ? `> ${guild.description}` : null)
     .setFields(
       {
@@ -185,7 +180,7 @@ export async function serverEmbed(options: Options) {
       : await inviteChannel.createInvite({ maxAge: 0, reason: "Serverboard invite" });
 
     embed.addFields({
-      name: `🚪 • Join in!`,
+      name: "🚪 • Join in!",
       value: `This server allows you to join from here! ${inviteUrl}`,
     });
   }
