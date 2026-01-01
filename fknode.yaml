@@ -3,3 +3,6 @@ flagless:
   flaglessPretty: true
 launchCmd:
   - $;;dev
+commitCmd:
+  - $;;lint
+  - $prettier

@@ -60,7 +60,8 @@ export default (async function run(reaction, user) {
       guild,
       permType: "Send",
       setting: { category: "starboard", setting: "channel" },
-    }))
+    })) ||
+    starboardChannel.isDMBased()
   )
     return;
 

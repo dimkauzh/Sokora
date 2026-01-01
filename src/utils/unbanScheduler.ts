@@ -4,7 +4,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { colorize } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
-import { safeMember } from "./safeThings";
+import { safeGuild, safeMember } from "./safeThings";
 
 export function scheduleUnban(
   client: Client,
@@ -20,7 +20,7 @@ export function scheduleUnban(
   const timeout = setTimeout(
     async () => {
       try {
-        const guild = await client.guilds.fetch(guildID);
+        const guild = await safeGuild(client, guildID);
         const user = (await guild.bans.fetch(userID)).user;
         if (!user) {
           removeModeration(guildID, userID);

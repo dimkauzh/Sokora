@@ -71,7 +71,7 @@ client.once("clientReady", async () => {
     registerGuildCommands(client),
     rescheduleUnbans(client),
   ]).then(() =>
-    console.log(Math.random() < 0.001 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！"),
+    console.log(Math.random() < 0.002 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！"),
   );
 
   // if you want to register/remove guild/global commands, replace registerGuildCommands() with:

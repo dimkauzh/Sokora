@@ -171,7 +171,8 @@ export async function serverEmbed(options: Options) {
     const inviteChannel =
       possibleInviteChannel &&
       possibleInviteChannel.isTextBased() &&
-      !possibleInviteChannel.isThread()
+      !possibleInviteChannel.isThread() &&
+      !possibleInviteChannel.isDMBased()
         ? possibleInviteChannel
         : guild.rulesChannel;
 

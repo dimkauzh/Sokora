@@ -2,6 +2,7 @@ import { kominator } from "utils/kominator";
 import { getDatabase } from ".";
 import { getSetting, setSetting } from "./settings";
 import { TableDefinition, TypeOfDefinition } from "./types";
+import { dekominator } from "../kominator";
 
 const tableDefinition = {
   name: "leveling",
@@ -75,7 +76,7 @@ type LevelReward = { id: string; level: number; channel: boolean };
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
   const content = await getSetting(guildID, "leveling", "rewards");
   if (!content || typeof content !== "string") return null;
-  return content.split(",").map(s => {
+  return kominator(content).map(s => {
     const channel = s.includes("#");
     if (channel) {
       const [level, id] = s.split("#");
@@ -88,14 +89,14 @@ export async function getLevelRewards(guildID: string): Promise<LevelReward[] | 
 }
 
 export async function addLevelRewards(guildID: string, rewards: LevelReward[]): Promise<void> {
-  const encodedRewards = rewards
-    .map(reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`)
-    .join(",");
+  const encodedRewards = dekominator(
+    rewards.map(reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`),
+  );
   const content = await getSetting(guildID, "leveling", "rewards");
   if (!content || typeof content !== "string") {
     setSetting(guildID, "leveling", "rewards", encodedRewards);
   } else {
-    setSetting(guildID, "leveling", "rewards", encodedRewards + "," + content);
+    setSetting(guildID, "leveling", "rewards", dekominator([...encodedRewards, ...content]));
   }
 }
 
@@ -109,5 +110,5 @@ export async function removeLevelRewards(guildID: string, rewards: LevelReward[]
   for (const reward of kominator(content)) {
     if (!encodedRewards.includes(reward)) newRewards.push(reward);
   }
-  setSetting(guildID, "leveling", "rewards", newRewards.join(","));
+  setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
 }

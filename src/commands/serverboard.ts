@@ -11,6 +11,7 @@ import {
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
 import { replace } from "utils/replace";
+import { safeGuild } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
   .setName("serverboard")
@@ -24,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       (await listPublicServers()).map(async entry => {
         try {
           return {
-            guild: await interaction.client.guilds.fetch(entry.guildID),
+            guild: await safeGuild(interaction.client, entry.guildID),
             showInvite: entry.showInvite,
             inviteChannelId: entry.inviteChannelId,
           };

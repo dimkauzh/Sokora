@@ -62,7 +62,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const targetUser = interaction.options.getUser("user");
   let deletedAmount = 0;
-  if (!channel.isTextBased())
+  if (!channel.isTextBased() || channel.isDMBased())
     return await errorEmbed({
       interaction,
       title: "You have provided a channel that can't have messages to clear.",
