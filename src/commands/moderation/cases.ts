@@ -22,6 +22,7 @@ import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
 import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
+import { mention } from "utils/mention";
 import { randomize } from "utils/randomize";
 import { replace } from "utils/replace";
 import { safeGuild, safeMember } from "utils/safeThings";
@@ -56,12 +57,12 @@ async function generateEmbed(params: {
   const avatar = user ? user.avatarURL() : (await safeGuild(client, guildID))?.iconURL();
   let fields = displayedCases.map(c => {
     const val = [
-      `**Moderator**: <@${c.moderator}>`,
+      `**Moderator**: ${mention(c.moderator, "USER")}`,
       c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
-      `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
+      `**Time of action**: ${mention(Math.floor(Number(c.timestamp) / 1000), "SIMPLE_TIMESTAMP")}`,
     ];
 
-    if (!user) val.unshift(`**User**: <@${c.user}>`);
+    if (!user) val.unshift(`**User**: ${mention(c.user, "USER")}`);
     if (c.expiresAt) val.push(`**Duration**: ${ms(Number(c.expiresAt), "fullPrecision")}`);
 
     return {

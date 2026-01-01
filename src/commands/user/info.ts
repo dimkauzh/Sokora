@@ -34,14 +34,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
         `Display name is ${
           user.displayName == user.username ? "*not there*" : `**${user.displayName}**`
         }`,
-        `Created on **<t:${Math.round(user.createdAt.valueOf() / 1000)}:D>**`,
+        `Created on **${mention(Math.round(user.createdAt.valueOf() / 1000), "DEFAULT_TIMESTAMP")}**`,
       ].join("\n"),
     })
     .setFooter({ text: `User ID: ${user.id}` })
     .setColor(await colorize({ user: target?.user ?? user, avatar, hue: 200 }));
 
   if (target) {
-    const serverInfo = [`Joined on **<t:${Math.round(target.joinedAt!.valueOf()! / 1000)}:D>**`];
+    const serverInfo = [
+      `Joined on **${mention(Math.round(target.joinedAt!.valueOf()! / 1000), "DEFAULT_TIMESTAMP")}**`,
+    ];
     const guildRoles = guild.roles.cache.filter(role => target.roles.cache.has(role.id))!;
     const memberRoles = [...guildRoles].sort(
       (role1, role2) => role2[1].position - role1[1].position,
@@ -54,7 +56,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const level = calculateLevel({ difficulty, xp });
 
     if (target.premiumSinceTimestamp)
-      serverInfo.push(`Boosting since **<t:${target.premiumSinceTimestamp}:D>**`);
+      serverInfo.push(
+        `Boosting since **${mention(target.premiumSinceTimestamp, "DEFAULT_TIMESTAMP")}**`,
+      );
 
     if ((await getSetting(`${guild.id}`, "leveling", "enabled")) && !user.bot)
       serverInfo.push(
