@@ -189,7 +189,7 @@ export async function errorEmbedCV2(options: {
 
 export async function buttonCheck(options: {
   i: ButtonInteraction | AnySelectMenuInteraction;
-  interaction: ChatInputCommandInteraction;
+  interaction: ChatInputCommandInteraction | ButtonInteraction;
   reply: Message | InteractionResponse;
   cv2: boolean;
   noExecuteError?: boolean;

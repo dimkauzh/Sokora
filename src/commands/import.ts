@@ -23,7 +23,9 @@ import {
   TextInputStyle,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
+import { capitalize } from "utils/capitalize";
 import { colorize } from "utils/colorGen";
+import { safeReply } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
   .setName("import")
@@ -48,13 +50,26 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   async function containerHelper(
     container: ContainerBuilder,
-    options: { content?: string; buttons?: boolean; error?: boolean },
+    options: {
+      content?: string;
+      buttons?: boolean;
+      error?: boolean;
+      json?: boolean;
+      footer?: boolean;
+    },
   ) {
-    const { content, buttons, error } = options;
+    const { content, buttons, error, json } = options;
     if (content) container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
     container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+
     if (buttons)
       container.addActionRowComponents(
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId("botreturn")
+            .setLabel("Return to bot selection")
+            .setStyle(ButtonStyle.Primary),
+        ),
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setCustomId("merge")
@@ -65,8 +80,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
             .setLabel("Overwrite data")
             .setStyle(ButtonStyle.Danger),
           new ButtonBuilder()
-            .setCustomId("check")
-            .setLabel("Check JSON data first")
+            .setCustomId(json ? "return" : "check")
+            .setLabel(json ? "Return" : "Check JSON data first")
             .setStyle(ButtonStyle.Primary),
         ),
       );
@@ -95,14 +110,20 @@ export async function run(interaction: ChatInputCommandInteraction) {
       new SectionBuilder()
         .addTextDisplayComponents(new TextDisplayBuilder().setContent(bot.content))
         .setButtonAccessory(
-          new ButtonBuilder().setCustomId(bot.id).setLabel("Import").setStyle(ButtonStyle.Primary),
+          new ButtonBuilder()
+            .setCustomId(capitalize(bot.id.toLowerCase()))
+            .setLabel("Import")
+            .setStyle(ButtonStyle.Primary),
         ),
     );
 
   const container = new ContainerBuilder().addSectionComponents(containerComponents);
-  const reply = await interaction.editReply({
-    components: [await containerHelper(container, {})],
-    flags: ["IsComponentsV2"],
+  const reply = await safeReply({
+    interaction,
+    editOptions: {
+      components: [await containerHelper(container, {})],
+      flags: ["IsComponentsV2"],
+    },
   });
   const collector = reply.createMessageComponentCollector({ time: 120000 });
   collector.on("collect", async (i: ButtonInteraction) => {
@@ -110,19 +131,146 @@ export async function run(interaction: ChatInputCommandInteraction) {
     collector.resetTimer({ time: 120000 });
     const cID = i.customId;
     const bots = {
-      name: cID,
+      name: cID === "Mee6" ? cID.toUpperCase() : cID,
       data: [
         "- User XP",
-        cID === SupportedBots[SupportedBots.TATSU]
-          ? "-# Note: Tatsu doesn't have role rewards."
-          : "- Role rewards",
+        cID === "Tatsu" ? "-# Note: Tatsu doesn't have role rewards." : "- Role rewards",
         "-# Settings like difficulty (which dictate the amount of XP needed to levelup) can't be imported. Levels might immediately change when chatting if you don't manually change the difficulty (and the current one differs too much from this one, which isn't necessarily the case).",
       ].join("\n"),
     };
 
     try {
-      if (cID == SupportedBots[SupportedBots.LURKR]) {
-        // todo: make this not suck
+      async function doStuff(lurkrKey: string | undefined) {
+        const leveler = new Leveler({
+          guild: interaction.guildId!,
+          tatsu_api: process.env["TATSU_TOKEN"],
+          lurkr_api: lurkrKey,
+        });
+        let levels =
+          cID === "Mee6"
+            ? await leveler.GetLeaderboard(SupportedBots.MEE6)
+            : await leveler.GetLeaderboard(SupportedBots.TATSU);
+
+        if (cID === "Lurkr" && lurkrKey) levels = await leveler.GetLeaderboard(SupportedBots.LURKR);
+        const container1 = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(
+            [
+              `Thanks for switching to Sokora! We will import leveling info from **${bots.name}** that we can gather. This includes a total of **${levels.length} entries**.`,
+              `Data we can import from ${bots.name} is:\n${bots.data}`,
+              `You may now import data by **merging** (adding imported XP to Sokora's XP) or by **overwriting** (removing Sokora's leveling data, then adding imported XP data). You can also review the JSON data that is to be imported, just in case.`,
+            ].join("\n\n"),
+          ),
+        );
+
+        const reply1 = await safeReply({
+          interaction: i,
+          editOptions: {
+            components: [await containerHelper(container1, { buttons: true })],
+            flags: "IsComponentsV2",
+          },
+        });
+
+        collector.stop("bot_chosen");
+        const collector1 = reply1.createMessageComponentCollector({ time: 45000 });
+        collector1.on("collect", async (i1: ButtonInteraction) => {
+          await buttonCheck({ i: i1, interaction: i, reply: reply1, cv2: true });
+          collector1.resetTimer({ time: 45000 });
+          let content;
+          switch (i1.customId) {
+            case "botreturn":
+              await safeReply({
+                interaction: i1,
+                replyOptions: { components: [container], flags: "IsComponentsV2" },
+              });
+              break;
+            case "check": {
+              const levelData = safeStringify(levels);
+              const checkContainer = new ContainerBuilder().addTextDisplayComponents(
+                new TextDisplayBuilder().setContent(
+                  `## This is what we'll import from ${bots.name}\n${
+                    levelData.length <= 4096
+                      ? codeBlock(levelData)
+                      : "The level data is an attachment due to it being too large."
+                  }`,
+                ),
+              );
+
+              const files: AttachmentBuilder[] = [];
+              if (levelData.length >= 4096) {
+                files.push(
+                  new AttachmentBuilder(Buffer.from(levelData, "utf8"), { name: "levels.txt" }),
+                );
+                checkContainer.addFileComponents(
+                  new FileBuilder().setURL("attachment://levels.txt"),
+                );
+              }
+
+              await safeReply({
+                interaction: i1,
+                replyOptions: {
+                  components: [
+                    await containerHelper(checkContainer, { buttons: true, json: true }),
+                  ],
+                  files: files,
+                  flags: "IsComponentsV2",
+                },
+              });
+              break;
+            }
+            case "return":
+              await safeReply({
+                interaction: i1,
+                replyOptions: { components: [container1], flags: "IsComponentsV2" },
+              });
+              break;
+            case "merge":
+            case "overwrite": {
+              content = `# ${i1.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`;
+              const res = [];
+              await safeReply({
+                interaction: i1,
+                replyOptions: {
+                  components: [await containerHelper(new ContainerBuilder(), { content })],
+                  flags: "IsComponentsV2",
+                },
+              });
+
+              const difficulty = (await getSetting(
+                interaction.guild!.id,
+                "leveling",
+                "difficulty",
+              )) as number;
+              for (const user of interaction.guild!.members.cache) {
+                if (user[1].user.bot) continue;
+                const imported = levels.find(lev => lev.uid == user[1].id);
+                if (!imported) {
+                  res.push(
+                    `${user[1].user.username} wasn't imported (had no data saved in the imported dataset)`,
+                  );
+                  continue;
+                }
+                const prevXp = getUserXp(interaction.guildId!, user[1].id);
+                const newXp = (i1.customId == "merge" ? prevXp : 0) + imported.current_xp;
+                setUserXp(interaction.guildId!, user[1].id, newXp);
+                res.push(
+                  `${user[1].user.username} updated from ${prevXp} XP (level ${calculateLevel({ xp: prevXp, difficulty })}) to **XP ${newXp} (level ${calculateLevel({ xp: newXp, difficulty })})**.`,
+                );
+              }
+
+              content = `# Done!\n${res.join("\n")}`;
+              await safeReply({
+                interaction: i1,
+                replyOptions: {
+                  components: [await containerHelper(new ContainerBuilder(), { content })],
+                  flags: "IsComponentsV2",
+                },
+              });
+            }
+          }
+        });
+      }
+
+      if (cID == "Lurkr") {
         const modal = new ModalBuilder()
           .setCustomId(cID)
           .setTitle(`•  API key to import`)
@@ -140,110 +288,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
           );
 
         await i.showModal(modal);
-      }
-
-      const leveler = new Leveler({
-        guild: interaction.guildId!,
-        tatsu_api: process.env["TATSU_TOKEN"],
-      });
-      const levels =
-        cID === SupportedBots[SupportedBots.MEE6]
-          ? await leveler.GetLeaderboard(SupportedBots.MEE6)
-          : await leveler.GetLeaderboard(SupportedBots.TATSU);
-
-      const container1 = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          [
-            `Thanks for switching to Sokora! We will import leveling info from **${bots.name}** that we can gather. This includes a total of **${levels.length} entries**.`,
-            `Data we can import from ${bots.name} is:\n${bots.data}`,
-            `You may now import data by **merging** (adding imported XP to Sokora's XP) or by **overwriting** (removing Sokora's leveling data, then adding imported XP data). You can also review the JSON data that is to be imported, just in case.`,
-          ].join("\n\n"),
-        ),
-      );
-
-      const reply1 = await interaction.editReply({
-        components: [await containerHelper(container1, { buttons: true })],
-        flags: "IsComponentsV2",
-      });
-
-      collector.stop("bot_chosen");
-      const collector1 = reply1.createMessageComponentCollector({ time: 45000 });
-      collector1.on("collect", async (i: ButtonInteraction) => {
-        await buttonCheck({ i, interaction, reply: reply1, cv2: true });
-        collector1.resetTimer({ time: 45000 });
-        let content;
-        switch (i.customId) {
-          case "check": {
-            const levelData = safeStringify(levels);
-            const checkContainer = new ContainerBuilder().addTextDisplayComponents(
-              new TextDisplayBuilder().setContent(
-                `## This is what we'll import from ${bots.name}\n${
-                  levelData.length <= 4096
-                    ? codeBlock(levelData)
-                    : "The level data is an attachment due to it being too large."
-                }`,
-              ),
-            );
-
-            const files: AttachmentBuilder[] = [];
-            if (levelData.length >= 4096) {
-              files.push(
-                new AttachmentBuilder(Buffer.from(levelData, "utf8"), { name: "levels.txt" }),
-              );
-              checkContainer.addFileComponents(new FileBuilder().setURL("attachment://levels.txt"));
-            }
-
-            await i.update({
-              components: [await containerHelper(checkContainer, { buttons: true })],
-              files: files,
-              flags: "IsComponentsV2",
-            });
-            break;
-          }
-          case "merge":
-          case "overwrite": {
-            content = `# ${i.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`;
-            const res = [];
-            await i.update({
-              components: [await containerHelper(new ContainerBuilder(), { content })],
-              flags: "IsComponentsV2",
-            });
-
-            const difficulty = (await getSetting(
-              interaction.guild!.id,
-              "leveling",
-              "difficulty",
-            )) as number;
-            for (const user of interaction.guild!.members.cache) {
-              if (user[1].user.bot) continue;
-              const imported = levels.find(lev => lev.uid == user[1].id);
-              if (!imported) {
-                res.push(
-                  `${user[1].user.username} wasn't imported (had no data saved in the imported dataset)`,
-                );
-                continue;
-              }
-              const prevXp = getUserXp(interaction.guildId!, user[1].id);
-              const newXp = (i.customId == "merge" ? prevXp : 0) + imported.current_xp;
-              setUserXp(interaction.guildId!, user[1].id, newXp);
-              res.push(
-                `${user[1].user.username} updated from ${prevXp} XP (level ${calculateLevel({ xp: prevXp, difficulty })}) to **XP ${newXp} (level ${calculateLevel({ xp: newXp, difficulty })})**.`,
-              );
-            }
-
-            content = `# Done!\n${res.join("\n")}`;
-            await i.editReply({
-              components: [await containerHelper(new ContainerBuilder(), { content })],
-              flags: "IsComponentsV2",
-            });
-          }
-        }
-      });
+        i.client.once("interactionCreate", async modalInteraction => {
+          if (modalInteraction.isModalSubmit())
+            await doStuff(modalInteraction.fields.getTextInputValue("setting"));
+        });
+      } else await doStuff(undefined);
     } catch (error) {
       const errorContainer = new ContainerBuilder().addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
           [
-            cID === SupportedBots[SupportedBots.MEE6]
+            cID === "Mee6"
               ? "Open the leaderboard settings in the MEE6 dashboard and enable the option `Make my server's leaderboard public`. Otherwise we can't import data."
               : "We don't really know what went wrong. Maybe try again?",
             "If after doing that Sokora keeps failing to import your data, please send the error message (shown below) to Sokora's team so we can try to fix this.",
@@ -252,9 +306,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ),
       );
 
-      return await interaction.editReply({
-        components: [await containerHelper(errorContainer, { error: true })],
-        flags: "IsComponentsV2",
+      return await safeReply({
+        interaction,
+        editOptions: {
+          components: [await containerHelper(errorContainer, { error: true })],
+          flags: "IsComponentsV2",
+        },
       });
     }
   });

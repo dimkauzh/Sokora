@@ -10,7 +10,7 @@ import { kominator } from "./kominator";
  */
 export function genColor(hue: number): ColorResolvable {
   return Bun.color(
-    `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 15 * Math.random()})`,
+    `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
     "hex",
   ) as ColorResolvable;
 }
@@ -22,7 +22,7 @@ export function genColor(hue: number): ColorResolvable {
  */
 export function genColorCV2(hue: number) {
   return Bun.color(
-    `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 15 * Math.random()})`,
+    `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
     "[rgb]",
   );
 }

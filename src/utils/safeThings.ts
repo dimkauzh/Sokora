@@ -87,7 +87,7 @@ export async function safeReply(options: {
     | MessagePayload
     | InteractionReplyOptions;
 
-  if (interaction.replied) {
+  if (interaction.replied || interaction.deferred) {
     if (editOptions) return await interaction.editReply(editOptions);
     return await interaction.followUp(reply);
   }
