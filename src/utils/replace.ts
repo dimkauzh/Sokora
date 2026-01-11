@@ -18,8 +18,8 @@ export function replace(
   text: string,
   replaceText?: { text: string; replacement: string | number }[],
 ) {
-  for (const mention of replaceText ? replaceText || replacements : replacements)
-    if (text?.includes(mention.text))
+  for (const mention of replaceText ?? replacements)
+    if (text.includes(mention.text))
       text = text.replaceAll(mention.text, mention.replacement.toString());
 
   return text;

@@ -53,7 +53,7 @@ export async function serverEmbed(options: Options) {
 
   const generalValues = [
     `Owned by **${owner.user.displayName}**`,
-    `Created on **${mention(Math.round(guild.createdAt.valueOf()), "DEFAULT_TIMESTAMP")}**`,
+    `Created on **${mention(guild.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}**`,
   ];
 
   const vl = guild.verificationLevel;
