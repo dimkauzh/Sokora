@@ -2,7 +2,7 @@ services:
   app:
     build: .
     container_name: sokora
-    restart: unless-stopped
+    restart: always
     volumes:
       - ./data.db:/app/data.db
       - ./.env:/app/.env

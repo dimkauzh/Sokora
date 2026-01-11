@@ -77,7 +77,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
   if (!interaction.guild) return;
-  await interaction.deferReply();
 
   async function containerHelper(
     container: ContainerBuilder,
@@ -148,7 +147,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const container = new ContainerBuilder().addSectionComponents(containerComponents);
   const reply = await safeReply({
     interaction,
-    editOptions: {
+    replyOptions: {
       components: [await containerHelper(container, {})],
       flags: ["IsComponentsV2"],
     },
@@ -192,17 +191,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         const reply1 = await safeReply({
           interaction: i,
-          editOptions: {
+          replyOptions: {
             components: [await containerHelper(container1, { buttons: true })],
             flags: "IsComponentsV2",
           },
         });
 
         collector.stop("bot_chosen");
-        const collector1 = reply1.createMessageComponentCollector({ time: 45000 });
+        const collector1 = reply1.createMessageComponentCollector({ time: 120000 });
         collector1.on("collect", async (i1: ButtonInteraction) => {
           await buttonCheck({ i: i1, interaction: i, reply: reply1, cv2: true });
-          collector1.resetTimer({ time: 45000 });
+          collector1.resetTimer({ time: 120000 });
           let content;
           switch (i1.customId) {
             case "botreturn":
@@ -210,6 +209,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 interaction: i1,
                 replyOptions: { components: [container], flags: "IsComponentsV2" },
               });
+              collector1.stop("bot_chosen");
               break;
             case "check": {
               const levelData = safeStringify(levels);
@@ -294,6 +294,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 },
               });
             }
+          }
+        });
+
+        collector1.on("end", async (_, reason) => {
+          if (reason === "bot_chosen") return;
+          try {
+            await interaction.deleteReply();
+          } catch (error) {
+            if (Error.isError(error) && error.message.toLowerCase().includes("unknown message"))
+              return;
+            throw error;
           }
         });
       }
