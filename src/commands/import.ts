@@ -23,7 +23,6 @@ import {
   TextInputStyle,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
-import { capitalize } from "utils/capitalize";
 import { colorize } from "utils/colorGen";
 import { safeReply } from "utils/safeThings";
 
@@ -42,6 +41,38 @@ function safeStringify(obj: any) {
   }
 }
 
+async function collapse(
+  error: any,
+  cID: keyof typeof SupportedBots,
+  interaction: ChatInputCommandInteraction,
+  containerHelper: (...args: any) => Promise<ContainerBuilder>,
+  lurkr_api?: string,
+) {
+  const errorContainer = new ContainerBuilder().addTextDisplayComponents(
+    new TextDisplayBuilder().setContent("# Something went wrong..."),
+    new TextDisplayBuilder().setContent(
+      [
+        cID === "MEE6"
+          ? "Open the leaderboard settings in the MEE6 dashboard and enable the option `Make my server's leaderboard public`. Otherwise we can't import data."
+          : cID === "LURKR"
+            ? "Check that the API token you provided is correct. You provided `" + lurkr_api + "`."
+            : "We don't really know what went wrong. Maybe you should try again?",
+        "You might as well check the error message shown below, it *might* explain better what's wrong.",
+        "If after doing all of that Sokora keeps failing to import your data, please send the error message to Sokora's team so we can try to fix this.",
+        `\`\`\`yaml\n${error instanceof Error ? (error.stack ?? error.message) : String(error)}\`\`\``,
+      ].join("\n\n"),
+    ),
+  );
+
+  return await safeReply({
+    interaction,
+    editOptions: {
+      components: [await containerHelper(errorContainer, { error: true })],
+      flags: "IsComponentsV2",
+    },
+  });
+}
+
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
@@ -57,7 +88,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       json?: boolean;
       footer?: boolean;
     },
-  ) {
+  ): Promise<ContainerBuilder> {
     const { content, buttons, error, json } = options;
     if (content) container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
     container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
@@ -110,10 +141,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       new SectionBuilder()
         .addTextDisplayComponents(new TextDisplayBuilder().setContent(bot.content))
         .setButtonAccessory(
-          new ButtonBuilder()
-            .setCustomId(capitalize(bot.id.toLowerCase()))
-            .setLabel("Import")
-            .setStyle(ButtonStyle.Primary),
+          new ButtonBuilder().setCustomId(bot.id).setLabel("Import").setStyle(ButtonStyle.Primary),
         ),
     );
 
@@ -129,29 +157,29 @@ export async function run(interaction: ChatInputCommandInteraction) {
   collector.on("collect", async (i: ButtonInteraction) => {
     await buttonCheck({ i, interaction, reply, cv2: true });
     collector.resetTimer({ time: 120000 });
-    const cID = i.customId;
+    const cID = i.customId as keyof typeof SupportedBots;
     const bots = {
-      name: cID === "Mee6" ? cID.toUpperCase() : cID,
+      name: cID === "MEE6" ? cID.toUpperCase() : cID,
       data: [
         "- User XP",
-        cID === "Tatsu" ? "-# Note: Tatsu doesn't have role rewards." : "- Role rewards",
+        cID === "TATSU" ? "-# Note: Tatsu doesn't have role rewards." : "- Role rewards",
         "-# Settings like difficulty (which dictate the amount of XP needed to levelup) can't be imported. Levels might immediately change when chatting if you don't manually change the difficulty (and the current one differs too much from this one, which isn't necessarily the case).",
       ].join("\n"),
     };
 
     try {
-      async function doStuff(lurkrKey: string | undefined) {
+      async function doStuff(lurkrKey?: string) {
         const leveler = new Leveler({
           guild: interaction.guildId!,
           tatsu_api: process.env["TATSU_TOKEN"],
           lurkr_api: lurkrKey,
         });
         let levels =
-          cID === "Mee6"
+          cID === "MEE6"
             ? await leveler.GetLeaderboard(SupportedBots.MEE6)
             : await leveler.GetLeaderboard(SupportedBots.TATSU);
 
-        if (cID === "Lurkr" && lurkrKey) levels = await leveler.GetLeaderboard(SupportedBots.LURKR);
+        if (cID === "LURKR" && lurkrKey) levels = await leveler.GetLeaderboard(SupportedBots.LURKR);
         const container1 = new ContainerBuilder().addTextDisplayComponents(
           new TextDisplayBuilder().setContent(
             [
@@ -270,7 +298,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         });
       }
 
-      if (cID == "Lurkr") {
+      if (cID == "LURKR") {
         const modal = new ModalBuilder()
           .setCustomId(cID)
           .setTitle(`•  API key to import`)
@@ -289,30 +317,23 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
-          if (modalInteraction.isModalSubmit())
-            await doStuff(modalInteraction.fields.getTextInputValue("setting"));
+          if (modalInteraction.isModalSubmit()) {
+            try {
+              await doStuff(modalInteraction.fields.getTextInputValue("setting"));
+            } catch (error) {
+              await collapse(
+                error,
+                cID,
+                interaction,
+                containerHelper,
+                modalInteraction.fields.getTextInputValue("setting"),
+              );
+            }
+          }
         });
-      } else await doStuff(undefined);
+      } else await doStuff();
     } catch (error) {
-      const errorContainer = new ContainerBuilder().addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          [
-            cID === "Mee6"
-              ? "Open the leaderboard settings in the MEE6 dashboard and enable the option `Make my server's leaderboard public`. Otherwise we can't import data."
-              : "We don't really know what went wrong. Maybe try again?",
-            "If after doing that Sokora keeps failing to import your data, please send the error message (shown below) to Sokora's team so we can try to fix this.",
-            `\`\`\`yaml\n${error instanceof Error ? (error.stack ?? error.message) : String(error)}\`\`\``,
-          ].join("\n\n"),
-        ),
-      );
-
-      return await safeReply({
-        interaction,
-        editOptions: {
-          components: [await containerHelper(errorContainer, { error: true })],
-          flags: "IsComponentsV2",
-        },
-      });
+      await collapse(error, cID, interaction, containerHelper);
     }
   });
 
