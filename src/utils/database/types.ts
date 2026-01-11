@@ -7,7 +7,8 @@ export type FieldData =
   | "USER"
   | "ROLE"
   | "LOG"
-  | "EGG";
+  | "EGG"
+  | "REWARD";
 
 export type TableDefinition = {
   name: string;
@@ -24,6 +25,7 @@ export type SqlType<T extends FieldData> = {
   ROLE: string;
   LOG: string;
   EGG: string;
+  REWARD: string;
 }[T];
 
 export type TypeOfDefinition<T extends TableDefinition> = {

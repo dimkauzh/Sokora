@@ -31,12 +31,8 @@ export function humanizeSettings(string: string): string {
  */
 export function humanizeType(type: FieldData): string {
   if (type == "BOOL") return "boolean";
+  if (type == "REWARD") return "level reward";
+  if (type == "EGG") return "easter egg";
   if (type == "INTEGER") return "number";
-  if (type == "TEXT") return "text";
-  if (type == "LOG") return "log";
-  if (type == "CHANNEL") return "channel";
-  if (type == "ROLE") return "role";
-  if (type == "USER") return "user";
-  if (type == "TIMESTAMP") return "timestamp";
-  return "easter egg";
+  return type.toLowerCase();
 }
