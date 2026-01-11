@@ -4,5 +4,5 @@ flagless:
 launchCmd:
   - $;;dev
 commitCmd:
-  - $;;lint
+  - $lint
   - $prettier

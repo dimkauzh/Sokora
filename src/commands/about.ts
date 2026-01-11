@@ -61,7 +61,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setEmoji("🗳️")
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
-      .setLabel("•  Donate")
+      .setLabel("•  Donate through Ko-Fi")
+      .setURL("https://ko-fi.com/sokoradesu")
+      .setEmoji("⭐")
+      .setStyle(ButtonStyle.Link),
+    new ButtonBuilder()
+      .setLabel("•  Donate through PayPal")
       .setURL("https://paypal.me/SokoraTheBot")
       .setEmoji("⭐")
       .setStyle(ButtonStyle.Link),
