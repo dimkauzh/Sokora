@@ -75,7 +75,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   collector.on("collect", async (i: ButtonInteraction) => {
     if (!reply) return;
-    await buttonCheck({ i, interaction, reply, cv2: false, noExecuteError: true });
+    if (await buttonCheck({ i, interaction, reply, cv2: false, noExecuteError: true })) return;
     if (i.user.id != opponent.id && i.user.id != user.id)
       return await errorEmbed({ interaction: i, title: "You aren't participating." });
 

@@ -79,7 +79,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (page < 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    await buttonCheck({ i, interaction, reply, cv2: false });
+    if (await buttonCheck({ i, interaction, reply, cv2: false })) return;
     collector.resetTimer({ time: 30000 });
     switch (i.customId) {
       case "left":

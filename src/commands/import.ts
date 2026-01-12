@@ -65,9 +65,9 @@ async function collapse(
 
   return await safeReply({
     interaction,
-    editOptions: {
+    replyOptions: {
       components: [await containerHelper(errorContainer, { error: true })],
-      flags: "IsComponentsV2",
+      flags: ["Ephemeral", "IsComponentsV2"],
     },
   });
 }
@@ -147,7 +147,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
   const collector = reply.createMessageComponentCollector({ time: 120000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    await buttonCheck({ i, interaction, reply, cv2: true });
+    if (await buttonCheck({ i, interaction, reply, cv2: true })) return;
     collector.resetTimer({ time: 120000 });
     const cID = i.customId as keyof typeof SupportedBots;
     const bots = {
@@ -184,7 +184,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         const reply1 = await safeReply({
           interaction: i,
-          replyOptions: {
+          editOptions: {
             components: [await containerHelper(container1, { buttons: true })],
             flags: "IsComponentsV2",
           },
@@ -193,7 +193,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         collector.stop("bot_chosen");
         const collector1 = reply1.createMessageComponentCollector({ time: 120000 });
         collector1.on("collect", async (i1: ButtonInteraction) => {
-          await buttonCheck({ i: i1, interaction: i, reply: reply1, cv2: true });
+          if (await buttonCheck({ i: i1, interaction: i, reply: reply1, cv2: true })) return;
           collector1.resetTimer({ time: 120000 });
           let content;
           switch (i1.customId) {
@@ -313,12 +313,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
-          if (!modalInteraction.isModalSubmit()) return;
-          try {
-            await doStuff(modalInteraction.fields.getTextInputValue("setting"));
-          } catch (error) {
-            return await collapse(error, cID, interaction, containerHelper);
-          }
+          if (modalInteraction.isModalSubmit())
+            try {
+              await doStuff(modalInteraction.fields.getTextInputValue("setting"));
+            } catch (error) {
+              return await collapse(error, cID, interaction, containerHelper);
+            }
         });
       } else await doStuff();
     } catch (error) {

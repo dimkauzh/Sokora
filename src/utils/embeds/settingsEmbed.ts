@@ -338,7 +338,7 @@ export async function settingsEmbed(
   });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
-    await buttonCheck({ i, interaction, reply, cv2: true });
+    if (await buttonCheck({ i, interaction, reply, cv2: true })) return;
     collector.resetTimer({ time: 60000 });
     const cID = i.customId;
     let disableCategory = false;

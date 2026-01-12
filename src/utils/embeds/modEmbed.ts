@@ -57,6 +57,7 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
         reason: `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`,
       });
 
+  // todo: uh oh
   if (channelError)
     if (!(await safeChannel(guild, channel!))?.permissionsFor(client).has("ViewChannel"))
       return await errorEmbed({
