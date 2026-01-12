@@ -14,6 +14,7 @@ import {
 } from "database/userSettings";
 import {
   ActionRowBuilder,
+  AnySelectMenuInteraction,
   ButtonBuilder,
   ButtonStyle,
   ChannelSelectMenuBuilder,
@@ -33,11 +34,7 @@ import {
   TextInputStyle,
   UserSelectMenuBuilder,
   codeBlock,
-  type ChannelSelectMenuInteraction,
   type ChatInputCommandInteraction,
-  type RoleSelectMenuInteraction,
-  type StringSelectMenuInteraction,
-  type UserSelectMenuInteraction,
 } from "discord.js";
 import { easterEggNames } from "handlers/events";
 import { colorize } from "utils/colorGen";
@@ -96,28 +93,13 @@ async function setSettingPlease(
   else return await setUserSetting(id, key, setting, value);
 }
 
-type opt =
-  | "bool"
-  | "channel"
-  | "user"
-  | "role"
-  | "log"
-  | "egg"
-  | "reset"
-  | "text"
-  | "number"
-  | "other";
-
 type SettingComponent = (
   name: string,
   reset: boolean,
 ) => Promise<
   | {
       text: string;
-      data: {
-        type: opt;
-        id: string;
-      };
+      data: { type: string; id: string };
       component:
         | ButtonBuilder
         | ChannelSelectMenuBuilder
@@ -157,7 +139,7 @@ export async function settingsEmbed(
 
   const settingComponent: SettingComponent = async (name: string, reset: boolean) => {
     if (resetButtons.includes(name)) return;
-    let data: { type: opt; id: string };
+    let data: { type: string; id: string };
     let component:
       | ButtonBuilder
       | ChannelSelectMenuBuilder
@@ -384,7 +366,7 @@ export async function settingsEmbed(
         break;
     }
 
-    switch ((await settingComponent(cID, reset || confirm))?.data.type as opt) {
+    switch ((await settingComponent(cID, reset || confirm))?.data.type) {
       case "reset":
         reset = false;
         confirm = true;
@@ -392,15 +374,6 @@ export async function settingsEmbed(
         break;
       case "bool":
         await setSettingPlease(id, key, cID, !(await getSettingPlease(id, key, cID, table)), table);
-        break;
-      case "channel":
-        await setSettingPlease(id, key, cID, (i as ChannelSelectMenuInteraction).values, table);
-        break;
-      case "user":
-        await setSettingPlease(id, key, cID, (i as UserSelectMenuInteraction).values, table);
-        break;
-      case "role":
-        await setSettingPlease(id, key, cID, (i as RoleSelectMenuInteraction).values, table);
         break;
       case "number":
       case "text": {
@@ -421,45 +394,44 @@ export async function settingsEmbed(
 
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
-          if (modalInteraction.isModalSubmit()) {
-            async function constructModalContainer(
-              settingText: string,
-              valueText: string,
-              hue: number,
-            ) {
-              return new ContainerBuilder()
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
-                .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-                .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
-                .setAccentColor((await colorize({ hue, cv2: true })) as RGBTuple);
-            }
-
-            const value = modalInteraction.fields.getTextInputValue("setting");
-            const length = value!.length;
-            let settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`;
-            let valueText = `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`;
-            let hue = 100;
-
-            if (!isValueValid(value, settingsObj[cID].type)) {
-              settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
-              valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
-              hue = 0;
-              return;
-            } else await setSettingPlease(id, key, cID, value, table);
-
-            await safeReply({
-              interaction: modalInteraction,
-              replyOptions: {
-                components: [await constructModalContainer(settingText, valueText, hue)],
-                flags: ["Ephemeral", "IsComponentsV2"],
-              },
-            });
+          if (!modalInteraction.isModalSubmit()) return;
+          async function constructModalContainer(
+            settingText: string,
+            valueText: string,
+            hue: number,
+          ) {
+            return new ContainerBuilder()
+              .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
+              .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+              .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
+              .setAccentColor((await colorize({ hue, cv2: true })) as RGBTuple);
           }
+
+          const value = modalInteraction.fields.getTextInputValue("setting");
+          const length = value!.length;
+          let settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`;
+          let valueText = `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`;
+          let hue = 100;
+
+          if (!isValueValid(value, settingsObj[cID].type)) {
+            settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
+            valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
+            hue = 0;
+            return;
+          } else await setSettingPlease(id, key, cID, value, table);
+
+          await safeReply({
+            interaction: modalInteraction,
+            replyOptions: {
+              components: [await constructModalContainer(settingText, valueText, hue)],
+              flags: ["Ephemeral", "IsComponentsV2"],
+            },
+          });
         });
         break;
       }
       default:
-        await setSettingPlease(id, key, cID, (i as StringSelectMenuInteraction).values, table);
+        await setSettingPlease(id, key, cID, (i as AnySelectMenuInteraction).values, table);
         break;
     }
 

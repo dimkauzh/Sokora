@@ -46,7 +46,6 @@ async function collapse(
   cID: keyof typeof SupportedBots,
   interaction: ChatInputCommandInteraction,
   containerHelper: (...args: any) => Promise<ContainerBuilder>,
-  lurkr_api?: string,
 ) {
   const errorContainer = new ContainerBuilder().addTextDisplayComponents(
     new TextDisplayBuilder().setContent("# Something went wrong..."),
@@ -55,7 +54,7 @@ async function collapse(
         cID === "MEE6"
           ? "Open the leaderboard settings in the MEE6 dashboard and enable the option `Make my server's leaderboard public`. Otherwise we can't import data."
           : cID === "LURKR"
-            ? "Check that the API token you provided is correct. You provided `" + lurkr_api + "`."
+            ? "Check that the API token you provided is correct."
             : "We don't really know what went wrong. Maybe you should try again?",
         "You might as well check the error message shown below, it *might* explain better what's wrong.",
         "If after doing all of that Sokora keeps failing to import your data, please send the error message to Sokora's team so we can try to fix this.",
@@ -94,12 +93,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     if (buttons)
       container.addActionRowComponents(
-        new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId("botreturn")
-            .setLabel("Return to bot selection")
-            .setStyle(ButtonStyle.Primary),
-        ),
         new ActionRowBuilder<ButtonBuilder>().addComponents(
           new ButtonBuilder()
             .setCustomId("merge")
@@ -204,13 +197,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
           collector1.resetTimer({ time: 120000 });
           let content;
           switch (i1.customId) {
-            case "botreturn":
-              await safeReply({
-                interaction: i1,
-                replyOptions: { components: [container], flags: "IsComponentsV2" },
-              });
-              collector1.stop("bot_chosen");
-              break;
             case "check": {
               const levelData = safeStringify(levels);
               const checkContainer = new ContainerBuilder().addTextDisplayComponents(
@@ -297,8 +283,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           }
         });
 
-        collector1.on("end", async (_, reason) => {
-          if (reason === "bot_chosen") return;
+        collector1.on("end", async () => {
           try {
             await interaction.deleteReply();
           } catch (error) {
@@ -328,23 +313,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
-          if (modalInteraction.isModalSubmit()) {
-            try {
-              await doStuff(modalInteraction.fields.getTextInputValue("setting"));
-            } catch (error) {
-              await collapse(
-                error,
-                cID,
-                interaction,
-                containerHelper,
-                modalInteraction.fields.getTextInputValue("setting"),
-              );
-            }
+          if (!modalInteraction.isModalSubmit()) return;
+          try {
+            await doStuff(modalInteraction.fields.getTextInputValue("setting"));
+          } catch (error) {
+            return await collapse(error, cID, interaction, containerHelper);
           }
         });
       } else await doStuff();
     } catch (error) {
-      await collapse(error, cID, interaction, containerHelper);
+      return await collapse(error, cID, interaction, containerHelper);
     }
   });
 
