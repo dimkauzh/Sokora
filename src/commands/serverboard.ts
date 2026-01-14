@@ -2,11 +2,11 @@ import { deletePublicServer, listPublicServers } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
-  Guild,
   SlashCommandBuilder,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type Guild,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";

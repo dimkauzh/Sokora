@@ -66,9 +66,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setEmoji("⭐")
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
-      .setLabel("•  Donate through PayPal")
+      .setLabel("or through PayPal!")
       .setURL("https://paypal.me/SokoraTheBot")
-      .setEmoji("⭐")
       .setStyle(ButtonStyle.Link),
   );
 

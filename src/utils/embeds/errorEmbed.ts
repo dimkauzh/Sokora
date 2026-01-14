@@ -1,18 +1,19 @@
 import {
-  AnySelectMenuInteraction,
   AttachmentBuilder,
-  Client,
   ContainerBuilder,
   EmbedBuilder,
   FileBuilder,
-  InteractionResponse,
-  Message,
-  RGBTuple,
   SeparatorBuilder,
   TextDisplayBuilder,
   codeBlock,
+  type AnySelectMenuInteraction,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type Client,
+  type InteractionResponse,
+  type Message,
+  type ModalSubmitInteraction,
+  type RGBTuple,
 } from "discord.js";
 import { safeChannel, safeReply } from "utils/safeThings";
 import { colorize } from "../colorGen";
@@ -189,7 +190,7 @@ export async function errorEmbedCV2(options: {
 
 export async function buttonCheck(options: {
   i: ButtonInteraction | AnySelectMenuInteraction;
-  interaction: ChatInputCommandInteraction | ButtonInteraction;
+  interaction: ChatInputCommandInteraction | ButtonInteraction | ModalSubmitInteraction;
   reply: Message | InteractionResponse;
   cv2: boolean;
   noExecuteError?: boolean;

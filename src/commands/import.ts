@@ -5,22 +5,23 @@ import {
   ActionRowBuilder,
   AttachmentBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
-  ChatInputCommandInteraction,
   codeBlock,
   ContainerBuilder,
   FileBuilder,
   LabelBuilder,
   ModalBuilder,
   PermissionsBitField,
-  RGBTuple,
   SectionBuilder,
   SeparatorBuilder,
   SlashCommandBuilder,
   TextDisplayBuilder,
   TextInputBuilder,
   TextInputStyle,
+  type ButtonInteraction,
+  type ChatInputCommandInteraction,
+  type ModalSubmitInteraction,
+  type RGBTuple,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
 import { colorize } from "utils/colorGen";
@@ -47,6 +48,7 @@ async function collapse(
   interaction: ChatInputCommandInteraction,
   containerHelper: (...args: any) => Promise<ContainerBuilder>,
 ) {
+  await interaction.deleteReply();
   const errorContainer = new ContainerBuilder().addTextDisplayComponents(
     new TextDisplayBuilder().setContent("# Something went wrong..."),
     new TextDisplayBuilder().setContent(
@@ -160,7 +162,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     };
 
     try {
-      async function doStuff(lurkrKey?: string) {
+      async function doStuff(lurkrKey?: string, modalInteraction?: ModalSubmitInteraction) {
         const leveler = new Leveler({
           guild: interaction.guildId!,
           tatsu_api: process.env["TATSU_TOKEN"],
@@ -182,18 +184,22 @@ export async function run(interaction: ChatInputCommandInteraction) {
           ),
         );
 
+        const replyInteraction = modalInteraction ?? i;
         const reply1 = await safeReply({
-          interaction: i,
+          interaction: replyInteraction,
           editOptions: {
             components: [await containerHelper(container1, { buttons: true })],
             flags: "IsComponentsV2",
           },
         });
 
+        if (modalInteraction) await reply.delete();
         collector.stop("bot_chosen");
         const collector1 = reply1.createMessageComponentCollector({ time: 120000 });
         collector1.on("collect", async (i1: ButtonInteraction) => {
-          if (await buttonCheck({ i: i1, interaction: i, reply: reply1, cv2: true })) return;
+          if (await buttonCheck({ i: i1, interaction: replyInteraction, reply: reply1, cv2: true }))
+            return;
+
           collector1.resetTimer({ time: 120000 });
           let content;
           switch (i1.customId) {
@@ -313,12 +319,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         await i.showModal(modal);
         i.client.once("interactionCreate", async modalInteraction => {
-          if (modalInteraction.isModalSubmit())
-            try {
-              await doStuff(modalInteraction.fields.getTextInputValue("setting"));
-            } catch (error) {
-              return await collapse(error, cID, interaction, containerHelper);
-            }
+          if (!modalInteraction.isModalSubmit()) return;
+          try {
+            await doStuff(modalInteraction.fields.getTextInputValue("setting"), modalInteraction);
+          } catch (error) {
+            return await collapse(error, cID, interaction, containerHelper);
+          }
         });
       } else await doStuff();
     } catch (error) {

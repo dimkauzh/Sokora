@@ -14,7 +14,6 @@ import {
 } from "database/userSettings";
 import {
   ActionRowBuilder,
-  AnySelectMenuInteraction,
   ButtonBuilder,
   ButtonStyle,
   ChannelSelectMenuBuilder,
@@ -23,7 +22,6 @@ import {
   LabelBuilder,
   MessageActionRowComponentBuilder,
   ModalBuilder,
-  RGBTuple,
   RoleSelectMenuBuilder,
   SectionBuilder,
   SeparatorBuilder,
@@ -34,7 +32,9 @@ import {
   TextInputStyle,
   UserSelectMenuBuilder,
   codeBlock,
+  type AnySelectMenuInteraction,
   type ChatInputCommandInteraction,
+  type RGBTuple,
 } from "discord.js";
 import { easterEggNames } from "handlers/events";
 import { colorize } from "utils/colorGen";

@@ -9,12 +9,12 @@ import { TypeOfDefinition } from "database/types";
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  User,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type User,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
