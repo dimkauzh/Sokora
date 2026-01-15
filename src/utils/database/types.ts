@@ -49,3 +49,5 @@ export type SettingsDefinition = Record<
     >;
   }
 >;
+
+export type LevelReward = { id: string; level: number; channel: boolean };

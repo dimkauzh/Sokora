@@ -162,7 +162,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     };
 
     try {
-      async function doStuff(lurkrKey?: string, modalInteraction?: ModalSubmitInteraction) {
+      async function construct(lurkrKey?: string, modalInteraction?: ModalSubmitInteraction) {
         const leveler = new Leveler({
           guild: interaction.guildId!,
           tatsu_api: process.env["TATSU_TOKEN"],
@@ -321,12 +321,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
         i.client.once("interactionCreate", async modalInteraction => {
           if (!modalInteraction.isModalSubmit()) return;
           try {
-            await doStuff(modalInteraction.fields.getTextInputValue("setting"), modalInteraction);
+            await construct(modalInteraction.fields.getTextInputValue("setting"), modalInteraction);
           } catch (error) {
             return await collapse(error, cID, interaction, containerHelper);
           }
         });
-      } else await doStuff();
+      } else await construct();
     } catch (error) {
       return await collapse(error, cID, interaction, containerHelper);
     }

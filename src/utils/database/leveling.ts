@@ -2,7 +2,7 @@ import { kominator } from "utils/kominator";
 import { getDatabase } from ".";
 import { dekominator } from "../kominator";
 import { getSetting, setSetting } from "./settings";
-import { TableDefinition, TypeOfDefinition } from "./types";
+import { LevelReward, TableDefinition, TypeOfDefinition } from "./types";
 
 const tableDefinition = {
   name: "leveling",
@@ -65,12 +65,10 @@ export async function getXpForCurrentLevel(guildID: string, userID: string): Pro
   return formula(difficulty, calculateLevel({ difficulty, xp: getUserXp(guildID, userID) }));
 }
 
-type LevelReward = { id: string; level: number; channel: boolean };
-
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
-  const content = await getSetting(guildID, "leveling", "rewards");
-  if (!content || typeof content !== "string") return null;
-  return kominator(content).map(s => {
+  const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
+  if (!content) return null;
+  return content.map(s => {
     const channel = s.includes("#");
     const [level, id] = s.split(channel ? "#" : "@");
     return { level: Number(level), id, channel };
@@ -83,8 +81,9 @@ export async function addLevelRewards(guildID: string, rewards: LevelReward[]): 
   );
   const content = await getSetting(guildID, "leveling", "rewards");
   if (!content || typeof content !== "string")
-    setSetting(guildID, "leveling", "rewards", encodedRewards);
-  else setSetting(guildID, "leveling", "rewards", dekominator([...encodedRewards, ...content]));
+    return setSetting(guildID, "leveling", "rewards", encodedRewards);
+
+  return setSetting(guildID, "leveling", "rewards", dekominator([...encodedRewards, ...content]));
 }
 
 export async function removeLevelRewards(guildID: string, rewards: LevelReward[]): Promise<void> {
@@ -97,5 +96,5 @@ export async function removeLevelRewards(guildID: string, rewards: LevelReward[]
   for (const reward of kominator(content))
     if (!encodedRewards.includes(reward)) newRewards.push(reward);
 
-  setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
+  return setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
 }

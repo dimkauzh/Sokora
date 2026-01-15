@@ -1,3 +1,4 @@
+import { getLevelRewards } from "database/leveling";
 import {
   getSetting,
   getSettingCategory,
@@ -45,31 +46,42 @@ import { safeMember, safeReply } from "utils/safeThings";
 import { buttonCheck } from "./errorEmbed";
 
 async function construct(
-  settingsObj: Record<string, any>,
+  settingsObj: Record<string, any> | Record<string, any>[],
   settingComponent: SettingComponent,
   container: ContainerBuilder,
   resetMode: boolean,
+  itrObjectView?: boolean,
   cID?: string,
 ) {
-  for (const name of Object.keys(settingsObj)) {
-    const object = await settingComponent(name, resetMode);
-    if (!object) return;
-    const component = object.component;
+  async function constructLoop(obj: Record<string, any>) {
+    for (const name of Object.keys(obj)) {
+      const object = await settingComponent(name, resetMode);
+      if (!object) return;
+      const component = object.component;
 
-    if (object.data.id == cID && object.data.type == "reset") component.setDisabled(true);
-    if (component instanceof ButtonBuilder)
-      container.addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-          .setButtonAccessory(component as ButtonBuilder),
-      );
-    else
-      container
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-        .addActionRowComponents(
-          new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
+      if (object.data.id == cID && object.data.type == "reset") component.setDisabled(true);
+      if (component instanceof ButtonBuilder)
+        container.addSectionComponents(
+          new SectionBuilder()
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+            .setButtonAccessory(component as ButtonBuilder),
         );
+      else
+        container
+          .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+          .addActionRowComponents(
+            new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
+          );
+    }
   }
+
+  // todo: finish this up
+  if (!itrObjectView) return await constructLoop(settingsObj);
+  settingsObj.map(async (obj: Record<string, any>) => {
+    console.log(obj);
+    // this sucks btw jsyk i'll redo this like entirely
+    return await constructLoop(obj);
+  });
 }
 
 async function getSettingPlease(
@@ -112,10 +124,8 @@ type SettingComponent = (
 
 // basic, but gets the job done
 function isValueValid(value: string | undefined, type: FieldData): boolean {
-  if (!value) return false;
-  if (value.trim() == "") return false;
-  if (type == "INTEGER") if (isNaN(Number(value))) return false;
-  if (type == "TEXT") if (!isNaN(Number(value))) return false;
+  if (!value || value.trim() == "") return false;
+  if (type == "INTEGER" || type == "TEXT") if (isNaN(Number(value))) return false;
   return true;
 }
 
@@ -124,8 +134,9 @@ export async function settingsEmbed(
   table: "server" | "user",
 ) {
   const guild = interaction.guild;
+  if (!guild) return;
   const user = interaction.user;
-  const id = table == "server" ? guild!.id : user.id;
+  const id = table == "server" ? guild.id : user.id;
   const key = interaction.options.getSubcommand();
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
@@ -233,11 +244,16 @@ export async function settingsEmbed(
             ),
           );
         break;
+      case "REWARD":
+        data = { type: "reward", id: name };
+        component = new ButtonBuilder()
+          .setCustomId(data.id)
+          .setLabel("suffer")
+          .setStyle(ButtonStyle.Danger);
+
+        break;
       default:
-        data = {
-          type: settingObject.type == "INTEGER" ? "number" : "text",
-          id: name,
-        };
+        data = { type: settingObject.type == "INTEGER" ? "number" : "text", id: name };
         component = new ButtonBuilder()
           .setCustomId(data.id)
           .setLabel("Edit")
@@ -248,19 +264,19 @@ export async function settingsEmbed(
 
     if (
       (name == "server_invite" || name == "invite_channel") &&
-      (!(await safeMember(guild!, interaction.client.user.id))?.permissions.has(
+      (!(await safeMember(guild, interaction.client.user.id))?.permissions.has(
         "CreateInstantInvite",
       ) ||
-        !(await safeMember(guild!, interaction.client.user.id))?.permissions.has("ManageGuild"))
+        !(await safeMember(guild, interaction.client.user.id))?.permissions.has("ManageGuild"))
     ) {
-      resetSetting(guild!.id, "serverboard", "server_invite");
-      resetSetting(guild!.id, "serverboard", "invite_channel");
+      resetSetting(guild.id, "serverboard", "server_invite");
+      resetSetting(guild.id, "serverboard", "invite_channel");
       text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# The **Create Invite** and/or the **Manage Server** permissions are required for this setting to work.`;
       component.setDisabled(true);
     }
 
     if (table == "user") {
-      const dmChannel = await (await safeMember(guild!, id)).createDM();
+      const dmChannel = await (await safeMember(guild, id)).createDM();
       if (name == "remind" && (!dmChannel || !dmChannel.isSendable())) {
         await setUserSetting(id, "topgg", "remind", false);
         text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
@@ -324,7 +340,7 @@ export async function settingsEmbed(
   };
 
   const container = new ContainerBuilder().setAccentColor(color);
-  await construct(settingsObj, settingComponent, container, false);
+  await construct(settingsObj, settingComponent, container, false, false);
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
   if (table == "server") container.addActionRowComponents(await buttons(false, false));
   else
@@ -341,6 +357,7 @@ export async function settingsEmbed(
     if (await buttonCheck({ i, interaction, reply, cv2: true })) return;
     collector.resetTimer({ time: 60000 });
     const cID = i.customId;
+    const setting = await getSettingPlease(id, key, cID, table);
     let disableCategory = false;
 
     switch (cID) {
@@ -373,23 +390,39 @@ export async function settingsEmbed(
         settingName = cID;
         break;
       case "bool":
-        await setSettingPlease(id, key, cID, !(await getSettingPlease(id, key, cID, table)), table);
+        await setSettingPlease(id, key, cID, !setting, table);
         break;
+      case "reward": {
+        console.log(setting);
+        const rewardContainer = new ContainerBuilder().addTextDisplayComponents(
+          new TextDisplayBuilder().setContent("ball"),
+        );
+        await construct(
+          (await getLevelRewards(guild.id))!,
+          settingComponent,
+          rewardContainer,
+          false,
+          true,
+        );
+        break;
+      }
       case "number":
       case "text": {
         const modal = new ModalBuilder()
           .setCustomId(cID)
           .setTitle(`•  ${humanizeSettings(cID)}`)
           .addLabelComponents(
-            new LabelBuilder().setLabel("Value").setTextInputComponent(
-              new TextInputBuilder()
-                .setCustomId("setting")
-                .setPlaceholder("Type in the value")
-                .setMaxLength(4000)
-                .setStyle(TextInputStyle.Paragraph)
-                .setRequired(true)
-                .setValue(`${await getSettingPlease(id, key, cID, table)}`),
-            ),
+            new LabelBuilder()
+              .setLabel("Value")
+              .setTextInputComponent(
+                new TextInputBuilder()
+                  .setCustomId("setting")
+                  .setPlaceholder("Type in the value")
+                  .setMaxLength(4000)
+                  .setStyle(TextInputStyle.Paragraph)
+                  .setRequired(true)
+                  .setValue(`${setting}`),
+              ),
           );
 
         await i.showModal(modal);
@@ -436,7 +469,7 @@ export async function settingsEmbed(
     }
 
     const newContainer = new ContainerBuilder().setAccentColor(color);
-    await construct(settingsObj, settingComponent, newContainer, reset || confirm, cID);
+    await construct(settingsObj, settingComponent, newContainer, reset || confirm, false, cID);
     newContainer.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
     if (table == "server")
       newContainer.addActionRowComponents(await buttons(reset, confirm, disableCategory));

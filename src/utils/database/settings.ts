@@ -55,7 +55,7 @@ export const settingsDefinition: SettingsDefinition = {
       rewards: {
         type: "REWARD",
         desc: "Set roles and channels to be granted to users who reach specific levels.",
-        val: "20@1455907681465405574",
+        iterable: true,
         emoji: "🌟",
       },
     },
