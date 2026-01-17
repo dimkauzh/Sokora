@@ -7,7 +7,7 @@ import {
   setSetting,
   settingsDefinition,
 } from "database/settings";
-import { FieldData } from "database/types";
+import { FieldData, LevelReward } from "database/types";
 import {
   getUserSetting,
   setUserSetting,
@@ -42,6 +42,7 @@ import { colorize } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
+import { mention } from "utils/mention";
 import { safeMember, safeReply } from "utils/safeThings";
 import { buttonCheck } from "./errorEmbed";
 
@@ -53,35 +54,33 @@ async function construct(
   itrObjectView?: boolean,
   cID?: string,
 ) {
-  async function constructLoop(obj: Record<string, any>) {
-    for (const name of Object.keys(obj)) {
-      const object = await settingComponent(name, resetMode);
-      if (!object) return;
-      const component = object.component;
+  async function constructLoop(object: Help) {
+    if (!object) return;
+    const component = object.component;
 
-      if (object.data.id == cID && object.data.type == "reset") component.setDisabled(true);
-      if (component instanceof ButtonBuilder)
-        container.addSectionComponents(
-          new SectionBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-            .setButtonAccessory(component as ButtonBuilder),
-        );
-      else
-        container
+    if (object.data.id == cID && object.data.type == "reset") component.setDisabled(true);
+    if (component instanceof ButtonBuilder)
+      container.addSectionComponents(
+        new SectionBuilder()
           .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-          .addActionRowComponents(
-            new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
-          );
-    }
+          .setButtonAccessory(component as ButtonBuilder),
+      );
+    else
+      container
+        .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+        .addActionRowComponents(
+          new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
+        );
   }
 
-  // todo: finish this up
-  if (!itrObjectView) return await constructLoop(settingsObj);
-  settingsObj.map(async (obj: Record<string, any>) => {
-    console.log(obj);
-    // this sucks btw jsyk i'll redo this like entirely
-    return await constructLoop(obj);
-  });
+  if (!itrObjectView)
+    for (const name of Object.keys(settingsObj))
+      await constructLoop(await settingComponent(name, resetMode));
+  else
+    settingsObj.map(
+      async (obj: LevelReward) =>
+        await constructLoop(await settingComponent(`lvl${obj.level}`, resetMode, true)),
+    );
 }
 
 async function getSettingPlease(
@@ -105,10 +104,7 @@ async function setSettingPlease(
   else return await setUserSetting(id, key, setting, value);
 }
 
-type SettingComponent = (
-  name: string,
-  reset: boolean,
-) => Promise<
+type Help =
   | {
       text: string;
       data: { type: string; id: string };
@@ -119,8 +115,9 @@ type SettingComponent = (
         | RoleSelectMenuBuilder
         | StringSelectMenuBuilder;
     }
-  | undefined
->;
+  | undefined;
+
+type SettingComponent = (name: string, reset: boolean, itrObjectView?: boolean) => Promise<Help>;
 
 // basic, but gets the job done
 function isValueValid(value: string | undefined, type: FieldData): boolean {
@@ -148,7 +145,11 @@ export async function settingsEmbed(
   let confirm = false;
   let resetCategory = false;
 
-  const settingComponent: SettingComponent = async (name: string, reset: boolean) => {
+  const settingComponent: SettingComponent = async (
+    name: string,
+    reset: boolean,
+    itrObjectView?: boolean,
+  ) => {
     if (resetButtons.includes(name)) return;
     let data: { type: string; id: string };
     let component:
@@ -158,10 +159,28 @@ export async function settingsEmbed(
       | RoleSelectMenuBuilder
       | StringSelectMenuBuilder;
 
+    let text: string;
+    if (itrObjectView) {
+      const reward = (await getLevelRewards(guild.id))?.find(r =>
+        name.includes(r.level.toString()),
+      );
+      if (reward)
+        text = `Level **${reward?.level}**\n-# Rewards • ${mention(reward?.id, reward?.channel ? "CHANNEL" : "ROLE")}`;
+      else text = "uh oh!";
+
+      data = { type: "lvl", id: name };
+      component = new ButtonBuilder()
+        .setCustomId(data.id)
+        .setLabel("Edit")
+        .setStyle(ButtonStyle.Secondary);
+
+      return { text, data, component };
+    }
+
     const setting = await getSettingPlease(id, key, name, table);
     const settingObject = settingsObj[name];
     const maxValues = settingObject.iterable ? 25 : 1;
-    let text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
+    text = `${dotCheck({ string: settingObject.emoji, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
 
     if (reset) {
       data = { type: "reset", id: name };
@@ -392,20 +411,10 @@ export async function settingsEmbed(
       case "bool":
         await setSettingPlease(id, key, cID, !setting, table);
         break;
-      case "reward": {
-        console.log(setting);
-        const rewardContainer = new ContainerBuilder().addTextDisplayComponents(
-          new TextDisplayBuilder().setContent("ball"),
-        );
-        await construct(
-          (await getLevelRewards(guild.id))!,
-          settingComponent,
-          rewardContainer,
-          false,
-          true,
-        );
+      case "reward":
         break;
-      }
+      case "lvl":
+        break;
       case "number":
       case "text": {
         const modal = new ModalBuilder()
@@ -469,7 +478,15 @@ export async function settingsEmbed(
     }
 
     const newContainer = new ContainerBuilder().setAccentColor(color);
-    await construct(settingsObj, settingComponent, newContainer, reset || confirm, false, cID);
+    const rewardCheck = (await settingComponent(cID, reset || confirm))?.data.type == "reward";
+    await construct(
+      rewardCheck ? (await getLevelRewards(guild.id))! : settingsObj,
+      settingComponent,
+      newContainer,
+      reset || confirm,
+      rewardCheck ? true : false,
+      cID,
+    );
     newContainer.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
     if (table == "server")
       newContainer.addActionRowComponents(await buttons(reset, confirm, disableCategory));

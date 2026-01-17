@@ -1,4 +1,3 @@
-import { kominator } from "utils/kominator";
 import { getDatabase } from ".";
 import { dekominator } from "../kominator";
 import { getSetting, setSetting } from "./settings";
@@ -66,7 +65,7 @@ export async function getXpForCurrentLevel(guildID: string, userID: string): Pro
 }
 
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
-  const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
+  const content = ["20#1408912300634542100"];
   if (!content) return null;
   return content.map(s => {
     const channel = s.includes("#");
@@ -79,9 +78,8 @@ export async function addLevelRewards(guildID: string, rewards: LevelReward[]): 
   const encodedRewards = dekominator(
     rewards.map(reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`),
   );
-  const content = await getSetting(guildID, "leveling", "rewards");
-  if (!content || typeof content !== "string")
-    return setSetting(guildID, "leveling", "rewards", encodedRewards);
+  const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
+  if (!content) return setSetting(guildID, "leveling", "rewards", encodedRewards);
 
   return setSetting(guildID, "leveling", "rewards", dekominator([...encodedRewards, ...content]));
 }
@@ -90,11 +88,10 @@ export async function removeLevelRewards(guildID: string, rewards: LevelReward[]
   const encodedRewards = rewards.map(
     reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`,
   );
-  const content = await getSetting(guildID, "leveling", "rewards");
-  if (!content || typeof content !== "string") return;
+  const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
+  if (!content) return;
   const newRewards = [];
-  for (const reward of kominator(content))
-    if (!encodedRewards.includes(reward)) newRewards.push(reward);
+  for (const reward of content) if (!encodedRewards.includes(reward)) newRewards.push(reward);
 
   return setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
 }
