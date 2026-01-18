@@ -379,6 +379,31 @@ export async function settingsEmbed(
     const cID = i.customId;
     let disableCategory = false;
 
+    async function end(reset: boolean, confirm: boolean) {
+      const newContainer = new ContainerBuilder().setAccentColor(color);
+      const rewardCheck = (await settingComponent(cID, reset || confirm))?.data.type == "reward";
+      await construct(
+        rewardCheck ? (await getLevelRewards(guild!.id))! : settingsObj,
+        settingComponent,
+        newContainer,
+        reset || confirm,
+        rewardCheck ? true : false,
+        cID,
+      );
+      newContainer.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+      if (table == "server")
+        newContainer.addActionRowComponents(await buttons(reset, confirm, disableCategory));
+      else
+        newContainer.addTextDisplayComponents(
+          new TextDisplayBuilder().setContent(settingsDef.description),
+        );
+
+      return await safeReply({
+        interaction: i,
+        editOptions: { components: [newContainer], flags: "IsComponentsV2" },
+      });
+    }
+
     switch (cID) {
       case "reset_start":
         reset = true;
@@ -468,6 +493,7 @@ export async function settingsEmbed(
               flags: ["Ephemeral", "IsComponentsV2"],
             },
           });
+          await end(reset, confirm);
         });
         break;
       }
@@ -476,28 +502,11 @@ export async function settingsEmbed(
         break;
     }
 
-    const newContainer = new ContainerBuilder().setAccentColor(color);
-    const rewardCheck = (await settingComponent(cID, reset || confirm))?.data.type == "reward";
-    await construct(
-      rewardCheck ? (await getLevelRewards(guild.id))! : settingsObj,
-      settingComponent,
-      newContainer,
-      reset || confirm,
-      rewardCheck ? true : false,
-      cID,
-    );
-    newContainer.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
-    if (table == "server")
-      newContainer.addActionRowComponents(await buttons(reset, confirm, disableCategory));
-    else
-      newContainer.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(settingsDef.description),
-      );
-
-    await safeReply({
-      interaction: i,
-      editOptions: { components: [newContainer], flags: "IsComponentsV2" },
-    });
+    if (
+      (await settingComponent(cID, reset || confirm))?.data.type != "text" ||
+      (await settingComponent(cID, reset || confirm))?.data.type != "number"
+    )
+      await end(reset, confirm);
   });
 
   collector.on("end", async () => {
