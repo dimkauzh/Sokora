@@ -189,6 +189,9 @@ export async function settingsEmbed(
         .setLabel("Reset")
         .setStyle(ButtonStyle.Danger);
 
+      if (settingObject.val == setting || settingObject.type == "REWARD")
+        component.setDisabled(true);
+
       return { text, data, component };
     }
 
@@ -307,13 +310,15 @@ export async function settingsEmbed(
   };
 
   const buttons = async (reset: boolean, confirm: boolean, disableCategory?: boolean) => {
+    const category = new ButtonBuilder()
+      .setCustomId("reset_category")
+      .setLabel("Reset category")
+      .setStyle(ButtonStyle.Danger);
+
     if (reset)
       return [
         new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId("reset_category")
-            .setLabel("Reset category")
-            .setStyle(ButtonStyle.Danger),
+          category,
           new ButtonBuilder()
             .setCustomId("cancel")
             .setLabel("Cancel")
@@ -325,11 +330,7 @@ export async function settingsEmbed(
     if (confirm)
       return [
         new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId("reset_category")
-            .setLabel("Reset category")
-            .setStyle(ButtonStyle.Danger)
-            .setDisabled(disableCategory),
+          category.setDisabled(disableCategory),
           new ButtonBuilder().setCustomId("yes").setLabel("Yes").setStyle(ButtonStyle.Secondary),
           new ButtonBuilder().setCustomId("cancel").setLabel("No").setStyle(ButtonStyle.Primary),
         ),
@@ -376,7 +377,6 @@ export async function settingsEmbed(
     if (await buttonCheck({ i, interaction, reply, cv2: true })) return;
     collector.resetTimer({ time: 60000 });
     const cID = i.customId;
-    const setting = await getSettingPlease(id, key, cID, table);
     let disableCategory = false;
 
     switch (cID) {
@@ -409,7 +409,7 @@ export async function settingsEmbed(
         settingName = cID;
         break;
       case "bool":
-        await setSettingPlease(id, key, cID, !setting, table);
+        await setSettingPlease(id, key, cID, !(await getSettingPlease(id, key, cID, table)), table);
         break;
       case "reward":
         break;
@@ -417,21 +417,20 @@ export async function settingsEmbed(
         break;
       case "number":
       case "text": {
+        // todo: make the first container update... LIVE.
         const modal = new ModalBuilder()
           .setCustomId(cID)
           .setTitle(`•  ${humanizeSettings(cID)}`)
           .addLabelComponents(
-            new LabelBuilder()
-              .setLabel("Value")
-              .setTextInputComponent(
-                new TextInputBuilder()
-                  .setCustomId("setting")
-                  .setPlaceholder("Type in the value")
-                  .setMaxLength(4000)
-                  .setStyle(TextInputStyle.Paragraph)
-                  .setRequired(true)
-                  .setValue(`${setting}`),
-              ),
+            new LabelBuilder().setLabel("Value").setTextInputComponent(
+              new TextInputBuilder()
+                .setCustomId("setting")
+                .setPlaceholder("Type in the value")
+                .setMaxLength(4000)
+                .setStyle(TextInputStyle.Paragraph)
+                .setRequired(true)
+                .setValue(`${await getSettingPlease(id, key, cID, table)}`),
+            ),
           );
 
         await i.showModal(modal);
