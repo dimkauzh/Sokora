@@ -65,7 +65,7 @@ export async function getXpForCurrentLevel(guildID: string, userID: string): Pro
 }
 
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
-  const content = ["20#1408912300634542100"];
+  const content = ["20#1408912300634542100", "5#1343140645132308532"];
   if (!content) return null;
   return content.map(s => {
     const channel = s.includes("#");

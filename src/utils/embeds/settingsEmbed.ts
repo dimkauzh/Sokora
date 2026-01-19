@@ -7,7 +7,7 @@ import {
   setSetting,
   settingsDefinition,
 } from "database/settings";
-import { FieldData, LevelReward } from "database/types";
+import { FieldData } from "database/types";
 import {
   getUserSetting,
   setUserSetting,
@@ -77,10 +77,10 @@ async function construct(
     for (const name of Object.keys(settingsObj))
       await constructLoop(await settingComponent(name, resetMode));
   else
-    settingsObj.map(
-      async (obj: LevelReward) =>
-        await constructLoop(await settingComponent(`lvl${obj.level}`, resetMode, true)),
-    );
+    for (const obj of settingsObj as Record<string, any>[])
+      await constructLoop(await settingComponent(`lvl${obj.level}`, resetMode, true));
+
+  return container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
 }
 
 async function getSettingPlease(
@@ -214,8 +214,6 @@ export async function settingsEmbed(
             ChannelType.GuildStageVoice,
             ChannelType.GuildText,
             ChannelType.GuildVoice,
-            ChannelType.PublicThread,
-            ChannelType.PrivateThread,
           ]);
 
         if (setting) component.setDefaultChannels(kominator(setting as string));
@@ -361,7 +359,6 @@ export async function settingsEmbed(
 
   const container = new ContainerBuilder().setAccentColor(color);
   await construct(settingsObj, settingComponent, container, false, false);
-  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
   if (table == "server") container.addActionRowComponents(await buttons(false, false));
   else
     container.addTextDisplayComponents(
@@ -390,7 +387,6 @@ export async function settingsEmbed(
         rewardCheck ? true : false,
         cID,
       );
-      newContainer.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
       if (table == "server")
         newContainer.addActionRowComponents(await buttons(reset, confirm, disableCategory));
       else
@@ -442,7 +438,6 @@ export async function settingsEmbed(
         break;
       case "number":
       case "text": {
-        // todo: make the first container update... LIVE.
         const modal = new ModalBuilder()
           .setCustomId(cID)
           .setTitle(`•  ${humanizeSettings(cID)}`)
