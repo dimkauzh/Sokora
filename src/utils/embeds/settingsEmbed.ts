@@ -399,7 +399,9 @@ export async function settingsEmbed(
     async function end(reset: boolean, confirm: boolean, itrObjectView: boolean) {
       const newContainer = new ContainerBuilder().setAccentColor(color);
       await construct(
-        itrObjectView ? (await getLevelRewards(id))! : settingsObj,
+        itrObjectView
+          ? (await getLevelRewards(id))!.sort((reward1, reward2) => reward1.level - reward2.level)
+          : settingsObj,
         settingComponent,
         newContainer,
         reset || confirm,
