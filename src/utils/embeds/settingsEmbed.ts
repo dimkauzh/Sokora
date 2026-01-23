@@ -59,7 +59,7 @@ async function construct(
       .addActionRowComponents(
         new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
           new ButtonBuilder()
-            .setCustomId("objreturn")
+            .setCustomId("return")
             .setLabel("Return")
             .setStyle(ButtonStyle.Secondary),
         ),
@@ -92,7 +92,7 @@ async function construct(
     for (const obj of settingsObj as Record<string, any>[])
       await constructLoop(await settingComponent(`lvl${obj.level}`, resetMode, true));
 
-  return container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+  return container.addSeparatorComponents(new SeparatorBuilder().setDivider(false));
 }
 
 async function getSettingPlease(
@@ -158,6 +158,7 @@ export async function settingsEmbed(
   let resetCategory = false;
   let disableCategory = false;
   let itrObjectView = false;
+  let editView = false;
 
   const settingComponent: SettingComponent = async (
     name: string,
@@ -471,6 +472,7 @@ export async function settingsEmbed(
         itrObjectView = false;
         break;
       case "add":
+        editView = true;
         break;
     }
 
