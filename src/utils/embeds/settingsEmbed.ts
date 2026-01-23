@@ -54,6 +54,18 @@ async function construct(
   itrObjectView?: boolean,
   cID?: string,
 ) {
+  if (itrObjectView)
+    container
+      .addActionRowComponents(
+        new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId("objreturn")
+            .setLabel("Return")
+            .setStyle(ButtonStyle.Secondary),
+        ),
+      )
+      .addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+
   async function constructLoop(object: Help) {
     if (!object) return;
     const component = object.component;
@@ -137,7 +149,7 @@ export async function settingsEmbed(
   const key = interaction.options.getSubcommand();
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const settingsObj = settingsDef.settings;
-  const resetButtons = ["reset_start", "reset_category", "cancel", "yes", "no"];
+  const exemptButtons = ["reset_start", "reset_category", "cancel", "yes", "no", "return", "add"];
   const eventNames = ["messageUpdate", "messageDelete"];
   const color = (await colorize({ hue: 200, cv2: true })) as RGBTuple;
   let settingName = "";
@@ -152,7 +164,7 @@ export async function settingsEmbed(
     reset: boolean,
     itrObjectView?: boolean,
   ) => {
-    if (resetButtons.includes(name) || resetButtons.map(name => `obj${name}`).includes(name))
+    if (exemptButtons.includes(name) || exemptButtons.map(name => `obj${name}`).includes(name))
       return;
 
     let data: { type: string; id: string };
@@ -354,7 +366,7 @@ export async function settingsEmbed(
       ];
     }
 
-    const topbarArray = [
+    const buttonArray = [
       new ButtonBuilder()
         .setCustomId("desc")
         .setLabel(itrObjectView ? settingsObj["rewards"].desc : settingsDef.description)
@@ -364,18 +376,28 @@ export async function settingsEmbed(
 
     const actual = (await getSettingCategory(id, key)).map(setting => setting ?? null);
     const defaults = Object.values(settingsObj).map(setting => setting.val ?? null);
-    let nullCheck: boolean = !actual.every(value => value == defaults[actual.indexOf(value)]);
+    const nullCheck = itrObjectView
+      ? !(await getLevelRewards(id))?.every(value => value == null)
+      : !actual.every(value => value == defaults[actual.indexOf(value)]);
 
-    if (itrObjectView) nullCheck = !(await getLevelRewards(id))?.every(value => value == null);
     if (nullCheck)
-      topbarArray.unshift(
+      buttonArray.unshift(
         new ButtonBuilder()
           .setCustomId(itrObjectIdify("reset_start"))
           .setLabel(itrObjectView ? "Delete" : "Reset")
           .setStyle(ButtonStyle.Danger),
       );
 
-    return [actionRow.addComponents(topbarArray)];
+    if (itrObjectView) {
+      buttonArray.unshift(
+        new ButtonBuilder()
+          .setCustomId(itrObjectIdify("add"))
+          .setLabel("Add")
+          .setStyle(ButtonStyle.Success),
+      );
+    }
+
+    return [actionRow.addComponents(buttonArray)];
   };
 
   const container = new ContainerBuilder().setAccentColor(color);
@@ -444,6 +466,11 @@ export async function settingsEmbed(
       case "cancel":
         reset = false;
         confirm = false;
+        break;
+      case "return":
+        itrObjectView = false;
+        break;
+      case "add":
         break;
     }
 
