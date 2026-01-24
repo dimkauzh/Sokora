@@ -21,7 +21,7 @@
         "@typescript-eslint/parser": "^8.53.1",
         "bun-types": "^1.3.6",
         "eslint": "^9.39.2",
-        "prettier": "^3.8.0",
+        "prettier": "^3.8.1",
         "typescript": "^5.9.3",
         "typescript-eslint": "^8.53.1",
       },
@@ -64,7 +64,7 @@
 
     "@fastify/busboy": ["@fastify/busboy@2.1.1", "", {}, "sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA=="],
 
-    "@hokkiai/djs-level-importer": ["@hokkiai/djs-level-importer@1.1.1", "", { "dependencies": { "tatsu": "latest" } }, "sha512-WLXqK3k899bVeOP9shGWhvVX73XrSPq8I7RGINDL5R33hlNjNhOOX69GpZ+DDIqqnPGBrAqZyY16+VRFlh0VkA=="],
+    "@hokkiai/djs-level-importer": ["@hokkiai/djs-level-importer@1.2.0", "", { "dependencies": { "tatsu": "latest" } }, "sha512-LWEWFHHPaiLa8l0Y8KocnQ9fpLDi/YMDpuLiObatntRnuNaXaI2PMPaVZzKyY3fNuXyvbS8huvcDQEHkcgpu9w=="],
 
     "@humanfs/core": ["@humanfs/core@0.19.1", "", {}, "sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA=="],
 

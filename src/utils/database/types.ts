@@ -8,6 +8,7 @@ export type FieldData =
   | "ROLE"
   | "LOG"
   | "EGG"
+  | "OBJECT"
   | "REWARD";
 
 export type TableDefinition = {
@@ -25,6 +26,7 @@ export type SqlType<T extends FieldData> = {
   ROLE: string;
   LOG: string;
   EGG: string;
+  OBJECT: string;
   REWARD: string;
 }[T];
 
@@ -32,21 +34,24 @@ export type TypeOfDefinition<T extends TableDefinition> = {
   [K in keyof T["definition"]]: SqlType<T["definition"][K]>;
 };
 
+export type SingleSettingDefinition = {
+  type: FieldData;
+  desc: string;
+  val?: any;
+  iterable?: boolean;
+  selectMenu?: boolean;
+  emoji?: string;
+  settings?: Record<
+    string,
+    SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
+  >;
+};
+
 export type SettingsDefinition = Record<
   string,
   {
     description: string;
-    settings: Record<
-      string,
-      {
-        type: FieldData;
-        desc: string;
-        val?: any;
-        iterable?: boolean;
-        selectMenu?: boolean;
-        emoji?: string;
-      }
-    >;
+    settings: Record<string, SingleSettingDefinition>;
   }
 >;
 

@@ -63,7 +63,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     new ButtonBuilder()
       .setLabel("•  Donate through Ko-Fi")
       .setURL("https://ko-fi.com/sokoradesu")
-      .setEmoji("⭐")
+      .setEmoji("☕")
       .setStyle(ButtonStyle.Link),
     new ButtonBuilder()
       .setLabel("or through PayPal!")
