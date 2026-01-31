@@ -52,17 +52,17 @@ async function construct(
   settingComponent: SettingComponent,
   container: ContainerBuilder,
   resetMode: boolean,
-  editView?: boolean,
+  objView?: boolean,
   itrObjectView?: boolean,
   cID?: string,
 ) {
-  if (editView || itrObjectView)
+  if (objView || itrObjectView)
     container
       .addActionRowComponents(
         new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
           new ButtonBuilder()
-            .setCustomId(editView ? "cancel" : "return")
-            .setLabel(editView ? "Cancel" : "Return")
+            .setCustomId(objView ? "cancel" : "return")
+            .setLabel(objView ? "Cancel" : "Return")
             .setStyle(ButtonStyle.Secondary),
         ),
       )
@@ -136,6 +136,7 @@ type SettingComponent = (
   settingsObj: Record<string, SingleSettingDefinition> | Record<string, SingleSettingDefinition>[],
   name: string,
   reset: boolean,
+  objView?: boolean,
   itrObjectView?: boolean,
 ) => Promise<Help>;
 
@@ -174,25 +175,33 @@ export async function settingsEmbed(
       | Record<string, SingleSettingDefinition>[],
     name: string,
     reset: boolean,
+    objView?: boolean,
     itrObjectView?: boolean,
   ) => {
     if (exemptButtons.includes(name) || exemptButtons.map(name => `obj${name}`).includes(name))
       return;
 
-    let data: { type: string; id: string };
+    const settingObject =
+      typeof settingsObj === "object"
+        ? (settingsObj as Record<string, SingleSettingDefinition>)[name]
+        : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!;
+
+    let data: { type: string; id: string } = { type: settingObject.type as string, id: name };
     let component:
       | ButtonBuilder
       | ChannelSelectMenuBuilder
       | UserSelectMenuBuilder
       | RoleSelectMenuBuilder
       | StringSelectMenuBuilder
-      | MentionableSelectMenuBuilder;
+      | MentionableSelectMenuBuilder = new ButtonBuilder()
+      .setCustomId(data.id)
+      .setLabel("Edit")
+      .setStyle(ButtonStyle.Secondary);
 
     let text: string;
     const resetObj = (text: string, itrObject?: boolean) => {
       data = { type: "reset", id: name };
-      component = new ButtonBuilder()
-        .setCustomId(data.id)
+      component = (component as ButtonBuilder)
         .setLabel(itrObject ? "Delete" : "Reset")
         .setStyle(ButtonStyle.Danger);
 
@@ -205,42 +214,28 @@ export async function settingsEmbed(
 
     if (itrObjectView) {
       const reward = (await getLevelRewards(id))?.find(r => name.includes(r.level.toString()));
-      if (reward)
-        text = `Level **${reward?.level}**\n-# Rewards • ${mention(reward?.id, reward?.channel ? "CHANNEL" : "ROLE")}`;
-      else text = "uh oh!";
-
+      if (!reward) return;
+      text = `Level **${reward?.level}**\n-# Rewards • ${mention(reward?.id, reward?.channel ? "CHANNEL" : "ROLE")}`;
       data = { type: "lvl", id: name };
-      component = new ButtonBuilder()
-        .setCustomId(data.id)
-        .setLabel("Edit")
-        .setStyle(ButtonStyle.Secondary);
 
       if (reset) return resetObj(text, true);
       return { text, data, component };
     }
 
-    // todo: figure out what to do with this thing erroring
+    // todo: make this support objView (currently outputs an error)
     const setting = await getSettingPlease(id, key, name, table);
-    const settingObject =
-      typeof settingsObj === "object"
-        ? (settingsObj as Record<string, SingleSettingDefinition>)[name]
-        : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!;
-
     const maxValues = settingObject.iterable ? 25 : 1;
     text = `${dotCheck({ string: settingObject.emoji as string, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
     if (reset) return resetObj(text, false);
 
     switch (settingObject.type) {
       case "BOOL":
-        data = { type: "bool", id: name };
-        component = new ButtonBuilder()
-          .setCustomId(data.id)
+        component = component
           .setLabel(humanizeSettings(setting?.toString() ?? "Not set"))
           .setStyle(setting ? ButtonStyle.Success : ButtonStyle.Danger);
 
         break;
       case "CHANNEL":
-        data = { type: "channel", id: name };
         component = new ChannelSelectMenuBuilder()
           .setCustomId(data.id)
           .setMaxValues(maxValues)
@@ -254,7 +249,6 @@ export async function settingsEmbed(
         if (setting) component.setDefaultChannels(kominator(setting as string));
         break;
       case "USER":
-        data = { type: "user", id: name };
         component = new UserSelectMenuBuilder()
           .setCustomId(data.id)
           .setMaxValues(maxValues)
@@ -263,7 +257,6 @@ export async function settingsEmbed(
         if (setting) component.setDefaultUsers(kominator(setting as string));
         break;
       case "ROLE":
-        data = { type: "role", id: name };
         component = new RoleSelectMenuBuilder()
           .setCustomId(data.id)
           .setMaxValues(maxValues)
@@ -272,7 +265,6 @@ export async function settingsEmbed(
         if (setting) component.setDefaultRoles(kominator(setting as string));
         break;
       case "LOG":
-        data = { type: "log", id: name };
         component = new StringSelectMenuBuilder()
           .setCustomId(data.id)
           .setMaxValues(eventNames.length)
@@ -286,7 +278,6 @@ export async function settingsEmbed(
           );
         break;
       case "EGG":
-        data = { type: "egg", id: name };
         component = new StringSelectMenuBuilder()
           .setCustomId(data.id)
           .setMaxValues(easterEggNames.length)
@@ -300,24 +291,12 @@ export async function settingsEmbed(
           );
         break;
       case "OBJECT":
-        data = { type: "object", id: name };
-        component = new ButtonBuilder()
-          .setCustomId(data.id)
-          .setLabel("suffer")
-          .setStyle(ButtonStyle.Danger);
-
+        component = component.setLabel("suffer").setStyle(ButtonStyle.Danger);
         break;
       case "REWARD":
-        data = { type: "reward", id: name };
         component = new MentionableSelectMenuBuilder().setCustomId(data.id);
         break;
       default:
-        data = { type: settingObject.type == "INTEGER" ? "number" : "text", id: name };
-        component = new ButtonBuilder()
-          .setCustomId(data.id)
-          .setLabel("Edit")
-          .setStyle(ButtonStyle.Secondary);
-
         break;
     }
 
@@ -512,7 +491,7 @@ export async function settingsEmbed(
         break;
     }
 
-    switch ((await settingComponent(settingsObj, cID, reset || confirm))?.data.type) {
+    switch ((await settingComponent(settingsObj, cID, reset || confirm))?.data.type.toLowerCase()) {
       case "reset":
         reset = false;
         confirm = true;
@@ -528,7 +507,7 @@ export async function settingsEmbed(
         itrObjectView = false;
         editView = true;
         break;
-      case "number":
+      case "integer":
       case "text": {
         const modal = new ModalBuilder()
           .setCustomId(cID)
@@ -591,7 +570,7 @@ export async function settingsEmbed(
 
     if (
       (await settingComponent(settingsObj, cID, reset || confirm))?.data.type != "text" ||
-      (await settingComponent(settingsObj, cID, reset || confirm))?.data.type != "number"
+      (await settingComponent(settingsObj, cID, reset || confirm))?.data.type != "integer"
     )
       await end(reset, confirm, editView, itrObjectView);
   });
