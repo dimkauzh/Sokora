@@ -1,17 +1,17 @@
 export type FieldData =
   | "TEXT"
-  | "TEXT?"
+  | "mTEXT"
   | "INTEGER"
-  | "INTEGER?"
+  | "mINTEGER"
   | "BOOL"
   | "TIMESTAMP"
-  | "TIMESTAMP?"
+  | "mTIMESTAMP"
   | "CHANNEL"
-  | "CHANNEL?"
+  | "mCHANNEL"
   | "USER"
-  | "USER?"
+  | "mUSER"
   | "ROLE"
-  | "ROLE?"
+  | "mROLE"
   | "LOG"
   | "EGG"
   | "OBJECT"
@@ -27,17 +27,17 @@ type Maybe<T> = T | null;
 export type SqlType<T extends FieldData> = {
   BOOL: boolean;
   INTEGER: number;
-  "INTEGER?": Maybe<number>;
+  mINTEGER: Maybe<number>;
   TEXT: string;
-  "TEXT?": Maybe<string>;
+  mTEXT: Maybe<string>;
   TIMESTAMP: number;
-  "TIMESTAMP?": Maybe<number>;
+  mTIMESTAMP: Maybe<number>;
   CHANNEL: string;
-  "CHANNEL?": Maybe<string>;
+  mCHANNEL: Maybe<string>;
   USER: string;
-  "USER?": Maybe<string>;
+  mUSER: Maybe<string>;
   ROLE: string;
-  "ROLE?": Maybe<string>;
+  mROLE: Maybe<string>;
   LOG: string;
   EGG: string;
   OBJECT: string;

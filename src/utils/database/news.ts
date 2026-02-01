@@ -10,9 +10,9 @@ const definition = {
     author: "TEXT",
     authorPFP: "TEXT",
     createdAt: "TIMESTAMP",
-    updatedAt: "TIMESTAMP?",
+    updatedAt: "mTIMESTAMP",
     messageID: "TEXT",
-    imageURL: "TEXT?",
+    imageURL: "mTEXT",
     id: "TEXT",
   },
 } satisfies TableDefinition;
