@@ -40,7 +40,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   if (page > sortedNews.length) page = sortedNews.length;
-  if (page < 1) page = 1;
+  if (page <= 1) page = 1;
 
   async function getEmbed() {
     const currentNews = sortedNews[page - 1];
@@ -76,7 +76,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     components: sortedNews.length > 1 ? [row] : [],
   });
 
-  if (page < 1) return;
+  if (page <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply, cv2: false })) return;

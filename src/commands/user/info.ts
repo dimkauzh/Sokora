@@ -34,7 +34,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         `Display name is ${
           user.displayName == user.username ? "*not there*" : `**${user.displayName}**`
         }`,
-        `Created on **${mention(user.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}**`,
+        `Created their account on **${mention(user.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}**`,
       ].join("\n"),
     })
     .setFooter({ text: `User ID: ${user.id}` })
@@ -42,7 +42,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   if (target) {
     const serverInfo = [
-      `Joined on **${mention(target.joinedAt!.valueOf(), "DEFAULT_TIMESTAMP")}**`,
+      `Joined this server on **${mention(target.joinedAt!.valueOf(), "DEFAULT_TIMESTAMP")}**`,
     ];
     const guildRoles = guild.roles.cache.filter(role => target.roles.cache.has(role.id))!;
     const memberRoles = [...guildRoles].sort(

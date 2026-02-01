@@ -9,6 +9,8 @@ import { Event } from "utils/types";
 
 export default (async function run(member) {
   const guild = member.guild;
+  if (guild.bans.cache.has(member.id)) return;
+
   const guildID = guild.id;
   const id =
     ((await getSetting(guildID, "welcome", "leave_channel")) as string) ??

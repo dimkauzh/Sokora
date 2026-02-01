@@ -136,7 +136,6 @@ type SettingComponent = (
   settingsObj: Record<string, SingleSettingDefinition> | Record<string, SingleSettingDefinition>[],
   name: string,
   reset: boolean,
-  objView?: boolean,
   itrObjectView?: boolean,
 ) => Promise<Help>;
 
@@ -175,33 +174,25 @@ export async function settingsEmbed(
       | Record<string, SingleSettingDefinition>[],
     name: string,
     reset: boolean,
-    objView?: boolean,
     itrObjectView?: boolean,
   ) => {
     if (exemptButtons.includes(name) || exemptButtons.map(name => `obj${name}`).includes(name))
       return;
 
-    const settingObject =
-      typeof settingsObj === "object"
-        ? (settingsObj as Record<string, SingleSettingDefinition>)[name]
-        : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!;
-
-    let data: { type: string; id: string } = { type: settingObject.type as string, id: name };
+    let data: { type: string; id: string };
     let component:
       | ButtonBuilder
       | ChannelSelectMenuBuilder
       | UserSelectMenuBuilder
       | RoleSelectMenuBuilder
       | StringSelectMenuBuilder
-      | MentionableSelectMenuBuilder = new ButtonBuilder()
-      .setCustomId(data.id)
-      .setLabel("Edit")
-      .setStyle(ButtonStyle.Secondary);
+      | MentionableSelectMenuBuilder;
 
     let text: string;
     const resetObj = (text: string, itrObject?: boolean) => {
       data = { type: "reset", id: name };
-      component = (component as ButtonBuilder)
+      component = new ButtonBuilder()
+        .setCustomId(data.id)
         .setLabel(itrObject ? "Delete" : "Reset")
         .setStyle(ButtonStyle.Danger);
 
@@ -217,16 +208,31 @@ export async function settingsEmbed(
       if (!reward) return;
       text = `Level **${reward?.level}**\n-# Rewards • ${mention(reward?.id, reward?.channel ? "CHANNEL" : "ROLE")}`;
       data = { type: "lvl", id: name };
+      component = new ButtonBuilder()
+        .setCustomId(data.id)
+        .setLabel("Edit")
+        .setStyle(ButtonStyle.Secondary);
 
       if (reset) return resetObj(text, true);
       return { text, data, component };
     }
+
+    const settingObject =
+      typeof settingsObj === "object"
+        ? (settingsObj as Record<string, SingleSettingDefinition>)[name]
+        : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!;
 
     // todo: make this support objView (currently outputs an error)
     const setting = await getSettingPlease(id, key, name, table);
     const maxValues = settingObject.iterable ? 25 : 1;
     text = `${dotCheck({ string: settingObject.emoji as string, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
     if (reset) return resetObj(text, false);
+
+    data = { type: settingObject.type as string, id: name };
+    component = new ButtonBuilder()
+      .setCustomId(data.id)
+      .setLabel("Edit")
+      .setStyle(ButtonStyle.Secondary);
 
     switch (settingObject.type) {
       case "BOOL":
@@ -295,9 +301,6 @@ export async function settingsEmbed(
         break;
       case "REWARD":
         component = new MentionableSelectMenuBuilder().setCustomId(data.id);
-        break;
-      default:
-        break;
     }
 
     if (
@@ -491,7 +494,10 @@ export async function settingsEmbed(
         break;
     }
 
-    switch ((await settingComponent(settingsObj, cID, reset || confirm))?.data.type.toLowerCase()) {
+    const componentType = (
+      await settingComponent(settingsObj, cID, reset || confirm)
+    )?.data.type.toLowerCase();
+    switch (componentType) {
       case "reset":
         reset = false;
         confirm = true;
@@ -565,13 +571,9 @@ export async function settingsEmbed(
       }
       default:
         await setSettingPlease(id, key, cID, (i as AnySelectMenuInteraction).values, table);
-        break;
     }
 
-    if (
-      (await settingComponent(settingsObj, cID, reset || confirm))?.data.type != "text" ||
-      (await settingComponent(settingsObj, cID, reset || confirm))?.data.type != "integer"
-    )
+    if (componentType != "text" && componentType != "integer")
       await end(reset, confirm, editView, itrObjectView);
   });
 
