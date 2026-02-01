@@ -30,7 +30,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const news = listAllNews(interaction.guild.id);
-  const sortedNews = (Object.values(news) as any[])?.sort((a, b) => b.createdAt - a.createdAt);
+  const sortedNews = Object.values(news).sort((a, b) => b.createdAt - a.createdAt);
 
   if (!news || !sortedNews || !sortedNews.length)
     return await errorEmbed({
@@ -53,7 +53,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setTitle(currentNews.title)
       .setDescription(currentNews.body)
       .setImage(currentNews.imageURL || null)
-      .setTimestamp(parseInt(currentNews.updatedAt))
+      .setTimestamp(currentNews.updatedAt || currentNews.createdAt)
       .setFooter({
         text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
       })

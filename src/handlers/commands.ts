@@ -1,5 +1,5 @@
 import {
-  ApplicationCommandDataResolvable,
+  ApplicationCommandData,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
@@ -9,8 +9,7 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
 
-export const commands: { data: ApplicationCommandDataResolvable; run: any; autocomplete: any }[] =
-  [];
+export const commands: { data: ApplicationCommandData; run: any; autocomplete: any }[] = [];
 
 export const subCommands: {
   data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;

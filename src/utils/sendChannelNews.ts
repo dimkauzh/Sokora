@@ -28,6 +28,7 @@ export async function sendChannelNews(
   interaction: ChatInputCommandInteraction,
   title?: string,
   body?: string,
+  imageURL?: string,
 ): Promise<void> {
   const news = get(guild.id, id)!;
   const role = (await getSetting(guild.id, "news", "role")) as string;
@@ -41,7 +42,8 @@ export async function sendChannelNews(
     })
     .setTitle(title ?? news.title)
     .setDescription(body ?? news.body)
-    .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)
+    .setImage((imageURL ?? news.imageURL) || null)
+    .setTimestamp(news.updatedAt || news.createdAt)
     .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
     .setColor(await colorize({ hue: 200 }));
 

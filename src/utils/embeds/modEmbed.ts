@@ -57,15 +57,17 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
         reason: `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`,
       });
 
-  // todo: uh oh
-  if (channelError)
-    if (!(await safeChannel(guild, channel!))?.permissionsFor(client).has("ViewChannel"))
+  if (channelError) {
+    const fetchedChannel = await safeChannel(guild, channel!);
+    if (fetchedChannel.isDMBased()) return;
+    if (!fetchedChannel.permissionsFor(client).has("ViewChannel"))
       return await errorEmbed({
         interaction,
         title: "The bot can't execute this command.",
         reason:
           "The bot is missing the **View Channel** permission. If you want to run this command, you might want to give the bot this permission from the channel settings.",
       });
+  }
 
   if (!member.permissions.has(permission))
     return await errorEmbed({

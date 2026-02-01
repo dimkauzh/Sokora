@@ -90,7 +90,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       })
       .setTitle(title)
       .setDescription(body)
-      .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)
+      .setTimestamp(news.updatedAt || news.createdAt)
       .setFooter({ text: `Edited news from ${guild.name} • ID: ${news.id}` })
       .setColor(await colorize({ hue: 200 }));
 

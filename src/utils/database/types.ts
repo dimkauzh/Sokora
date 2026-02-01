@@ -1,11 +1,17 @@
 export type FieldData =
   | "TEXT"
+  | "TEXT?"
   | "INTEGER"
+  | "INTEGER?"
   | "BOOL"
   | "TIMESTAMP"
+  | "TIMESTAMP?"
   | "CHANNEL"
+  | "CHANNEL?"
   | "USER"
+  | "USER?"
   | "ROLE"
+  | "ROLE?"
   | "LOG"
   | "EGG"
   | "OBJECT"
@@ -16,14 +22,22 @@ export type TableDefinition = {
   definition: Record<string, FieldData>;
 };
 
+type Maybe<T> = T | null;
+
 export type SqlType<T extends FieldData> = {
   BOOL: boolean;
   INTEGER: number;
+  "INTEGER?": Maybe<number>;
   TEXT: string;
-  TIMESTAMP: Date;
+  "TEXT?": Maybe<string>;
+  TIMESTAMP: number;
+  "TIMESTAMP?": Maybe<number>;
   CHANNEL: string;
+  "CHANNEL?": Maybe<string>;
   USER: string;
+  "USER?": Maybe<string>;
   ROLE: string;
+  "ROLE?": Maybe<string>;
   LOG: string;
   EGG: string;
   OBJECT: string;

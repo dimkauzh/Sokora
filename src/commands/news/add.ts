@@ -1,6 +1,7 @@
 import { addNews, listAllQuery } from "database/news";
 import {
   EmbedBuilder,
+  FileUploadBuilder,
   LabelBuilder,
   ModalBuilder,
   SlashCommandSubcommandBuilder,
@@ -51,6 +52,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true),
         ),
+      new LabelBuilder()
+        .setLabel("Optionally, upload a banner image")
+        .setFileUploadComponent(
+          new FileUploadBuilder().setCustomId("image").setMinValues(0).setRequired(false),
+        ),
     );
 
   try {
@@ -74,8 +80,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
       interaction.user,
     );
 
+    const image = i.fields.getUploadedFiles("image")?.at(0)?.url;
+
     const id = (listAllQuery.all(guild.id).length + 1).toString();
-    addNews(guild.id, title, body, i.user.displayName, i.user.avatarURL()!, null!, id);
+    addNews(
+      guild.id,
+      title,
+      body,
+      i.user.displayName,
+      i.user.avatarURL()!,
+      null!,
+      id,
+      image ?? "null",
+    );
 
     try {
       await sendChannelNews(guild, id, interaction);

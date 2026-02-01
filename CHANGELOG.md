@@ -3,6 +3,16 @@
 
 # Sokora Changelog
 
+## 0.4.0 (work in progress)
+
+### Added
+
+- Added the ability to upload one image to your news. (Cannot edit or remove images, nor add images from the edit modal.)
+
+###
+
+- Fixed some minor issues with timestamps.
+
 ## 0.3.2
 
 ## Changed
