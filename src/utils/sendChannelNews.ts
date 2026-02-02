@@ -42,7 +42,7 @@ export async function sendChannelNews(
     })
     .setTitle(title ?? news.title)
     .setDescription(body ?? news.body)
-    .setImage((imageURL ?? news.imageURL) || null)
+    .setImage(imageURL ?? news.imageURL ?? null)
     .setTimestamp(news.updatedAt || news.createdAt)
     .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
     .setColor(await colorize({ hue: 200 }));

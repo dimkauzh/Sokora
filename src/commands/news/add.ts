@@ -90,8 +90,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       i.user.displayName,
       i.user.avatarURL()!,
       null!,
+      image ?? null,
       id,
-      image ?? "null",
     );
 
     try {

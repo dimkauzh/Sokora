@@ -32,7 +32,7 @@ export function addNews(
   author: string,
   authorPFP: string,
   messageID: string,
-  imageURL: string,
+  imageURL: string | null,
   id: string,
 ) {
   sendQuery.run(guildID, title, body, author, authorPFP, Date.now(), 0, messageID, imageURL, id);
