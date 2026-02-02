@@ -15,6 +15,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const example = "Welcome to (servername), **(name)**!";
   const exampleTwo =
     "Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!";
+  const exampleThree =
+    "Thank you so much to (725985503177867295, user) for making this announcement the (1770053619077, detailed_timestamp). We love you!";
 
   const avatar = interaction.client.user.displayAvatarURL();
   const embed = new EmbedBuilder()
@@ -42,6 +44,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ].join("\n"),
       },
       {
+        name: "🛜 • Dynamic mentioning",
+        value: [
+          `You can use a similar syntax to mention specific users, roles, channels, or timestamps, since Discord disallows this natively:\n\`${exampleThree}\`\nwill result in:`,
+          `> ${await replaceVariables(exampleThree, interaction.guild!, interaction.user)}`,
+        ].join("\n"),
+      },
+      {
         name: "📜 • All variables",
         value: [
           "`(name)` - display name of the user who joined",
@@ -56,6 +65,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
           "`(currentdate)` - current date in the 'July 10, 2025' format",
           "`(currentdate, simple)` - current date in the '7/10/25' format",
           "`(currentdate, detailed)` - current date in the 'July 10, 2025, at 1:11 PM' format",
+          "`(<id>, user | role | channel)` - given an ID, allows you to mention/link it (Discord modals don't let you do this natively)",
+          "`(<timestamp>, default_timestamp | simple_timestamp | detailed_timestamp)` - given a timestamp, formats it as a date",
         ].join("\n"),
       },
     ]);

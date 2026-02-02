@@ -51,5 +51,12 @@ export async function replaceVariables(text: string, guild: Guild, user: User): 
     },
   ];
 
+  text = text.replace(
+    /\((\d+), (user|role|default_timestamp|simple_timestamp|detailed_timestamp|channel)\)/g,
+    (_, id: string, indicator: string) => {
+      return mention(id, indicator.toUpperCase() as any);
+    },
+  );
+
   return replace(text, replacementVariables);
 }
