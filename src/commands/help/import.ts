@@ -3,7 +3,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -20,7 +20,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(
       "You can use the `/import` command to bring your leaderboard from other bots into Sokora.",
     )
-    .setColor(await colorize({ hue: 200 }))
+    .setColor(await colorize({ hue: Sokolors.Blue }))
     .setFields([
       {
         name: "📜 • Supported bots",

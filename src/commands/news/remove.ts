@@ -7,7 +7,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { safeChannel, safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -40,7 +40,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (newsChannel) await newsChannel.messages.delete(news.messageID);
   deleteNews(guild.id, id);
   await interaction.reply({
-    embeds: [new EmbedBuilder().setTitle("News removed.").setColor(await colorize({ hue: 100 }))],
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("News removed.")
+        .setColor(await colorize({ hue: Sokolors.Green })),
+    ],
     flags: "Ephemeral",
   });
 }

@@ -1,7 +1,7 @@
 import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { channelCheck } from "utils/channelCheck";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replaceVariables } from "utils/replace";
 import { safeChannel } from "utils/safeThings";
@@ -33,7 +33,7 @@ export default (async function run(member) {
       ),
     )
     .setFooter({ text: `User ID: ${user.id}` })
-    .setColor(await colorize({ user, avatar, hue: 200 }));
+    .setColor(await colorize({ user, avatar, hue: Sokolors.Blue }));
 
   if (
     await channelCheck({

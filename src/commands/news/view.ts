@@ -9,7 +9,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
@@ -57,7 +57,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setFooter({
         text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
       })
-      .setColor(await colorize({ hue: 100 }));
+      .setColor(await colorize({ hue: Sokolors.Green }));
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(

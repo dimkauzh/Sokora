@@ -12,7 +12,7 @@ import {
   type TextChannel,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { safeChannel, safeMember, safeRole } from "utils/safeThings";
@@ -92,7 +92,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setDescription(body)
       .setTimestamp(news.updatedAt || news.createdAt)
       .setFooter({ text: `Edited news from ${guild.name} • ID: ${news.id}` })
-      .setColor(await colorize({ hue: 200 }));
+      .setColor(await colorize({ hue: Sokolors.Blue }));
 
     const channel = (await safeChannel(
       guild,
@@ -106,7 +106,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     updateNews(guild.id, id, title, body);
     await i.reply({
-      embeds: [new EmbedBuilder().setTitle("News edited.").setColor(await colorize({ hue: 100 }))],
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("News edited.")
+          .setColor(await colorize({ hue: Sokolors.Green })),
+      ],
       flags: "Ephemeral",
     });
   });

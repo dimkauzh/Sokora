@@ -60,7 +60,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ? "Choose your weapon!"
         : `${user.username} has challenged ${opponent.username} to a game!\nBoth players, make your choice!`,
     )
-    .setColor(await colorize({ hue: 60 }));
+    .setColor(await colorize({ hue: Sokolors.Yellow }));
 
   if (opponent.id == user.id)
     return await errorEmbed({
@@ -99,7 +99,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             new EmbedBuilder()
               .setAuthor({ name: "Game timed out" })
               .setDescription("The game has been canceled due to inactivity.")
-              .setColor(await colorize({ hue: 0 })),
+              .setColor(await colorize({ hue: Sokolors.Red })),
           ],
           components: [],
         });

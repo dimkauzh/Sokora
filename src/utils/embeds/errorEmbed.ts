@@ -16,7 +16,7 @@ import {
   type RGBTuple,
 } from "discord.js";
 import { safeChannel, safeReply } from "utils/safeThings";
-import { colorize } from "../colorGen";
+import { colorize, Sokolors } from "../colorGen";
 import { errorType } from "../errorType";
 
 /**
@@ -57,7 +57,7 @@ export async function errorEmbed(options: {
   const embed = new EmbedBuilder()
     .setAuthor({ name: "Something went wrong!" })
     .setDescription(content.join("\n"))
-    .setColor(await colorize({ hue: 0 }));
+    .setColor(await colorize({ hue: Sokolors.Red }));
 
   if (options.error) {
     embed.addFields(
@@ -139,7 +139,7 @@ export async function errorEmbedCV2(options: {
     .addTextDisplayComponents(
       new TextDisplayBuilder().setContent(`Something went wrong!\n${content.join("\n")}`),
     )
-    .setAccentColor((await colorize({ hue: 0, cv2: true })) as RGBTuple);
+    .setAccentColor((await colorize({ hue: Sokolors.Red, cv2: true })) as RGBTuple);
 
   if (options.error) {
     container

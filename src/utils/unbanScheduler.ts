@@ -1,7 +1,7 @@
 import { getPendingBans, removeModeration } from "database/moderation";
 import { Client, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize } from "./colorGen";
+import { colorize, Sokolors } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
 import { safeGuild, safeMember } from "./safeThings";
@@ -56,7 +56,7 @@ export function scheduleUnban(
             [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
           )
           .setFooter({ text: `User ID: ${user.id}` })
-          .setColor(await colorize({ hue: 100 }));
+          .setColor(await colorize({ hue: Sokolors.Green }));
 
         await logChannel(guild, { embeds: [embed] });
         await guild.members.unban(userID, "Temporary ban has expired");

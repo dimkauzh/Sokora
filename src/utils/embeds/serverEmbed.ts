@@ -9,7 +9,7 @@ import {
 } from "discord.js";
 import { logChannel } from "utils/logChannel";
 import { safeChannel, safeMember } from "utils/safeThings";
-import { colorize } from "../colorGen";
+import { colorize, Sokolors } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
 import { pluralOrNot } from "../pluralOrNot";
@@ -113,7 +113,7 @@ export async function serverEmbed(options: Options) {
     .setFooter({
       text: `${pages && pages > 1 ? `Page ${page} of ${pages} • ` : ""}Server ID: ${guild.id}`,
     })
-    .setColor(await colorize({ avatar: icon, hue: 200 }));
+    .setColor(await colorize({ avatar: icon, hue: Sokolors.Blue }));
 
   if (invite?.show) {
     async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
@@ -131,7 +131,7 @@ export async function serverEmbed(options: Options) {
             `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
           ].join("\n"),
         })
-        .setColor(await colorize({ hue: 60 }));
+        .setColor(await colorize({ hue: Sokolors.Yellow }));
 
       await logChannel(guild, { embeds: [errEmbed] }, true, {
         silent: false,

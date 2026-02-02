@@ -24,7 +24,7 @@ import {
   type RGBTuple,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { safeReply } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
@@ -112,7 +112,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       );
 
     const color = (await colorize({ user, avatar, hue: 300, cv2: true })) as RGBTuple;
-    const errorColor = (await colorize({ user, avatar, hue: 0, cv2: true })) as RGBTuple;
+    const errorColor = (await colorize({ user, avatar, hue: Sokolors.Red, cv2: true })) as RGBTuple;
     container
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(

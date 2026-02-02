@@ -10,7 +10,11 @@
 - Added the ability to upload one image to your news. (Cannot edit or remove images, nor add images from the edit modal.)
 - Added the ability to ping users and roles, link channels, and add custom timestamps to news. Discord doesn't allow this from the modal editor, so it uses a Dynamic Variables-ish syntax (Dynamic Mentions). See `/help variables` for info.
 
-###
+### Changed
+
+- Tweaked colors to ensure they're consistent across all embeds.
+
+### Fixed
 
 - Fixed some minor issues with timestamps.
 
@@ -24,7 +28,7 @@
 ## Fixed
 
 - Top.gg reminders are fixed once more, now they should send **only** when you didn't vote
-- Attempt to fix tempbans not unbanning the user due to Sokora not finding them through the cache (by fetching the ban list instead)
+- Attempt to fix temporary bans not unbanning the user due to Sokora not finding them through the cache (by fetching the ban list instead)
 - "Unknown guild" error in serverboard
 
 ## Removed

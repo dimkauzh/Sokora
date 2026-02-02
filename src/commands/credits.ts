@@ -1,5 +1,5 @@
 import { EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
@@ -27,7 +27,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setColor(await colorize({ user, avatar, hue: 270 }));
+    .setColor(await colorize({ user, avatar, hue: Sokolors.Purple }));
 
   await interaction.reply({ embeds: [embed], flags: "Ephemeral" });
 }

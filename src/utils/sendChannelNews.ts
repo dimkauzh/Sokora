@@ -8,7 +8,7 @@ import {
   type TextChannel,
 } from "discord.js";
 import { channelCheck } from "./channelCheck";
-import { colorize } from "./colorGen";
+import { colorize, Sokolors } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
 import { safeChannel, safeRole } from "./safeThings";
@@ -45,7 +45,7 @@ export async function sendChannelNews(
     .setImage(imageURL ?? news.imageURL ?? null)
     .setTimestamp(news.updatedAt || news.createdAt)
     .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
-    .setColor(await colorize({ hue: 200 }));
+    .setColor(await colorize({ hue: Sokolors.Blue }));
 
   const channel = (await safeChannel(
     guild,

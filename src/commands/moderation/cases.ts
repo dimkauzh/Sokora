@@ -20,7 +20,7 @@ import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
 import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { randomize } from "utils/randomize";
@@ -90,7 +90,7 @@ async function generateEmbed(params: {
     .setFooter({
       text: `${totalPages > 1 ? `Page ${page} of ${totalPages}` : ""}${user ? `\nUser ID: ${user.id} • Server ID: ${guildID}` : `${totalPages > 1 ? ` • Server ID: ${guildID}` : `Server ID: ${guildID}`}`}`,
     })
-    .setColor(await colorize({ hue: 200 }));
+    .setColor(await colorize({ hue: Sokolors.Blue }));
 }
 
 export const data = new SlashCommandSubcommandBuilder()

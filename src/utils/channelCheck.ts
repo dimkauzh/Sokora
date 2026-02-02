@@ -9,7 +9,7 @@ import {
   PermissionResolvable,
   type TextChannel,
 } from "discord.js";
-import { colorize } from "./colorGen";
+import { colorize, Sokolors } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
 
@@ -63,7 +63,7 @@ export async function channelCheck(options: {
         : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that no longer exists! **This setting will be reset to default.**`,
     })
     .setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` })
-    .setColor(await colorize({ hue: 60 }));
+    .setColor(await colorize({ hue: Sokolors.Yellow }));
 
   const dm = await (await guild.fetchOwner())?.createDM().catch(() => null);
   if (!channel || !isValid(channel)) return await reset();

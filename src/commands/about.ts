@@ -7,7 +7,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { version } from "package";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";
@@ -52,7 +52,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       },
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setColor(await colorize({ user, avatar, hue: 270 }));
+    .setColor(await colorize({ user, avatar, hue: Sokolors.Purple }));
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()

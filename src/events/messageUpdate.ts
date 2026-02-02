@@ -7,7 +7,7 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
 import { fetchMedia } from "utils/media";
@@ -71,7 +71,7 @@ export default (async function run(oldMessage, newMessage) {
     .setThumbnail(thumbnail)
     .setImage(image)
     .setFooter({ text: `User ID: ${author.id}` })
-    .setColor(await colorize({ hue: 60 }));
+    .setColor(await colorize({ hue: Sokolors.Yellow }));
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()

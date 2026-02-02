@@ -2,7 +2,7 @@ import { getSetting } from "database/settings";
 import { AttachmentBuilder, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
 import { fetchMedia } from "utils/media";
@@ -63,7 +63,7 @@ export default (async function run(message) {
       .setImage(image)
       .setTimestamp(new Date())
       .setFooter({ text: `Author ID: ${author.id}` })
-      .setColor(await colorize({ hue: 0 }));
+      .setColor(await colorize({ hue: Sokolors.Red }));
 
     const files: AttachmentBuilder[] = [];
     if (content.length >= 1024)

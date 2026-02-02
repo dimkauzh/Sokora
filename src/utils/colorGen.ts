@@ -3,12 +3,21 @@ import { Vibrant } from "node-vibrant/node";
 import sharp from "sharp";
 import { kominator } from "./kominator";
 
+/** Sokolors, colors of Sokora, get it? */
+export enum Sokolors {
+  Red = 30,
+  Yellow = 110,
+  Green = 140,
+  Blue = 240,
+  Purple = 300,
+}
+
 /**
  * Randomizes a color and outputs HEX.
  * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
  * @returns Color in HEX.
  */
-export function genColor(hue: number): ColorResolvable {
+function genColor(hue: Sokolors): ColorResolvable {
   return Bun.color(
     `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
     "hex",
@@ -20,7 +29,7 @@ export function genColor(hue: number): ColorResolvable {
  * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
  * @returns Color in RGB.
  */
-export function genColorCV2(hue: number) {
+function genColorCV2(hue: Sokolors) {
   return Bun.color(
     `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
     "[rgb]",
@@ -55,7 +64,7 @@ export async function genImageColor(
 export async function colorize(options: {
   user?: User;
   avatar?: string;
-  hue?: number;
+  hue?: Sokolors;
   cv2?: boolean;
 }) {
   const { user, avatar, hue, cv2 } = options;

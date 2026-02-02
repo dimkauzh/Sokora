@@ -1,7 +1,7 @@
 import { EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { commands } from "handlers/commands";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 import type { Event } from "utils/types";
@@ -23,7 +23,7 @@ export default (async function run(guild) {
       ].join("\n"),
     )
     .setFooter({ text: replace("(madeWith)") })
-    .setColor(await colorize({ user, avatar, hue: 200 }));
+    .setColor(await colorize({ user, avatar, hue: Sokolors.Blue }));
 
   await guild.commands.set(commands.map(command => command.data));
   try {

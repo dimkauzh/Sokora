@@ -39,7 +39,7 @@ import {
   type RGBTuple,
 } from "discord.js";
 import { easterEggNames } from "handlers/events";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
@@ -158,7 +158,7 @@ export async function settingsEmbed(
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const exemptButtons = ["reset_start", "reset_category", "cancel", "yes", "no", "return", "add"];
   const eventNames = ["messageUpdate", "messageDelete"];
-  const color = (await colorize({ hue: 200, cv2: true })) as RGBTuple;
+  const color = (await colorize({ hue: Sokolors.Blue, cv2: true })) as RGBTuple;
   let settingsObj = settingsDef.settings;
   let settingName = "";
   let reset = false;

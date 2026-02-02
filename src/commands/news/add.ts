@@ -10,7 +10,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { replaceVariables } from "utils/replace";
 import { safeMember } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
@@ -101,7 +101,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     }
 
     await i.reply({
-      embeds: [new EmbedBuilder().setTitle("News added.").setColor(await colorize({ hue: 100 }))],
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("News added.")
+          .setColor(await colorize({ hue: Sokolors.Green })),
+      ],
       flags: "Ephemeral",
     });
   });

@@ -5,7 +5,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { pluralOrNot } from "utils/pluralOrNot";
@@ -38,7 +38,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ].join("\n"),
     })
     .setFooter({ text: `User ID: ${user.id}` })
-    .setColor(await colorize({ user: target?.user ?? user, avatar, hue: 200 }));
+    .setColor(await colorize({ user: target?.user ?? user, avatar, hue: Sokolors.Blue }));
 
   if (target) {
     const serverInfo = [
