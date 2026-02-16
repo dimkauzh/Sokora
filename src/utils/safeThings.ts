@@ -43,6 +43,10 @@ export async function safeMember(guild: Guild, id: string) {
   return guild.members.cache.get(id) ?? (await guild.members.fetch(id));
 }
 
+export async function safeMembers(guild: Guild) {
+  return guild.members.cache ?? (await guild.members.fetch());
+}
+
 /**
  * Ensures that the user that you're getting will be gotten.
  * @param client The client where the user resides.

@@ -3,7 +3,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -19,7 +19,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       iconURL: avatar,
     })
     .setDescription(`The coin landed on **${Math.random() >= 0.5 ? "tails" : "heads"}**!`)
-    .setColor(await colorize({ user, avatar, hue: 120 }));
+    .setColor(await colorize({ user, avatar, hue: Sokolors.Green }));
 
   await interaction.reply({ embeds: [embed] });
 }

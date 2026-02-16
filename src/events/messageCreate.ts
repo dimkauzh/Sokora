@@ -10,7 +10,7 @@ import { EmbedBuilder, PermissionsBitField, type TextChannel } from "discord.js"
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggs } from "handlers/events";
 import { channelCheck } from "utils/channelCheck";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { mention } from "utils/mention";
@@ -121,7 +121,7 @@ export default (async function run(message) {
       ].join("\n"),
     )
     .setTimestamp()
-    .setColor(await colorize({ user: author, avatar, hue: 120 }));
+    .setColor(await colorize({ user: author, avatar, hue: Sokolors.Green }));
 
   if (levelChannelId) {
     const channel = (await safeChannel(guild, `${levelChannelId}`)) as TextChannel;

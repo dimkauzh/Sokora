@@ -14,7 +14,7 @@ export enum Sokolors {
 
 /**
  * Randomizes a color and outputs HEX.
- * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
+ * @param hue Hue of the color to randomize.
  * @returns Color in HEX.
  */
 function genColor(hue: Sokolors): ColorResolvable {
@@ -26,7 +26,7 @@ function genColor(hue: Sokolors): ColorResolvable {
 
 /**
  * Randomizes a color and outputs RGB for the accent color of CV2 containers.
- * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
+ * @param hue Hue of the color to randomize.
  * @returns Color in RGB.
  */
 function genColorCV2(hue: Sokolors) {

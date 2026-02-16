@@ -3,13 +3,17 @@ import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from 
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
 import ms from "enhanced-ms";
+import { safeMembers } from "utils/safeThings";
 import { scheduleUnban } from "utils/unbanScheduler";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("ban")
   .setDescription("Bans a user.")
   .addUserOption(user =>
-    user.setName("user").setDescription("The user that you want to ban.").setRequired(true),
+    user
+      .setName("user")
+      .setDescription("The user that you want to ban. (you can provide a user ID)")
+      .setRequired(true),
   )
   .addStringOption(string => string.setName("reason").setDescription("The reason for the ban."))
   .addStringOption(string =>
@@ -26,6 +30,7 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const guild = interaction.guild!;
+  const userOrMember = (await safeMembers(guild)).has(user.id);
   const duration = interaction.options.getString("duration");
   const reason = interaction.options.getString("reason");
 
@@ -35,7 +40,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       user,
       action: "Ban",
       errorOptions: {
-        allErrors: true,
+        allErrors: userOrMember,
         banCheckError: true,
         botError: true,
         ownerError: true,
@@ -67,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         user,
         action: "Banned",
         duration: duration ? ms(duration) : undefined,
-        dm: true,
+        dm: userOrMember,
         dbAction: "BAN",
         expiresAt: duration ? ms(duration) : undefined,
         silent,

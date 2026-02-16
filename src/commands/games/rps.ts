@@ -8,7 +8,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
-import { colorize } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 
@@ -83,7 +83,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (!opponent.bot) {
       await i.reply({
         embeds: [
-          new EmbedBuilder().setTitle("Choice recorded!").setColor(await colorize({ hue: 120 })),
+          new EmbedBuilder()
+            .setTitle("Choice recorded!")
+            .setColor(await colorize({ hue: Sokolors.Green })),
         ],
         flags: "Ephemeral",
       });
@@ -120,7 +122,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
           ].join("\n"),
         )
         .setColor(
-          await colorize({ hue: winner == 0 ? 60 : winner == 2 && opponent.bot ? 0 : 120 }),
+          await colorize({
+            hue:
+              winner == 0
+                ? Sokolors.Yellow
+                : winner == 2 && opponent.bot
+                  ? Sokolors.Red
+                  : Sokolors.Green,
+          }),
         );
 
       await interaction.editReply({ embeds: [resultEmbed], components: [] });

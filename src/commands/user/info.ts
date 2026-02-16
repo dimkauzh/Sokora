@@ -10,7 +10,7 @@ import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";
-import { safeMember } from "utils/safeThings";
+import { safeMember, safeMembers } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("info")
@@ -19,12 +19,13 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  const user = interaction.options.getUser("user") ?? interaction.user;
-  const target = await safeMember(guild, user.id);
-  const avatar = target?.displayAvatarURL() ?? user.displayAvatarURL();
+  let user = interaction.options.getUser("user") ?? interaction.user;
+  let avatar = user.displayAvatarURL();
+  let name = user.displayName;
+
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}${target?.nickname ?? user.displayName}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${name}`,
       iconURL: avatar,
     })
     .setFields({
@@ -38,9 +39,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ].join("\n"),
     })
     .setFooter({ text: `User ID: ${user.id}` })
-    .setColor(await colorize({ user: target?.user ?? user, avatar, hue: Sokolors.Blue }));
+    .setColor(await colorize({ user, avatar, hue: Sokolors.Blue }));
 
-  if (target) {
+  if ((await safeMembers(guild)).has(user.id)) {
+    const target = await safeMember(guild, user.id);
+    avatar = target.displayAvatarURL();
+    name = target.nickname ?? name;
+    user = target.user;
+
     const serverInfo = [
       `Joined this server on **${mention(target.joinedAt!.valueOf(), "DEFAULT_TIMESTAMP")}**`,
     ];

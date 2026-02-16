@@ -44,6 +44,7 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
   const { interaction, user, channel, action, errorOptions } = options;
   const { allErrors, botError, channelError, ownerError, outsideError, banCheckError } =
     errorOptions;
+
   const guild = interaction.guild!;
   const member = await safeMember(guild, interaction.user.id);
   const client = await safeMember(guild, interaction.client.user.id);
@@ -93,7 +94,7 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
   }
 
   if (!allErrors || !user || !action) return;
-  const target = (await safeMember(guild, user.id))!;
+  const target = await safeMember(guild, user.id);
   const name = user.displayName;
   const highestModPos = member.roles.highest.position;
 
@@ -121,13 +122,14 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
       reason: "The member has a higher (or the same) role position than Sokora.",
     });
 
-  const same: boolean = highestModPos == highestTargetPos;
-  if (highestModPos <= highestTargetPos && member.id != guild.ownerId)
+  if (highestModPos <= highestTargetPos && member.id != guild.ownerId) {
+    const same: boolean = highestModPos == highestTargetPos;
     return await errorEmbed({
       interaction,
       title: `You can't ${action.toLowerCase()} ${name}.`,
       reason: `The member has ${same ? "the same" : "a higher"} role position ${same ? "as" : "than"} you.`,
     });
+  }
 
   if (ownerError) {
     if (target.id == guild.ownerId)
