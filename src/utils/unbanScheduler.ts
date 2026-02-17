@@ -21,6 +21,11 @@ export function scheduleUnban(
     async () => {
       try {
         const guild = await safeGuild(client, guildID);
+        if (!guild) {
+          removeModeration(guildID, userID);
+          return scheduledUnbans.delete(key);
+        }
+
         const user = (await guild.bans.fetch(userID)).user;
         if (!user) {
           removeModeration(guildID, userID);
@@ -63,17 +68,6 @@ export function scheduleUnban(
         removeModeration(guildID, userID);
         scheduledUnbans.delete(key);
       } catch (error) {
-        if (String(error).toLowerCase().includes("unknown guild")) {
-          removeModeration(guildID, userID);
-          return await errorEmbed({
-            client,
-            title: `Failed to ban user(s) from guild ${guildID}.`,
-            reason: "The guild is undefined.",
-            log: true,
-            forward: true,
-            fileName: "unbanScheduler.ts",
-          });
-        }
         return await errorEmbed({
           client,
           error,

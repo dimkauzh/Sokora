@@ -59,7 +59,7 @@ export async function errorEmbed(options: {
     .setDescription(content.join("\n"))
     .setColor(await colorize({ hue: Sokolors.Red }));
 
-  if (options.error) {
+  if (options.error)
     embed.addFields(
       {
         name: "💬 • Error message",
@@ -74,7 +74,6 @@ export async function errorEmbed(options: {
           : "No error stacktrace.",
       },
     );
-  }
 
   const files: AttachmentBuilder[] = [];
   if (stack && stack.length >= 4096)
@@ -141,7 +140,7 @@ export async function errorEmbedCV2(options: {
     )
     .setAccentColor((await colorize({ hue: Sokolors.Red, cv2: true })) as RGBTuple);
 
-  if (options.error) {
+  if (options.error)
     container
       .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
       .addTextDisplayComponents(
@@ -159,7 +158,6 @@ export async function errorEmbedCV2(options: {
           }`,
         ),
       );
-  }
 
   const files: AttachmentBuilder[] = [];
   if (stack && stack.length >= 4096) {

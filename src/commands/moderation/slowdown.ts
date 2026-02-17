@@ -50,9 +50,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   const time = interaction.options.getString("time")!;
+  const timeMs = ms(time);
   const reason = interaction.options.getString("reason");
   let title = `Set the slowdown to ${ms(ms(time), "fullPrecision")}`;
-  if (!ms(time)) title = "Removed the slowdown";
+
+  if (!timeMs) title = "Removed the slowdown";
+  if (timeMs > 21600000)
+    return await errorEmbed({
+      interaction,
+      title: "You have provided a duration longer than 6 hours.",
+    });
 
   if (!channel.isTextBased() || channel.isDMBased())
     return await errorEmbed({
@@ -61,7 +68,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   await Promise.all([
-    channel.setRateLimitPerUser(ms(time) / 1000, interaction.options.getString("reason")!),
+    channel.setRateLimitPerUser(timeMs / 1000, interaction.options.getString("reason")!),
     modEmbed(
       {
         interaction,
