@@ -20,6 +20,9 @@ export const data = new SlashCommandSubcommandBuilder()
     string.setName("duration").setDescription("The duration of the ban (e.g 2mo, 1y)."),
   )
   .addBooleanOption(bool =>
+    bool.setName("del").setDescription("If true, the user's messages will be deleted."),
+  )
+  .addBooleanOption(bool =>
     bool
       .setName("silent")
       .setDescription(
@@ -33,6 +36,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const userOrMember = (await safeMembers(guild)).has(user.id);
   const duration = interaction.options.getString("duration");
   const reason = interaction.options.getString("reason");
+  const del = interaction.options.getBoolean("del");
 
   if (
     await errorCheck("Ban Members", {
@@ -80,6 +84,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason,
     );
     await guild.members.ban(user.id, { reason: reason ?? undefined });
+    if (del) {
+      for await (const channel of await guild.channels.fetch()) {
+        if (!channel[1] || !channel[1].isTextBased()) continue;
+        const messages = (await channel[1].messages.fetch({ limit: 100 })).filter(
+          m => m.author.id == user.id && !m.partial,
+        );
+        await channel[1].bulkDelete(messages, true);
+      }
+    }
   } catch (error) {
     return await errorEmbed({ interaction, error, forward: true, fileName: "ban.ts" });
   }

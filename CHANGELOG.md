@@ -9,6 +9,7 @@
 
 - Added the ability to upload one image to your news. (Cannot edit or remove images, nor add images from the edit modal.)
 - Added the ability to ping users and roles, link channels, and add custom timestamps to news. Discord doesn't allow this from the modal editor, so it uses a Dynamic Variables-ish syntax (Dynamic Mentions). See `/help variables` for info.
+- Added the ability to remove a user's messages when banning them. Use `/moderation ban user:@USER del:true` for this.
 
 ### Changed
 
