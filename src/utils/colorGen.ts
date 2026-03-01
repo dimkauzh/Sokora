@@ -1,6 +1,5 @@
+import { getColor } from "colorthief";
 import { ColorResolvable, type User } from "discord.js";
-import { Vibrant } from "node-vibrant/node";
-import sharp from "sharp";
 import { kominator } from "./kominator";
 
 /** Sokolors, colors of Sokora, get it? */
@@ -13,27 +12,21 @@ export enum Sokolors {
 }
 
 /**
- * Randomizes a color and outputs HEX.
+ * Randomizes a color and outputs hex (or RGB for CV2 containers).
  * @param hue Hue of the color to randomize.
- * @returns Color in HEX.
+ * @returns Color in hex (or RGB).
  */
-function genColor(hue: Sokolors): ColorResolvable {
+function genColor(hue: Sokolors, cv2?: boolean): ColorResolvable | [number, number, number] | null {
+  if (cv2)
+    return Bun.color(
+      `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
+      "[rgb]",
+    );
+
   return Bun.color(
     `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
     "hex",
   ) as ColorResolvable;
-}
-
-/**
- * Randomizes a color and outputs RGB for the accent color of CV2 containers.
- * @param hue Hue of the color to randomize.
- * @returns Color in RGB.
- */
-function genColorCV2(hue: Sokolors) {
-  return Bun.color(
-    `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
-    "[rgb]",
-  );
 }
 
 /**
@@ -45,15 +38,22 @@ export async function genImageColor(
   url: string,
   cv2?: boolean,
 ): Promise<ColorResolvable | [number, number, number] | null | undefined> {
-  // todo: make this support OKLCH like the rest of the functions
   if (!url) return;
 
-  const imageBuffer = await (await fetch(url)).arrayBuffer();
-  const { r, g, b } = (
-    await new Vibrant(await sharp(imageBuffer).toFormat("jpg").toBuffer()).getPalette()
-  ).Vibrant!;
-  const hsl = kominator(Bun.color([r, g, b], "hsl")!);
-  const h = parseInt(hsl[0].replace("hsl(", "")) + 15 * Math.random();
+  // todo: make this more reliable
+  const rgb = await getColor(Buffer.from(await (await fetch(url)).arrayBuffer()), {
+    quality: 7,
+    ignoreWhite: false,
+    whiteThreshold: 160,
+    minSaturation: 0.8,
+  });
+  if (!rgb) return;
+  // console.log(rgb);
+
+  const hsl = kominator(Bun.color([rgb[0], rgb[1], rgb[2]], "hsl")!);
+  // console.log(hsl);
+  const trueHue = hsl[0].replace("hsl(", "");
+  const h = parseInt(trueHue == "nan" ? "0" : trueHue) + 15 * Math.random();
   const s = parseFloat(hsl[1]) * 100 + 20 * Math.random();
   const l = parseFloat(hsl[2].replace(")", "")) * 100 + 15 * Math.random();
 
@@ -62,16 +62,11 @@ export async function genImageColor(
 }
 
 export async function colorize(options: {
+  hue: Sokolors;
   user?: User;
   avatar?: string;
-  hue?: Sokolors;
   cv2?: boolean;
 }) {
   const { user, avatar, hue, cv2 } = options;
-
-  return (
-    (await genImageColor(avatar!, cv2)) ??
-    user?.hexAccentColor ??
-    (cv2 ? genColorCV2(hue!) : genColor(hue!))
-  );
+  return (await genImageColor(avatar!, cv2)) ?? user?.hexAccentColor ?? genColor(hue, cv2);
 }

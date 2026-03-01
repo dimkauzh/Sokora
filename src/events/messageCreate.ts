@@ -3,6 +3,7 @@ import {
   getLevelRewards,
   getUserXp,
   getXpForNextLevel,
+  removeLevelRewards,
   setUserXp,
 } from "database/leveling";
 import { getSetting } from "database/settings";
@@ -24,6 +25,8 @@ export default (async function run(message) {
   if (author.bot) return;
   if (!guild) return;
 
+  const client = message.client;
+  const clientMember = await safeMember(guild, client.user.id);
   if (await getSetting(guild.id, "easter", "enabled")) {
     const enabledEggs = (await getSetting(guild.id, "easter", "enabled_eggs")) as string;
     const allowedChannels = (await getSetting(guild.id, "easter", "allowed_channels")) as string;
@@ -36,7 +39,7 @@ export default (async function run(message) {
             if (Math.random() <= 0.15) await easterEgg.run(message);
         } catch (error) {
           return await errorEmbed({
-            client: message.client,
+            client,
             error,
             title: `Error running easter egg ${easterEgg.name}.`,
             log: true,
@@ -78,35 +81,54 @@ export default (async function run(message) {
   if (rewards && rewards.length > 0)
     for (const reward of rewards) {
       const member = await safeMember(guild, author.id);
-      if (reward.channel) {
-        const channel = await safeChannel(guild, reward.id);
-        if (
-          !channel.isTextBased() ||
-          channel.isDMBased() ||
-          channel.isVoiceBased() ||
-          channel.isThread()
-        )
-          continue;
+      if (!reward.channel) {
+        if (!clientMember.permissions.has("ManageRoles")) {
+          await removeLevelRewards(guild.id, [reward]);
+          return await errorEmbed({
+            client,
+            title: "A level reward has been removed.",
+            reason: `The bot is missing the **Manage Roles** permission.\n**Removed level reward**: ${mention(reward.id, "ROLE")} at level ${reward.level}`,
+            dmOwner: true,
+          });
+        }
 
-        await channel.permissionOverwrites.set([
-          {
-            id: author.id,
-            allow: [PermissionsBitField.Flags.ViewChannel],
-          },
-        ]);
-
-        if (!channel.permissionsFor(member).has("ViewChannel"))
-          messageContent.push(
-            `**You've been rewarded access to the ${mention(channel.id, "CHANNEL")}> channel!** Congrats.`,
-          );
-      } else {
         const role = await safeRole(guild, reward.id);
         await member.roles.add(role);
         if (!member.roles.cache.has(role.id))
           messageContent.push(
             `**You've been rewarded the ${mention(role.id, "ROLE")} role!** Congrats.`,
           );
+
+        continue;
       }
+
+      if (!clientMember.permissions.has("ManageChannels")) {
+        await removeLevelRewards(guild.id, [reward]);
+        return await errorEmbed({
+          client,
+          title: "A level reward has been removed.",
+          reason: `The bot is missing the **Manage Channels** permission.\n**Removed level reward**: ${mention(reward.id, "CHANNEL")} at level ${reward.level}`,
+          dmOwner: true,
+        });
+      }
+
+      const channel = await safeChannel(guild, reward.id);
+      if (
+        !channel.isTextBased() ||
+        channel.isDMBased() ||
+        channel.isVoiceBased() ||
+        channel.isThread()
+      )
+        continue;
+
+      await channel.permissionOverwrites.set([
+        { id: author.id, allow: [PermissionsBitField.Flags.ViewChannel] },
+      ]);
+
+      if (!channel.permissionsFor(member).has("ViewChannel"))
+        messageContent.push(
+          `**You've been rewarded access to the ${mention(channel.id, "CHANNEL")}> channel!** Congrats.`,
+        );
     }
 
   const embed = new EmbedBuilder()

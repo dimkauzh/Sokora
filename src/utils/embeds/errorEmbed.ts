@@ -36,8 +36,9 @@ export async function errorEmbed(options: {
   log?: boolean;
   forward?: boolean;
   fileName?: string;
+  dmOwner?: boolean;
 }) {
-  const { interaction, title, reason, log, forward, fileName } = options;
+  const { interaction, title, reason, log, forward, fileName, dmOwner } = options;
   const client = options.client ? options.client : interaction ? interaction.client : null;
   if (!client && !interaction)
     return console.error(
@@ -51,7 +52,7 @@ export async function errorEmbed(options: {
   if (reason) content.push(reason);
   if (!title && !reason)
     content.push(
-      "The bot has experienced an internal error.\nThe team has been informed. If you keep encountering this issue, you can go to our [support server](https://discord.gg/c6C25P4BuY) to report it.",
+      "The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)",
     );
 
   const embed = new EmbedBuilder()
@@ -85,18 +86,19 @@ export async function errorEmbed(options: {
       process.env.DEV_ERROR_CHANNEL_ID!,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
-    await channel.send({ embeds: [embed], files: files });
+    await channel.send({ embeds: [embed], files });
+  }
+
+  if (dmOwner) {
+    const dm = await (await interaction?.guild!.fetchOwner())?.createDM().catch(() => null);
+    if (dm) await dm.send({ embeds: [embed], files });
   }
 
   if (log) console.error(error);
   if (interaction)
     return await safeReply({
       interaction,
-      replyOptions: {
-        embeds: [embed],
-        files: files,
-        flags: "Ephemeral",
-      },
+      replyOptions: { embeds: [embed], files, flags: "Ephemeral" },
     });
 }
 
@@ -131,7 +133,7 @@ export async function errorEmbedCV2(options: {
   if (reason) content.push(reason);
   if (!title && !reason)
     content.push(
-      "The bot has experienced an internal error.\nThe team has been informed. If you keep encountering this issue, you can go to our [support server](https://discord.gg/c6C25P4BuY) to report it.",
+      "The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)",
     );
 
   const container = new ContainerBuilder()
@@ -171,7 +173,7 @@ export async function errorEmbedCV2(options: {
       process.env.DEV_ERROR_CHANNEL_ID!,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
-    await channel.send({ components: [container], flags: "IsComponentsV2" });
+    await channel.send({ components: [container], files, flags: "IsComponentsV2" });
   }
 
   if (log) console.error(error);
@@ -180,7 +182,7 @@ export async function errorEmbedCV2(options: {
       interaction,
       replyOptions: {
         components: [container],
-        files: files,
+        files,
         flags: ["Ephemeral", "IsComponentsV2"],
       },
     });

@@ -19,8 +19,8 @@ export const data = new SlashCommandSubcommandBuilder()
   .addStringOption(string =>
     string.setName("duration").setDescription("The duration of the ban (e.g 2mo, 1y)."),
   )
-  .addBooleanOption(bool =>
-    bool.setName("del").setDescription("If true, the user's messages will be deleted."),
+  .addStringOption(string =>
+    string.setName("del").setDescription("Time of messages to delete (e.g 6h, 30m, max - 7d)."),
   )
   .addBooleanOption(bool =>
     bool
@@ -36,7 +36,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const userOrMember = (await safeMembers(guild)).has(user.id);
   const duration = interaction.options.getString("duration");
   const reason = interaction.options.getString("reason");
-  const del = interaction.options.getBoolean("del");
+  const del = interaction.options.getString("del");
+  let delSec;
 
   if (
     await errorCheck("Ban Members", {
@@ -69,6 +70,24 @@ export async function run(interaction: ChatInputCommandInteraction) {
     interaction.options.getBoolean("silent") ??
     ((await getSetting(guild.id, "moderation", "silent")) as boolean);
 
+  if (del) {
+    // this has to be in seconds, thanks to whoever made the change
+    delSec = ms(del) / 1000;
+    if (!delSec || delSec <= 0)
+      return await errorEmbed({
+        interaction,
+        title: `The bot can't remove messages of ${user.username} while banning.`,
+        reason: "The duration is invalid.",
+      });
+
+    if (delSec > 604800)
+      return await errorEmbed({
+        interaction,
+        title: `The bot can't remove messages of ${user.username} while banning.`,
+        reason: "The duration is longer than 7 days.",
+      });
+  }
+
   try {
     await modEmbed(
       {
@@ -83,16 +102,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
       },
       reason,
     );
-    await guild.members.ban(user.id, { reason: reason ?? undefined });
-    if (del) {
-      for await (const channel of await guild.channels.fetch()) {
-        if (!channel[1] || !channel[1].isTextBased()) continue;
-        const messages = (await channel[1].messages.fetch({ limit: 100 })).filter(
-          m => m.author.id == user.id && !m.partial,
-        );
-        await channel[1].bulkDelete(messages, true);
-      }
-    }
+    await guild.members.ban(user.id, {
+      reason: reason ?? undefined,
+      deleteMessageSeconds: delSec ?? undefined,
+    });
   } catch (error) {
     return await errorEmbed({ interaction, error, forward: true, fileName: "ban.ts" });
   }

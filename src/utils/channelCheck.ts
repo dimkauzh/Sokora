@@ -58,12 +58,12 @@ export async function channelCheck(options: {
       name: "⁉️ • What happened",
       value: channel
         ? isValid(channel)
-          ? `Sokora needs ${permType == "View" ? "**View Channel**" : "both **View Channel and **Send Messages**"} permission in ${mention(channel.id, "CHANNEL")}, requested by setting \`${setting.category}.${setting.setting}\`, but it doesn't have it anymore. **This setting will be reset to default.**`
-          : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that is neither a text nor an announcements channel! We cannot send messages to ${mention(channel.id, "CHANNEL")}. **This setting will be reset to default.**`
-        : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that no longer exists! **This setting will be reset to default.**`,
+          ? `Sokora needs ${permType == "View" ? "**View Channel**" : "both **View Channel** and **Send Messages**"} permission in ${mention(channel.id, "CHANNEL")}, requested by setting \`${setting.category}.${setting.setting}\`, but it doesn't have it anymore. **This setting has been reset to default.**`
+          : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that is neither a text nor an announcements channel! We cannot send messages to ${mention(channel.id, "CHANNEL")}. **This setting has been reset to default.**`
+        : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that no longer exists! **This setting has been reset to default.**`,
     })
     .setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` })
-    .setColor(await colorize({ hue: Sokolors.Yellow }));
+    .setColor(await colorize({ hue: Sokolors.Red }));
 
   const dm = await (await guild.fetchOwner())?.createDM().catch(() => null);
   if (!channel || !isValid(channel)) return await reset();

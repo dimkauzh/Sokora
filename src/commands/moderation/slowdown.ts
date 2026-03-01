@@ -14,7 +14,9 @@ export const data = new SlashCommandSubcommandBuilder()
   .addStringOption(string =>
     string
       .setName("time")
-      .setDescription("Time to slow the channel down to (e.g 30m, 1d, 2h). 0 to remove slowdown.")
+      .setDescription(
+        "Time to slow the channel down to (e.g 30m, 2h, max - 6h). 0 for no slowdown.",
+      )
       .setRequired(true),
   )
   .addStringOption(string =>

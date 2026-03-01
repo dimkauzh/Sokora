@@ -20,15 +20,13 @@ export function scheduleUnban(
   const timeout = setTimeout(
     async () => {
       try {
+        removeModeration(guildID, userID);
+        scheduledUnbans.delete(key);
         const guild = await safeGuild(client, guildID);
-        if (!guild) {
-          removeModeration(guildID, userID);
-          return scheduledUnbans.delete(key);
-        }
+        if (!guild) return;
 
         const user = (await guild.bans.fetch(userID)).user;
         if (!user) {
-          removeModeration(guildID, userID);
           return await errorEmbed({
             client,
             title: `Failed to unban user ${userID} in guild ${guildID}.`,
@@ -65,8 +63,6 @@ export function scheduleUnban(
 
         await logChannel(guild, { embeds: [embed] });
         await guild.members.unban(userID, "Temporary ban has expired");
-        removeModeration(guildID, userID);
-        scheduledUnbans.delete(key);
       } catch (error) {
         return await errorEmbed({
           client,
