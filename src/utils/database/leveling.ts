@@ -64,9 +64,8 @@ export async function getXpForCurrentLevel(guildID: string, userID: string): Pro
   return formula(difficulty, calculateLevel({ difficulty, xp: getUserXp(guildID, userID) }));
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-export async function getLevelRewards(_guildID: string): Promise<LevelReward[] | null> {
-  const content = ["20#1408912300634542100", "5#1343140645132308532"];
+export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
+  const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
   if (!content) return null;
   return content.map(s => {
     const channel = s.includes("#");
