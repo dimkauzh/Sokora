@@ -4,8 +4,7 @@ import {
   ContainerBuilder,
   EmbedBuilder,
   FileBuilder,
-  SeparatorBuilder,
-  TextDisplayBuilder,
+  MessageCreateOptions,
   type AnySelectMenuInteraction,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
@@ -13,11 +12,11 @@ import {
   type InteractionResponse,
   type Message,
   type ModalSubmitInteraction,
-  type RGBTuple,
 } from "discord.js";
 import { safeChannel, safeReply } from "utils/safeThings";
-import { colorize, Sokolors } from "../colorGen";
+import { Sokolors } from "../colorGen";
 import { errorType } from "../errorType";
+import SimpleEmbedBuilder from "./SimpleEmbedBuilder";
 
 /**
  * Sends the embed containing an error.
@@ -37,8 +36,9 @@ export async function errorEmbed(options: {
   forward?: boolean;
   fileName?: string;
   dmOwner?: boolean;
+  cv2?: boolean;
 }) {
-  const { interaction, title, reason, log, forward, fileName, dmOwner } = options;
+  const { interaction, title, reason, log, forward, fileName, dmOwner, cv2 } = options;
   const client = options.client ? options.client : interaction ? interaction.client : null;
   if (!client && !interaction)
     return console.error(
@@ -52,16 +52,17 @@ export async function errorEmbed(options: {
   if (reason) content.push(reason);
   if (!title && !reason)
     content.push(
-      "The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)",
+      `The bot has experienced an internal error.
+      The team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)`,
     );
-
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: "Something went wrong!" })
-    .setDescription(content.join("\n"))
-    .setColor(await colorize({ hue: Sokolors.Red }));
-
-  if (options.error)
-    embed.addFields(
+  
+  const embed = await SimpleEmbedBuilder.from({
+    author: "Something went wrong!",
+    desc: content.join("\n"),
+    fields: options.error ? [
+      {
+        divider: true
+      },
       {
         name: "💬 • Error message",
         value: `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
@@ -74,11 +75,23 @@ export async function errorEmbed(options: {
             : "The error stacktrace is an attachment below this embed due to it being too large."
           : "No error stacktrace.",
       },
-    );
-
+    ] : [],
+    color: Sokolors.Red
+  }, cv2)
+  
   const files: AttachmentBuilder[] = [];
-  if (stack && stack.length >= 4096)
+  if (stack && stack.length >= 4096) {
     files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
+    if (cv2) (embed as ContainerBuilder).addFileComponents(new FileBuilder().setURL("attachment://error.txt"));
+  }
+
+  let messageObject: MessageCreateOptions = { files }
+  let flags: any[] = []; // I don't like it but i'm forced to do it like this (flags don't have their separate type)
+  if (embed instanceof EmbedBuilder) messageObject.embeds = [embed]
+  else {
+    messageObject.components = [embed];
+    flags.push("IsComponentsV2");
+  }
 
   if (forward) {
     const channel = await safeChannel(
@@ -86,106 +99,22 @@ export async function errorEmbed(options: {
       process.env.DEV_ERROR_CHANNEL_ID!,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
-    await channel.send({ embeds: [embed], files });
+    await channel.send({ ...messageObject, flags });
   }
 
   if (dmOwner) {
     const dm = await (await interaction?.guild!.fetchOwner())?.createDM().catch(() => null);
-    if (dm) await dm.send({ embeds: [embed], files });
+    if (dm) await dm.send({ ...messageObject, flags });
   }
 
   if (log) console.error(error);
-  if (interaction)
+  if (interaction) {
+    flags.push("Ephemeral");
     return await safeReply({
       interaction,
-      replyOptions: { embeds: [embed], files, flags: "Ephemeral" },
+      replyOptions: { ...messageObject, flags },
     });
-}
-
-/**
- * Sends a CV2 container containing an error.
- * @param interaction The interaction.
- * @param title The error.
- * @param reason The reason of the error.
- * @param forward Whether or not should the error embed be forwarded to the error log channel.
- * @returns Embed with the error description.
- */
-export async function errorEmbedCV2(options: {
-  interaction?: ChatInputCommandInteraction | ButtonInteraction | AnySelectMenuInteraction;
-  client?: Client;
-  error?: unknown | Error;
-  title?: string;
-  reason?: string;
-  log?: boolean;
-  forward?: boolean;
-}) {
-  const { interaction, title, reason, log, forward } = options;
-  const client = options.client ? options.client : interaction ? interaction.client : null;
-  if (!client && !interaction)
-    return console.error(
-      "You need to provide either a client or an interaction for errorEmbed to work.",
-    );
-
-  const error = errorType(options.error);
-  const stack = error.stack;
-  const content = [];
-  if (title) content.push(`**${title}**`);
-  if (reason) content.push(reason);
-  if (!title && !reason)
-    content.push(
-      "The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)",
-    );
-
-  const container = new ContainerBuilder()
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(`Something went wrong!\n${content.join("\n")}`),
-    )
-    .setAccentColor((await colorize({ hue: Sokolors.Red, cv2: true })) as RGBTuple);
-
-  if (options.error)
-    container
-      .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(`💬 • Error message\n${codeBlock(error.message)}`),
-      )
-      .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
-      .addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(
-          `📜 • Error stack\n${
-            stack
-              ? stack.length <= 4096
-                ? codeBlock(stack)
-                : "The error stacktrace is an attachment due to it being too large."
-              : "No error stacktrace."
-          }`,
-        ),
-      );
-
-  const files: AttachmentBuilder[] = [];
-  if (stack && stack.length >= 4096) {
-    files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
-    container.addFileComponents(new FileBuilder().setURL("attachment://error.txt"));
   }
-
-  if (forward) {
-    const channel = await safeChannel(
-      client ?? interaction!.client,
-      process.env.DEV_ERROR_CHANNEL_ID!,
-    );
-    if (!channel?.isTextBased() || !channel.isSendable()) return;
-    await channel.send({ components: [container], files, flags: "IsComponentsV2" });
-  }
-
-  if (log) console.error(error);
-  if (interaction)
-    return await safeReply({
-      interaction,
-      replyOptions: {
-        components: [container],
-        files,
-        flags: ["Ephemeral", "IsComponentsV2"],
-      },
-    });
 }
 
 export async function buttonCheck(options: {
@@ -197,31 +126,20 @@ export async function buttonCheck(options: {
 }) {
   const { i, interaction, reply, cv2, noExecuteError } = options;
   if (i.message.id != (await reply.fetch()).id) {
-    if (cv2)
-      return await errorEmbedCV2({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
     return await errorEmbed({
       interaction: i,
       title:
         "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
+      cv2,
     });
   }
 
   if (noExecuteError) return;
   if (i.user.id != interaction.user.id) {
-    if (cv2)
-      return await errorEmbedCV2({
-        interaction: i,
-        title: "You are not the person who executed this command.",
-      });
-
     return await errorEmbed({
       interaction: i,
       title: "You are not the person who executed this command.",
+      cv2,
     });
   }
 }
