@@ -2,13 +2,16 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  EmbedBuilder,
+  ContainerBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import SimpleEmbedBuilder from "embeds/SimpleEmbedBuilder";
 import { version } from "package";
-import { colorize, Sokolors } from "utils/colorGen";
-import { dotCheck } from "utils/dotCheck";
+import { Sokolors } from "utils/colorGen";
+// import { dotCheck } from "utils/dotCheck";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";
 
@@ -24,15 +27,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const members = guilds.map(guild => guild.memberCount).reduce((a, b) => a + b);
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}About Sokora`,
-      iconURL: avatar,
-    })
-    .setDescription(
-      "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
-    )
-    .setFields(
+  const cv2 = true;
+  const embed = await SimpleEmbedBuilder.from({
+    author: `About Sokora`,
+    thumb: !cv2 ? avatar : "",
+    desc: "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
+    fields: [
       {
         name: "📃 • General",
         value: [
@@ -50,9 +50,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
           "Also, please read the [ToS](https://sokora.org/terms) and the [privacy policy](https://sokora.org/privacy).",
         ].join("\n"),
       },
-    )
-    .setFooter({ text: replace("(madeWith)") })
-    .setColor(await colorize({ user, avatar, hue: Sokolors.Purple }));
+    ],
+    footer : replace("(madeWith)"),
+    color: { user, avatar, hue: Sokolors.Purple },
+  }, cv2);
+
+  if (cv2) { // Sokora Banner
+    (embed as ContainerBuilder).spliceComponents(0, 0, new MediaGalleryBuilder().addItems(
+      new MediaGalleryItemBuilder().setURL("https://raw.githubusercontent.com/Chiissu/Sokora/refs/heads/dev/static/banner.png")
+    ))
+  }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
@@ -65,11 +72,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setURL("https://ko-fi.com/sokoradesu")
       .setEmoji("☕")
       .setStyle(ButtonStyle.Link),
-    new ButtonBuilder()
-      .setLabel("or through PayPal!")
-      .setURL("https://paypal.me/SokoraTheBot")
-      .setStyle(ButtonStyle.Link),
+    // new ButtonBuilder()
+    //   .setLabel("•  or through PayPal!")
+    //   .setURL("https://paypal.me/SokoraTheBot")
+    //   .setEmoji("🅿️")
+    //   .setStyle(ButtonStyle.Link),
   );
 
-  await interaction.reply({ embeds: [embed], components: [row], flags: "Ephemeral" });
+  const messageObject: any = {components: [row], flags: ["Ephemeral"]};
+  if (cv2) {
+    messageObject.components.splice(0, 0, embed)
+    messageObject.flags.push("IsComponentsV2")
+  } else {
+    messageObject.embeds = [embed]
+  }
+  await interaction.reply(messageObject);
 }

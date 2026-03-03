@@ -75,7 +75,7 @@ export async function errorEmbed(options: {
           : "No error stacktrace.",
       },
     ] : [],
-    color: Sokolors.Red
+    color: { hue: Sokolors.Red },
   }, cv2)
   
   const files: AttachmentBuilder[] = [];
