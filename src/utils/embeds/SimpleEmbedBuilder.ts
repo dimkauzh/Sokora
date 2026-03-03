@@ -58,7 +58,7 @@ class SimpleEmbedBuilder {
                     )
                 }
             }
-            
+
             if (content.color) embed.setAccentColor((await colorize({ hue: content.color, cv2: true })) as RGBTuple);
 
         } else {
@@ -71,7 +71,7 @@ class SimpleEmbedBuilder {
                 content.fields = content.fields.map(field => isSeparator(field)
                     ? {name: "", value: `${"\n".repeat((field.spacing || 1)-1)}`}
                     : field
-                );
+                ).filter(f => f.name || f.value);
                 embed.addFields(content.fields as APIEmbedField[])
             }
 

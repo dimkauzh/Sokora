@@ -52,8 +52,7 @@ export async function errorEmbed(options: {
   if (reason) content.push(reason);
   if (!title && !reason)
     content.push(
-      `The bot has experienced an internal error.
-      The team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)`,
+      `The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)`,
     );
   
   const embed = await SimpleEmbedBuilder.from({
