@@ -16,22 +16,22 @@
     "lint": "eslint --cache ."
   },
   "dependencies": {
-    "@hokkiai/djs-level-importer": "latest",
+    "@hokkiai/djs-level-importer": "^1.2.0",
     "@top-gg/sdk": "^3.1.6",
     "chart.js": "^4.5.1",
     "chartjs-node-canvas": "^5.0.0",
-    "colorthief": "^2.7.0",
+    "colorthief": "^3.3.1",
     "discord.js": "^14.25.1",
     "enhanced-ms": "^4.2.0",
     "mathjs": "^15.1.1"
   },
   "devDependencies": {
-    "@eslint/js": "^9.39.3",
+    "@eslint/js": "^10.0.1",
     "@types/colorthief": "^2.6.1",
     "@typescript-eslint/eslint-plugin": "^8.56.1",
     "@typescript-eslint/parser": "^8.56.1",
     "bun-types": "^1.3.10",
-    "eslint": "^9.39.3",
+    "eslint": "^10.0.3",
     "prettier": "^3.8.1",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.56.1"

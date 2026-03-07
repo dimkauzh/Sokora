@@ -54,48 +54,61 @@ export async function errorEmbed(options: {
     content.push(
       `The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)`,
     );
-  
-  const embed = await SimpleEmbedBuilder.from({
-    author: "Something went wrong!",
-    desc: content.join("\n"),
-    fields: options.error ? [
-      {
-        divider: true
-      },
-      {
-        name: "💬 • Error message",
-        value: `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
-      },
-      {
-        name: "📜 • Error stack",
-        value: stack
-          ? stack.length <= 4096
-            ? codeBlock(stack)
-            : "The error stacktrace is an attachment below this embed due to it being too large."
-          : "No error stacktrace.",
-      },
-    ] : [],
-    color: { hue: Sokolors.Red },
-  }, cv2)
-  
+
+  const embed = await SimpleEmbedBuilder.from(
+    {
+      author: "Something went wrong!",
+      desc: content.join("\n"),
+      fields: options.error
+        ? [
+            { divider: true },
+            {
+              name: "💬 • Error message",
+              value: `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
+            },
+            {
+              name: "📜 • Error stack",
+              value: stack
+                ? stack.length <= 4096
+                  ? codeBlock(stack)
+                  : "The error stacktrace is an attachment below this embed due to it being too large."
+                : "No error stacktrace.",
+            },
+          ]
+        : [],
+      color: { hue: Sokolors.Red },
+    },
+    cv2,
+  );
+
   const files: AttachmentBuilder[] = [];
   if (stack && stack.length >= 4096) {
     files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
-    if (cv2) (embed as ContainerBuilder).addFileComponents(new FileBuilder().setURL("attachment://error.txt"));
+    if (cv2)
+      (embed as ContainerBuilder).addFileComponents(
+        new FileBuilder().setURL("attachment://error.txt"),
+      );
   }
 
-  let messageObject: MessageCreateOptions = { files }
+  let messageObject: MessageCreateOptions = { files };
   let flags: any[] = []; // I don't like it but i'm forced to do it like this (flags don't have their separate type)
-  if (embed instanceof EmbedBuilder) messageObject.embeds = [embed]
+  if (embed instanceof EmbedBuilder) messageObject.embeds = [embed];
   else {
     messageObject.components = [embed];
     flags.push("IsComponentsV2");
   }
 
   if (forward) {
+    if (!process.env.DEV_ERROR_CHANNEL_ID) {
+      console.log(
+        "hey, you don't have DEV_ERROR_CHANNEL_ID set in .env and the bot tried to forward an error message to undefined :D",
+      );
+      return console.error(error);
+    }
+
     const channel = await safeChannel(
       client ?? interaction!.client,
-      process.env.DEV_ERROR_CHANNEL_ID!,
+      process.env.DEV_ERROR_CHANNEL_ID,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
     await channel.send({ ...messageObject, flags });

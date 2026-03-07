@@ -1,5 +1,6 @@
 import {
   AnySelectMenuInteraction,
+  BaseFetchOptions,
   ButtonInteraction,
   ChatInputCommandInteraction,
   Client,
@@ -53,8 +54,8 @@ export async function safeMembers(guild: Guild) {
  * @param id The ID of the user.
  * @returns A user.
  */
-export async function safeUser(client: Client, id: string) {
-  return client.users.cache.get(id) ?? (await client.users.fetch(id));
+export async function safeUser(client: Client, id: string, force?: BaseFetchOptions) {
+  return client.users.cache.get(id) ?? (await client.users.fetch(id, force));
 }
 
 /**
