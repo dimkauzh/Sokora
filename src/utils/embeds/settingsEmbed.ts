@@ -158,7 +158,7 @@ export async function settingsEmbed(
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const exemptButtons = ["reset_start", "reset_category", "cancel", "yes", "no", "return", "add"];
   const eventNames = ["messageUpdate", "messageDelete"];
-  const color = (await colorize({ hue: Sokolors.Blue, cv2: true })) as RGBTuple;
+  const color = (await colorize({ hue: Sokolors.Blue })) as RGBTuple;
   let settingsObj = settingsDef.settings;
   let settingName = "";
   let reset = false;
@@ -418,7 +418,7 @@ export async function settingsEmbed(
   });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
-    if (await buttonCheck({ i, interaction, reply, cv2: true })) return;
+    if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 60000 });
     const cID = i.customId;
 
@@ -542,7 +542,7 @@ export async function settingsEmbed(
               .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
               .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
               .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
-              .setAccentColor((await colorize({ hue, cv2: true })) as RGBTuple);
+              .setAccentColor((await colorize({ hue })) as RGBTuple);
           }
 
           const value = modalInteraction.fields.getTextInputValue("setting");

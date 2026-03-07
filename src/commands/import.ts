@@ -111,8 +111,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ),
       );
 
-    const color = (await colorize({ user, avatar, hue: 300, cv2: true })) as RGBTuple;
-    const errorColor = (await colorize({ user, avatar, hue: Sokolors.Red, cv2: true })) as RGBTuple;
+    const color = (await colorize({ user, avatar, hue: 300 })) as RGBTuple;
+    const errorColor = (await colorize({ user, avatar, hue: Sokolors.Red })) as RGBTuple;
     container
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
@@ -149,7 +149,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
   const collector = reply.createMessageComponentCollector({ time: 120000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (await buttonCheck({ i, interaction, reply, cv2: true })) return;
+    if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 120000 });
     const cID = i.customId as keyof typeof SupportedBots;
     const bots = {
@@ -197,8 +197,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         collector.stop("bot_chosen");
         const collector1 = reply1.createMessageComponentCollector({ time: 120000 });
         collector1.on("collect", async (i1: ButtonInteraction) => {
-          if (await buttonCheck({ i: i1, interaction: replyInteraction, reply: reply1, cv2: true }))
-            return;
+          if (await buttonCheck({ i: i1, interaction: replyInteraction, reply: reply1 })) return;
 
           collector1.resetTimer({ time: 120000 });
           let content;

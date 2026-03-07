@@ -20,7 +20,7 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction, f
     } catch (e) {
       console.error("Failed to send error message");
       console.error(e);
-    };
+    }
   };
 
   const processEventListeners: { [key: string]: { listener: (...args: any[]) => Promise<void> } } =

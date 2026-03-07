@@ -1,5 +1,5 @@
 import { Color, getColor, getSwatches } from "colorthief";
-import { ColorResolvable, type User } from "discord.js";
+import { type User } from "discord.js";
 
 /** Sokolors, colors of Sokora, get it? */
 export enum Sokolors {
@@ -14,25 +14,16 @@ export type ColorOptions = {
   hue: Sokolors;
   user?: User;
   avatar?: string;
-  cv2?: boolean;
 };
 
-export async function colorize(
-  options: ColorOptions,
-): Promise<ColorResolvable | [number, number, number] | null> {
-  const { user, avatar, hue, cv2 } = options;
+export async function colorize(options: ColorOptions): Promise<[number, number, number] | null> {
+  const { user, avatar, hue } = options;
 
-  function genColor(): ColorResolvable | [number, number, number] | null {
-    if (cv2)
-      return Bun.color(
-        `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
-        "[rgb]",
-      );
-
+  function genColor(): [number, number, number] | null {
     return Bun.color(
       `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
-      "hex",
-    ) as ColorResolvable;
+      "[rgb]",
+    );
   }
 
   function randomizeColor(hue: number, saturation: number, lightness: number) {
@@ -41,8 +32,7 @@ export async function colorize(
       saturation + 15 * Math.random(),
       lightness + 15 * Math.random(),
     ];
-    if (cv2) return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "[rgb]");
-    return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "hex") as ColorResolvable;
+    return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "[rgb]");
   }
 
   if (!avatar) return genColor();

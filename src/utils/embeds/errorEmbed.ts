@@ -1,7 +1,6 @@
 import {
   AttachmentBuilder,
   codeBlock,
-  ContainerBuilder,
   EmbedBuilder,
   FileBuilder,
   MessageCreateOptions,
@@ -16,7 +15,7 @@ import {
 import { safeChannel, safeReply } from "utils/safeThings";
 import { Sokolors } from "../colorGen";
 import { errorType } from "../errorType";
-import SimpleEmbedBuilder from "./SimpleEmbedBuilder";
+import { SimpleEmbedBuilder } from "./SimpleEmbedBuilder";
 
 /**
  * Sends the embed containing an error.
@@ -36,9 +35,8 @@ export async function errorEmbed(options: {
   forward?: boolean;
   fileName?: string;
   dmOwner?: boolean;
-  cv2?: boolean;
 }) {
-  const { interaction, title, reason, log, forward, fileName, dmOwner, cv2 } = options;
+  const { interaction, title, reason, log, forward, fileName, dmOwner } = options;
   const client = options.client ? options.client : interaction ? interaction.client : null;
   if (!client && !interaction)
     return console.error(
@@ -55,47 +53,39 @@ export async function errorEmbed(options: {
       `The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)`,
     );
 
-  const embed = await SimpleEmbedBuilder.from(
-    {
-      author: "Something went wrong!",
-      desc: content.join("\n"),
-      fields: options.error
-        ? [
-            { divider: true },
-            {
-              name: "💬 • Error message",
-              value: `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
-            },
-            {
-              name: "📜 • Error stack",
-              value: stack
-                ? stack.length <= 4096
-                  ? codeBlock(stack)
-                  : "The error stacktrace is an attachment below this embed due to it being too large."
-                : "No error stacktrace.",
-            },
-          ]
-        : [],
-      color: { hue: Sokolors.Red },
-    },
-    cv2,
-  );
+  const embed = await SimpleEmbedBuilder({
+    author: "Something went wrong!",
+    desc: content.join("\n"),
+    fields: options.error
+      ? [
+          { divider: true },
+          {
+            name: "💬 • Error message",
+            value: `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
+          },
+          {
+            name: "📜 • Error stack",
+            value: stack
+              ? stack.length <= 4096
+                ? codeBlock(stack)
+                : "The error stacktrace is an attachment below this embed due to it being too large."
+              : "No error stacktrace.",
+          },
+        ]
+      : [],
+    color: { hue: Sokolors.Red },
+  });
 
   const files: AttachmentBuilder[] = [];
   if (stack && stack.length >= 4096) {
     files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
-    if (cv2)
-      (embed as ContainerBuilder).addFileComponents(
-        new FileBuilder().setURL("attachment://error.txt"),
-      );
+    embed.addFileComponents(new FileBuilder().setURL("attachment://error.txt"));
   }
 
-  let messageObject: MessageCreateOptions = { files };
-  let flags: any[] = []; // I don't like it but i'm forced to do it like this (flags don't have their separate type)
+  const messageObject: MessageCreateOptions = { files };
   if (embed instanceof EmbedBuilder) messageObject.embeds = [embed];
   else {
     messageObject.components = [embed];
-    flags.push("IsComponentsV2");
   }
 
   if (forward) {
@@ -111,20 +101,19 @@ export async function errorEmbed(options: {
       process.env.DEV_ERROR_CHANNEL_ID,
     );
     if (!channel?.isTextBased() || !channel.isSendable()) return;
-    await channel.send({ ...messageObject, flags });
+    await channel.send({ ...messageObject, flags: "IsComponentsV2" });
   }
 
   if (dmOwner) {
     const dm = await (await interaction?.guild!.fetchOwner())?.createDM().catch(() => null);
-    if (dm) await dm.send({ ...messageObject, flags });
+    if (dm) await dm.send({ ...messageObject, flags: "IsComponentsV2" });
   }
 
   if (log) console.error(error);
   if (interaction) {
-    flags.push("Ephemeral");
     return await safeReply({
       interaction,
-      replyOptions: { ...messageObject, flags },
+      replyOptions: { ...messageObject, flags: ["IsComponentsV2", "Ephemeral"] },
     });
   }
 }
@@ -133,16 +122,14 @@ export async function buttonCheck(options: {
   i: ButtonInteraction | AnySelectMenuInteraction;
   interaction: ChatInputCommandInteraction | ButtonInteraction | ModalSubmitInteraction;
   reply: Message | InteractionResponse;
-  cv2: boolean;
   noExecuteError?: boolean;
 }) {
-  const { i, interaction, reply, cv2, noExecuteError } = options;
+  const { i, interaction, reply, noExecuteError } = options;
   if (i.message.id != (await reply.fetch()).id) {
     return await errorEmbed({
       interaction: i,
       title:
         "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      cv2,
     });
   }
 
@@ -151,7 +138,6 @@ export async function buttonCheck(options: {
     return await errorEmbed({
       interaction: i,
       title: "You are not the person who executed this command.",
-      cv2,
     });
   }
 }

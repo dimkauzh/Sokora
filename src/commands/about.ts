@@ -8,7 +8,7 @@ import {
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import SimpleEmbedBuilder from "embeds/SimpleEmbedBuilder";
+import { SimpleEmbedBuilder } from "embeds/SimpleEmbedBuilder";
 import { version } from "package";
 import { Sokolors } from "utils/colorGen";
 import { pluralOrNot } from "utils/pluralOrNot";
@@ -27,44 +27,38 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
   const banner = user.bannerURL({ size: 512 });
-  const cv2 = true;
-  const embed = await SimpleEmbedBuilder.from(
-    {
-      author: `About Sokora`,
-      thumb: !cv2 ? avatar : "",
-      desc: "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
-      fields: [
-        {
-          name: "📃 • General",
-          value: [
-            `Version **${version}**, *Heijun*`,
-            `**${members.toLocaleString("en-US")}** ${pluralOrNot("member", members)} • **${guilds.size.toLocaleString("en-US")}** ${pluralOrNot(
-              "guild",
-              guilds.size,
-            )}${!shards ? "" : ` • **${shards}** ${pluralOrNot("shard", shards)}`}`,
-          ].join("\n"),
-        },
-        {
-          name: "🔗 • Links",
-          value: [
-            "[Discord](https://discord.gg/c6C25P4BuY) • [GitHub](https://www.github.com/SokoraDesu) • [YouTube](https://www.youtube.com/@SokoraDesu) • [Mastodon](https://mastodon.online/@NebulaTheBot@mastodon.social)",
-            "Also, please read the [ToS](https://sokora.org/terms) and the [privacy policy](https://sokora.org/privacy).",
-          ].join("\n"),
-        },
-      ],
-      footer: replace("(madeWith)"),
-      color: { user, avatar, hue: Sokolors.Purple },
-    },
-    cv2,
-  );
+  const embed = await SimpleEmbedBuilder({
+    author: "About Sokora",
+    desc: "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
+    fields: [
+      {
+        name: "📃 • General",
+        value: [
+          `Version **${version}**, *Heijun*`,
+          `**${members.toLocaleString("en-US")}** ${pluralOrNot("member", members)} • **${guilds.size.toLocaleString("en-US")}** ${pluralOrNot(
+            "guild",
+            guilds.size,
+          )}${!shards ? "" : ` • **${shards}** ${pluralOrNot("shard", shards)}`}`,
+        ].join("\n"),
+      },
+      {
+        name: "🔗 • Links",
+        value: [
+          "[Discord](https://discord.gg/c6C25P4BuY) • [GitHub](https://www.github.com/SokoraDesu) • [YouTube](https://www.youtube.com/@SokoraDesu) • [Mastodon](https://mastodon.online/@NebulaTheBot@mastodon.social)",
+          "Also, please read the [ToS](https://sokora.org/terms) and the [privacy policy](https://sokora.org/privacy).",
+        ].join("\n"),
+      },
+    ],
+    footer: replace("(madeWith)"),
+    color: { user, avatar, hue: Sokolors.Purple },
+  });
 
-  if (cv2)
-    if (banner)
-      (embed as ContainerBuilder).spliceComponents(
-        0,
-        0,
-        new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(banner)),
-      );
+  if (banner)
+    (embed as ContainerBuilder).spliceComponents(
+      0,
+      0,
+      new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(banner)),
+    );
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
@@ -80,10 +74,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   );
 
   const messageObject: any = { components: [row], flags: ["Ephemeral"] };
-  if (cv2) {
-    messageObject.components.splice(0, 0, embed);
-    messageObject.flags.push("IsComponentsV2");
-  } else messageObject.embeds = [embed];
+  messageObject.components.splice(0, 0, embed);
+  messageObject.flags.push("IsComponentsV2");
 
   await interaction.reply(messageObject);
 }
