@@ -7,8 +7,8 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
-import { safeMember } from "utils/safeThings";
+import { colorize, Sokolors } from "utils/colorGen";
+import { safeChannel, safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("remove")
@@ -32,15 +32,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const id = interaction.options.getString("id")!;
   const news = get(guild.id, id);
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
-
-  const newsChannel = (await guild.channels
-    .fetch(((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id)
-    .catch(() => null)) as TextChannel;
+  const newsChannel = (await safeChannel(
+    guild,
+    ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
+  )) as TextChannel;
 
   if (newsChannel) await newsChannel.messages.delete(news.messageID);
   deleteNews(guild.id, id);
   await interaction.reply({
-    embeds: [new EmbedBuilder().setTitle("News removed.").setColor(genColor(100))],
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("News removed.")
+        .setColor(await colorize({ hue: Sokolors.Green })),
+    ],
     flags: "Ephemeral",
   });
 }

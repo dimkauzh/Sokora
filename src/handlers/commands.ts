@@ -1,5 +1,5 @@
 import {
-  ApplicationCommandDataResolvable,
+  ApplicationCommandData,
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
@@ -9,8 +9,7 @@ import { readdirSync } from "fs";
 import { join } from "path";
 import { pathToFileURL } from "url";
 
-export const commands: { data: ApplicationCommandDataResolvable; run: any; autocomplete: any }[] =
-  [];
+export const commands: { data: ApplicationCommandData; run: any; autocomplete: any }[] = [];
 
 export const subCommands: {
   data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;
@@ -42,11 +41,9 @@ async function createSubCommand(name: string, client: Client) {
   for (const subCommandFile of readdirSync(join(commandsPath, name), {
     withFileTypes: true,
   })) {
+    const subName = subCommandFile.name;
     if (subCommandFile.isFile()) {
-      const subCommand = await import(
-        pathToFileURL(join(commandsPath, name, subCommandFile.name)).toString()
-      );
-
+      const subCommand = await import(pathToFileURL(join(commandsPath, name, subName)).toString());
       if (subCommand.data instanceof SlashCommandSubcommandBuilder)
         command.addSubcommand(subCommand.data);
       else command.addSubcommandGroup(subCommand.data);
@@ -56,17 +53,15 @@ async function createSubCommand(name: string, client: Client) {
     }
 
     const subCommandGroup = new SlashCommandSubcommandGroupBuilder()
-      .setName(subCommandFile.name.replaceAll(".ts", "").toLowerCase())
+      .setName(subName.replaceAll(".ts", "").toLowerCase())
       .setDescription("This subcommand group has no description.");
 
-    for (const subCommandGroupFile of readdirSync(join(commandsPath, name, subCommandFile.name), {
+    for (const subCommandGroupFile of readdirSync(join(commandsPath, name, subName), {
       withFileTypes: true,
     })) {
       if (!subCommandGroupFile.isFile()) continue;
       const subCommand = await import(
-        pathToFileURL(
-          join(commandsPath, name, subCommandFile.name, subCommandGroupFile.name),
-        ).toString()
+        pathToFileURL(join(commandsPath, name, subName, subCommandGroupFile.name)).toString()
       );
 
       subCommandGroup.addSubcommand(subCommand.data);

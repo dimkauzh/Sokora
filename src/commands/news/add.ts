@@ -1,7 +1,8 @@
 import { addNews, listAllQuery } from "database/news";
 import {
-  ActionRowBuilder,
   EmbedBuilder,
+  FileUploadBuilder,
+  LabelBuilder,
   ModalBuilder,
   SlashCommandSubcommandBuilder,
   TextInputBuilder,
@@ -9,7 +10,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { replaceVariables } from "utils/replace";
 import { safeMember } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
@@ -27,30 +28,36 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Manage Server** permission.",
     });
 
-  const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("title")
-      .setPlaceholder("Write a title")
-      .setMaxLength(30)
-      .setStyle(TextInputStyle.Short)
-      .setLabel("Title")
-      .setRequired(true),
-  );
-
-  const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("body")
-      .setPlaceholder("Insert your content here")
-      .setMaxLength(4000)
-      .setStyle(TextInputStyle.Paragraph)
-      .setLabel("Content (supports Markdown)")
-      .setRequired(true),
-  );
-
   const newsModal = new ModalBuilder()
     .setCustomId("addnews")
     .setTitle("•  Write your news.")
-    .addComponents(firstActionRow, secondActionRow);
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Title")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("title")
+            .setPlaceholder("Write a title")
+            .setMaxLength(30)
+            .setStyle(TextInputStyle.Short)
+            .setRequired(true),
+        ),
+      new LabelBuilder()
+        .setLabel("Content (supports Markdown)")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("body")
+            .setPlaceholder("Insert your content here")
+            .setMaxLength(4000)
+            .setStyle(TextInputStyle.Paragraph)
+            .setRequired(true),
+        ),
+      new LabelBuilder()
+        .setLabel("Optionally, upload a banner image")
+        .setFileUploadComponent(
+          new FileUploadBuilder().setCustomId("image").setMinValues(0).setRequired(false),
+        ),
+    );
 
   try {
     await interaction.showModal(newsModal);
@@ -73,8 +80,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
       interaction.user,
     );
 
+    const image = i.fields.getUploadedFiles("image")?.at(0)?.url;
+
     const id = (listAllQuery.all(guild.id).length + 1).toString();
-    addNews(guild.id, title, body, i.user.displayName, i.user.avatarURL()!, null!, id);
+    addNews(
+      guild.id,
+      title,
+      body,
+      i.user.displayName,
+      i.user.avatarURL()!,
+      null!,
+      image ?? null,
+      id,
+    );
 
     try {
       await sendChannelNews(guild, id, interaction);
@@ -83,7 +101,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
     }
 
     await i.reply({
-      embeds: [new EmbedBuilder().setTitle("News added.").setColor(genColor(100))],
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("News added.")
+          .setColor(await colorize({ hue: Sokolors.Green })),
+      ],
       flags: "Ephemeral",
     });
   });

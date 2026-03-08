@@ -1,6 +1,5 @@
 import { getSetting } from "database/settings";
 import {
-  ChannelType,
   DMChannel,
   InteractionResponse,
   Message,
@@ -43,17 +42,7 @@ export async function logChannel(
   if (logChannel) {
     channel = (await safeChannel(guild, `${logChannel}`)
       .then((channel: Channel) => {
-        if (
-          !(
-            channel.type == ChannelType.GuildText ||
-            channel.type == ChannelType.GuildAnnouncement ||
-            channel.type == ChannelType.GuildVoice ||
-            channel.type == ChannelType.PublicThread ||
-            channel.type == ChannelType.PrivateThread
-          )
-        )
-          return null;
-
+        if (!channel.isTextBased()) return null;
         return channel as TextChannel;
       })
       .catch(() => null)) as TextChannel;

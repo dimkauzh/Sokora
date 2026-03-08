@@ -2,15 +2,16 @@ import { deletePublicServer, listPublicServers } from "database/settings";
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
-  Guild,
   SlashCommandBuilder,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type Guild,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
 import { replace } from "utils/replace";
+import { safeGuild } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
   .setName("serverboard")
@@ -24,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       (await listPublicServers()).map(async entry => {
         try {
           return {
-            guild: await interaction.client.guilds.fetch(entry.guildID),
+            guild: await safeGuild(interaction.client, entry.guildID),
             showInvite: entry.showInvite,
             inviteChannelId: entry.inviteChannelId,
           };
@@ -87,25 +88,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const reply = await interaction.reply({
     embeds: [await getEmbed()],
-    components: pages != 1 ? [row] : [],
+    components: pages > 1 ? [row] : [],
   });
-  if (pages == 1) return;
 
+  if (pages == 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbed({
-        interaction: i,
-        title: "You aren't the person who executed this command.",
-      });
-
+    if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 30000 });
     switch (i.customId) {
       case "left":

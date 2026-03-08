@@ -41,24 +41,17 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )
     return;
 
+  if (channel.isThread() || channel.isDMBased())
+    return await errorEmbed({
+      interaction,
+      title: "You have provided a channel that can't be locked.",
+    });
+
   if (!channel.permissionsFor(guild.id)?.has("SendMessages"))
     return await errorEmbed({
       interaction,
       title: "You can't execute this command.",
       reason: "The channel is already locked.",
-    });
-
-  if (
-    !(
-      channel.type == ChannelType.GuildText ||
-      channel.type == ChannelType.GuildAnnouncement ||
-      channel.type == ChannelType.GuildVoice ||
-      channel.type == ChannelType.GuildStageVoice
-    )
-  )
-    return await errorEmbed({
-      interaction,
-      title: "You have provided a channel that can't be locked.",
     });
 
   try {

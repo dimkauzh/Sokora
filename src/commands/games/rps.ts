@@ -1,14 +1,14 @@
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 
@@ -60,7 +60,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ? "Choose your weapon!"
         : `${user.username} has challenged ${opponent.username} to a game!\nBoth players, make your choice!`,
     )
-    .setColor(genColor(60));
+    .setColor(await colorize({ hue: Sokolors.Yellow }));
 
   if (opponent.id == user.id)
     return await errorEmbed({
@@ -75,20 +75,18 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   collector.on("collect", async (i: ButtonInteraction) => {
     if (!reply) return;
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
+    if (await buttonCheck({ i, interaction, reply, noExecuteError: true })) return;
     if (i.user.id != opponent.id && i.user.id != user.id)
       return await errorEmbed({ interaction: i, title: "You aren't participating." });
 
     playerChoices.set(i.user.id, i.customId.split("_")[1] as RPSChoice);
     if (!opponent.bot) {
       await i.reply({
-        embeds: [new EmbedBuilder().setTitle("Choice recorded!").setColor(genColor(120))],
+        embeds: [
+          new EmbedBuilder()
+            .setTitle("Choice recorded!")
+            .setColor(await colorize({ hue: Sokolors.Green })),
+        ],
         flags: "Ephemeral",
       });
       if (playerChoices.size == 2) collector.stop("game-complete");
@@ -103,7 +101,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             new EmbedBuilder()
               .setAuthor({ name: "Game timed out" })
               .setDescription("The game has been canceled due to inactivity.")
-              .setColor(genColor(0)),
+              .setColor(await colorize({ hue: Sokolors.Red })),
           ],
           components: [],
         });
@@ -123,7 +121,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
             `${winner == 0 ? "**It's a tie!**" : winner == 1 ? `**${user.username}**, you win!` : opponent.bot ? `**Sokora** wins!` : `**${opponent.username}**, you win!`}`,
           ].join("\n"),
         )
-        .setColor(genColor(winner == 0 ? 60 : winner == 2 && opponent.bot ? 0 : 120));
+        .setColor(
+          await colorize({
+            hue:
+              winner == 0
+                ? Sokolors.Yellow
+                : winner == 2 && opponent.bot
+                  ? Sokolors.Red
+                  : Sokolors.Green,
+          }),
+        );
 
       await interaction.editReply({ embeds: [resultEmbed], components: [] });
     } catch (error) {

@@ -1,8 +1,8 @@
 import { get, updateNews } from "database/news";
 import { getSetting } from "database/settings";
 import {
-  ActionRowBuilder,
   EmbedBuilder,
+  LabelBuilder,
   ModalBuilder,
   SlashCommandSubcommandBuilder,
   TextInputBuilder,
@@ -12,10 +12,10 @@ import {
   type TextChannel,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
-import { safeChannel, safeMember } from "utils/safeThings";
+import { safeChannel, safeMember, safeRole } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -38,30 +38,31 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const news = get(guild.id, id);
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
 
-  const firstActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("title")
-      .setMaxLength(30)
-      .setStyle(TextInputStyle.Short)
-      .setLabel("Title")
-      .setValue(news.title)
-      .setRequired(true),
-  );
-
-  const secondActionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(
-    new TextInputBuilder()
-      .setCustomId("body")
-      .setMaxLength(4000)
-      .setStyle(TextInputStyle.Paragraph)
-      .setLabel("Content (supports Markdown)")
-      .setValue(news.body)
-      .setRequired(true),
-  );
-
   const editModal = new ModalBuilder()
     .setCustomId("editnews")
     .setTitle(`•  Edit news: ${news.title}`)
-    .addComponents(firstActionRow, secondActionRow);
+    .addLabelComponents(
+      new LabelBuilder()
+        .setLabel("Title")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("title")
+            .setMaxLength(30)
+            .setStyle(TextInputStyle.Short)
+            .setValue(news.title)
+            .setRequired(true),
+        ),
+      new LabelBuilder()
+        .setLabel("Content (supports Markdown)")
+        .setTextInputComponent(
+          new TextInputBuilder()
+            .setCustomId("body")
+            .setMaxLength(4000)
+            .setStyle(TextInputStyle.Paragraph)
+            .setValue(news.body)
+            .setRequired(true),
+        ),
+    );
 
   try {
     await interaction.showModal(editModal);
@@ -74,7 +75,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     const role = (await getSetting(guild.id, "news", "role")) as string;
     let roleToSend: Role | undefined;
-    if (role) roleToSend = guild.roles.cache.get(role);
+    if (role) roleToSend = await safeRole(guild, role);
     const title = i.fields.getTextInputValue("title");
     const body = i.fields.getTextInputValue("body");
     const avatar = news.authorPFP;
@@ -89,9 +90,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       })
       .setTitle(title)
       .setDescription(body)
-      .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)
+      .setTimestamp(news.updatedAt || news.createdAt)
       .setFooter({ text: `Edited news from ${guild.name} • ID: ${news.id}` })
-      .setColor(genColor(200));
+      .setColor(await colorize({ hue: Sokolors.Blue }));
 
     const channel = (await safeChannel(
       guild,
@@ -105,7 +106,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
     updateNews(guild.id, id, title, body);
     await i.reply({
-      embeds: [new EmbedBuilder().setTitle("News edited.").setColor(genColor(100))],
+      embeds: [
+        new EmbedBuilder()
+          .setTitle("News edited.")
+          .setColor(await colorize({ hue: Sokolors.Green })),
+      ],
       flags: "Ephemeral",
     });
   });

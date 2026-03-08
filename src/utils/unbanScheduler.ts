@@ -1,10 +1,10 @@
 import { getPendingBans, removeModeration } from "database/moderation";
 import { Client, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "./colorGen";
+import { colorize, Sokolors } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
-import { safeMember } from "./safeThings";
+import { safeGuild, safeMember } from "./safeThings";
 
 export function scheduleUnban(
   client: Client,
@@ -20,10 +20,13 @@ export function scheduleUnban(
   const timeout = setTimeout(
     async () => {
       try {
-        const guild = await client.guilds.fetch(guildID);
+        removeModeration(guildID, userID);
+        scheduledUnbans.delete(key);
+        const guild = await safeGuild(client, guildID);
+        if (!guild) return;
+
         const user = (await guild.bans.fetch(userID)).user;
         if (!user) {
-          removeModeration(guildID, userID);
           return await errorEmbed({
             client,
             title: `Failed to unban user ${userID} in guild ${guildID}.`,
@@ -56,24 +59,11 @@ export function scheduleUnban(
             [`**Moderator**: ${moderator.displayName}`, "*Temporary ban has expired*"].join("\n"),
           )
           .setFooter({ text: `User ID: ${user.id}` })
-          .setColor(genColor(100));
+          .setColor(await colorize({ hue: Sokolors.Green }));
 
         await logChannel(guild, { embeds: [embed] });
         await guild.members.unban(userID, "Temporary ban has expired");
-        removeModeration(guildID, userID);
-        scheduledUnbans.delete(key);
       } catch (error) {
-        if (String(error).toLowerCase().includes("unknown guild")) {
-          removeModeration(guildID, userID);
-          return await errorEmbed({
-            client,
-            title: `Failed to ban user(s) from guild ${guildID}.`,
-            reason: "The guild is undefined.",
-            log: true,
-            forward: true,
-            fileName: "unbanScheduler.ts",
-          });
-        }
         return await errorEmbed({
           client,
           error,

@@ -52,6 +52,22 @@ export const settingsDefinition: SettingsDefinition = {
         val: 1,
         emoji: "🧩",
       },
+      rewards: {
+        type: "OBJECT",
+        desc: "Set roles and channels to be granted to users who reach specific levels.",
+        iterable: true,
+        emoji: "🌟",
+        settings: {
+          level: {
+            type: "INTEGER",
+            desc: "The level required to get the level reward.",
+          },
+          reward: {
+            type: "REWARD",
+            desc: "The reward that the user gets after reaching the aforementioned level.",
+          },
+        },
+      },
     },
   },
   moderation: {

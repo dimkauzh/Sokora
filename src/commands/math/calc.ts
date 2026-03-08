@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import * as math from "mathjs";
-import { genColor } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("calc")
@@ -38,7 +38,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const embed = new EmbedBuilder()
     .setAuthor({ name: "Calculation result" })
     .setDescription(`\`${expr}\` = **${result}**`)
-    .setColor(genColor(200));
+    .setColor(await colorize({ hue: Sokolors.Blue }));
 
   await interaction.reply({ embeds: [embed] });
 }

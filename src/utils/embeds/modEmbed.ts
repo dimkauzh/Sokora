@@ -7,8 +7,8 @@ import {
 } from "discord.js";
 import ms from "enhanced-ms";
 import { mention } from "utils/mention";
-import { safeMember, safeReply } from "utils/safeThings";
-import { genColor } from "../colorGen";
+import { safeChannel, safeMember, safeReply } from "utils/safeThings";
+import { colorize, Sokolors } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
 import { errorEmbed } from "./errorEmbed";
@@ -44,6 +44,7 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
   const { interaction, user, channel, action, errorOptions } = options;
   const { allErrors, botError, channelError, ownerError, outsideError, banCheckError } =
     errorOptions;
+
   const guild = interaction.guild!;
   const member = await safeMember(guild, interaction.user.id);
   const client = await safeMember(guild, interaction.client.user.id);
@@ -57,14 +58,17 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
         reason: `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`,
       });
 
-  if (channelError)
-    if (!guild.channels.cache.get(channel!)?.permissionsFor(client).has("ViewChannel"))
+  if (channelError) {
+    const fetchedChannel = await safeChannel(guild, channel!);
+    if (fetchedChannel.isDMBased()) return;
+    if (!fetchedChannel.permissionsFor(client).has("ViewChannel"))
       return await errorEmbed({
         interaction,
         title: "The bot can't execute this command.",
         reason:
           "The bot is missing the **View Channel** permission. If you want to run this command, you might want to give the bot this permission from the channel settings.",
       });
+  }
 
   if (!member.permissions.has(permission))
     return await errorEmbed({
@@ -90,7 +94,7 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
   }
 
   if (!allErrors || !user || !action) return;
-  const target = (await safeMember(guild, user.id))!;
+  const target = await safeMember(guild, user.id);
   const name = user.displayName;
   const highestModPos = member.roles.highest.position;
 
@@ -118,13 +122,14 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
       reason: "The member has a higher (or the same) role position than Sokora.",
     });
 
-  const same: boolean = highestModPos == highestTargetPos;
-  if (highestModPos <= highestTargetPos && member.id != guild.ownerId)
+  if (highestModPos <= highestTargetPos && member.id != guild.ownerId) {
+    const same: boolean = highestModPos == highestTargetPos;
     return await errorEmbed({
       interaction,
       title: `You can't ${action.toLowerCase()} ${name}.`,
       reason: `The member has ${same ? "the same" : "a higher"} role position ${same ? "as" : "than"} you.`,
     });
+  }
 
   if (ownerError) {
     if (target.id == guild.ownerId)
@@ -227,7 +232,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     .setDescription(generalValues.join("\n"))
     .setFooter({ text: user ? `User ID: ${user.id}` : `Channel ID: ${channel}` })
     .setTimestamp(new Date())
-    .setColor(genColor(100));
+    .setColor(await colorize({ hue: Sokolors.Green }));
 
   async function replier() {
     if (silent)
@@ -248,7 +253,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
             })
             .setDescription(generalValues.join("\n"))
             .setTimestamp(new Date())
-            .setColor(genColor(0)),
+            .setColor(await colorize({ hue: Sokolors.Red })),
         ],
       },
     }),

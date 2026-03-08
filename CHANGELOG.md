@@ -3,6 +3,26 @@
 
 # Sokora Changelog
 
+## 0.4.0 (work in progress)
+
+### Added
+
+- Added the ability to import levelling data from MEE6, Tatsu, and Lurkr.
+- (WIP) Added level rewards.
+- Added the ability to upload one image to your news. (Cannot edit or remove images, nor add images from the edit modal.)
+- Added the ability to ping users and roles, link channels, and add custom timestamps to news. Discord doesn't allow this from the modal editor, so it uses a Dynamic Variables-ish syntax (Dynamic Mentions). See `/help variables` for info.
+- Added the ability to remove a user's messages when banning them. Use `/moderation ban user:@USER del:true` for this.
+
+### Changed
+
+- Changed the formula to calculate levels and XP, it should now be better.
+- Tweaked colors to ensure they're consistent across all embeds.
+
+### Fixed
+
+- Fixed `/moderation ban` not working on members not in the guild.
+- Fixed some minor issues with timestamps.
+
 ## 0.3.2
 
 ## Changed
@@ -13,7 +33,7 @@
 ## Fixed
 
 - Top.gg reminders are fixed once more, now they should send **only** when you didn't vote
-- Attempt to fix tempbans not unbanning the user due to Sokora not finding them through the cache (by fetching the ban list instead)
+- Attempt to fix temporary bans not unbanning the user due to Sokora not finding them through the cache (by fetching the ban list instead)
 - "Unknown guild" error in serverboard
 
 ## Removed

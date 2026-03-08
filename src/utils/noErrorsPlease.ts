@@ -15,7 +15,12 @@ export async function noErrorsPlease(interaction: ChatInputCommandInteraction, f
 
     errorRateLimit.add(errorKey);
     setTimeout(() => errorRateLimit.delete(errorKey), 10000);
-    await errorEmbed({ interaction, error, log: true, forward: true, fileName });
+    try {
+      await errorEmbed({ interaction, error, log: true, forward: true, fileName });
+    } catch (e) {
+      console.error("Failed to send error message");
+      console.error(e);
+    }
   };
 
   const processEventListeners: { [key: string]: { listener: (...args: any[]) => Promise<void> } } =

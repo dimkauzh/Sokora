@@ -8,10 +8,10 @@ import {
   type TextChannel,
 } from "discord.js";
 import { channelCheck } from "./channelCheck";
-import { genColor } from "./colorGen";
+import { colorize, Sokolors } from "./colorGen";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
-import { safeChannel } from "./safeThings";
+import { safeChannel, safeRole } from "./safeThings";
 
 /**
  * Sends news to a channel.
@@ -28,11 +28,12 @@ export async function sendChannelNews(
   interaction: ChatInputCommandInteraction,
   title?: string,
   body?: string,
+  imageURL?: string,
 ): Promise<void> {
   const news = get(guild.id, id)!;
   const role = (await getSetting(guild.id, "news", "role")) as string;
   let roleToSend: Role | undefined;
-  if (role) roleToSend = guild.roles.cache.get(role);
+  if (role) roleToSend = await safeRole(guild, role);
   const avatar = news.authorPFP;
   const embed = new EmbedBuilder()
     .setAuthor({
@@ -41,9 +42,10 @@ export async function sendChannelNews(
     })
     .setTitle(title ?? news.title)
     .setDescription(body ?? news.body)
-    .setTimestamp(parseInt(news.updatedAt.toString()) ?? null)
+    .setImage(imageURL ?? news.imageURL ?? null)
+    .setTimestamp(news.updatedAt || news.createdAt)
     .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
-    .setColor(genColor(200));
+    .setColor(await colorize({ hue: Sokolors.Blue }));
 
   const channel = (await safeChannel(
     guild,

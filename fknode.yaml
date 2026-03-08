@@ -1,5 +1,8 @@
-prettyCmd: "prettier"
+prettyScript: "prettier"
 flagless:
-  flaglessUpdate: true
   flaglessPretty: true
-launchCmd: "dev"
+launchCmd:
+  - $;;dev
+commitCmd:
+  - $lint
+  - $prettier

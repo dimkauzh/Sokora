@@ -6,6 +6,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
 import { registerGuildCommands } from "handlers/commands";
 import { loadEasterEggs, loadEvents } from "handlers/events";
+import { safeUser } from "utils/safeThings";
 import { rescheduleUnbans } from "utils/unbanScheduler";
 
 export const client = new Client({
@@ -44,7 +45,7 @@ client.once("clientReady", async () => {
       )) {
         try {
           if ((await topgg.hasVoted(user)) == true) continue;
-          const dmChannel = await (await client.users.fetch(user)).createDM();
+          const dmChannel = await (await safeUser(client, user)).createDM();
           if (!dmChannel || !dmChannel.isSendable()) continue;
 
           await dmChannel.send(
@@ -70,7 +71,7 @@ client.once("clientReady", async () => {
     registerGuildCommands(client),
     rescheduleUnbans(client),
   ]).then(() =>
-    console.log(Math.random() < 0.001 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！"),
+    console.log(Math.random() < 0.002 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！"),
   );
 
   // if you want to register/remove guild/global commands, replace registerGuildCommands() with:

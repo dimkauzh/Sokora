@@ -2,14 +2,14 @@ import { listAllNews } from "database/news";
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
-import { genColor } from "utils/colorGen";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
@@ -30,7 +30,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const news = listAllNews(interaction.guild.id);
-  const sortedNews = (Object.values(news) as any[])?.sort((a, b) => b.createdAt - a.createdAt);
+  const sortedNews = Object.values(news).sort((a, b) => b.createdAt - a.createdAt);
 
   if (!news || !sortedNews || !sortedNews.length)
     return await errorEmbed({
@@ -40,9 +40,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   if (page > sortedNews.length) page = sortedNews.length;
-  if (page < 1) page = 1;
+  if (page <= 1) page = 1;
 
-  function getEmbed() {
+  async function getEmbed() {
     const currentNews = sortedNews[page - 1];
     const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
@@ -53,11 +53,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setTitle(currentNews.title)
       .setDescription(currentNews.body)
       .setImage(currentNews.imageURL || null)
-      .setTimestamp(parseInt(currentNews.updatedAt))
+      .setTimestamp(currentNews.updatedAt || currentNews.createdAt)
       .setFooter({
         text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
       })
-      .setColor(genColor(200));
+      .setColor(await colorize({ hue: Sokolors.Green }));
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -72,37 +72,25 @@ export async function run(interaction: ChatInputCommandInteraction) {
   );
 
   const reply = await interaction.reply({
-    embeds: [getEmbed()],
+    embeds: [await getEmbed()],
     components: sortedNews.length > 1 ? [row] : [],
   });
 
-  if (page < 1) return;
+  if (page <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbed({
-        interaction: i,
-        title: "You aren't the person who executed this command.",
-      });
-
+    if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 30000 });
     switch (i.customId) {
       case "left":
         page--;
         if (page < 1) page = sortedNews.length;
-        await i.update({ embeds: [getEmbed()], components: [row] });
+        await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
       case "right":
         page++;
         if (page > sortedNews.length) page = 1;
-        await i.update({ embeds: [getEmbed()], components: [row] });
+        await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
     }
   });

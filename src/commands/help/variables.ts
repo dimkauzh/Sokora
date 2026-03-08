@@ -3,7 +3,7 @@ import {
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { genColor } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
 import { replaceVariables } from "utils/replace";
 
@@ -15,6 +15,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const example = "Welcome to (servername), **(name)**!";
   const exampleTwo =
     "Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!";
+  const exampleThree =
+    "Thank you so much to (725985503177867295, user) for making this announcement the (1770053619077, detailed_timestamp). We love you!";
 
   const avatar = interaction.client.user.displayAvatarURL();
   const embed = new EmbedBuilder()
@@ -25,7 +27,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     .setDescription(
       "You can write the following variables in some places to dynamically show certain pieces of data. Data like 'current time' or 'member count' always refer to what that value is at the moment of sending the specific message. Dynamic variables are currently supported for **join messages, leave messages, join DMs, and news.**",
     )
-    .setColor(genColor(200))
+    .setColor(await colorize({ hue: Sokolors.Blue }))
     .setFields([
       {
         name: "👀 • Simple example",
@@ -39,6 +41,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         value: [
           `Adding more stuff:\n\`${exampleTwo}\`\nwill result in:`,
           `> ${await replaceVariables(exampleTwo, interaction.guild!, interaction.user)}`,
+        ].join("\n"),
+      },
+      {
+        name: "🛜 • Dynamic mentioning",
+        value: [
+          `You can use a similar syntax to mention specific users, roles, channels, or timestamps, since Discord disallows this natively:\n\`${exampleThree}\`\nwill result in:`,
+          `> ${await replaceVariables(exampleThree, interaction.guild!, interaction.user)}`,
         ].join("\n"),
       },
       {
@@ -56,6 +65,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
           "`(currentdate)` - current date in the 'July 10, 2025' format",
           "`(currentdate, simple)` - current date in the '7/10/25' format",
           "`(currentdate, detailed)` - current date in the 'July 10, 2025, at 1:11 PM' format",
+          "`(<id>, user | role | channel)` - given an ID, allows you to mention/link it (Discord modals don't let you do this natively)",
+          "`(<timestamp>, default_timestamp | simple_timestamp | detailed_timestamp)` - given a timestamp, formats it as a date",
         ].join("\n"),
       },
     ]);

@@ -1,6 +1,5 @@
 import { resetSetting } from "database/settings";
 import {
-  ChannelType,
   EmbedBuilder,
   NewsChannel,
   StageChannel,
@@ -9,8 +8,8 @@ import {
   type Guild,
 } from "discord.js";
 import { logChannel } from "utils/logChannel";
-import { safeMember } from "utils/safeThings";
-import { colorize, genColor } from "../colorGen";
+import { safeChannel, safeMember } from "utils/safeThings";
+import { colorize, Sokolors } from "../colorGen";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
 import { pluralOrNot } from "../pluralOrNot";
@@ -54,7 +53,7 @@ export async function serverEmbed(options: Options) {
 
   const generalValues = [
     `Owned by **${owner.user.displayName}**`,
-    `Created on **<t:${Math.round(guild.createdAt.valueOf() / 1000)}:D>**`,
+    `Created on **${mention(guild.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}**`,
   ];
 
   const vl = guild.verificationLevel;
@@ -76,9 +75,7 @@ export async function serverEmbed(options: Options) {
 
   if (boostTier)
     statValues.push(
-      `${!boostTier ? "**No** level" : `Level **${boostTier}**`} • **${boostCount}**${
-        !boostTier ? "/2" : boostTier == 1 ? "/7" : boostTier == 2 ? "/14" : ""
-      } ${pluralOrNot("boost", boostCount!)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
+      `${!boostTier ? "**No** level" : `Level **${boostTier}**`} • **${boostCount}** ${pluralOrNot("boost", boostCount!)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
     );
 
   if (options.roles)
@@ -95,10 +92,7 @@ export async function serverEmbed(options: Options) {
 
   const dot = dotCheck({ string: icon, doubleSpace: true });
   const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${pages ? `#${page}  •  ` : dot}${guild.name}`,
-      iconURL: icon,
-    })
+    .setAuthor({ name: `${pages ? `#${page}  •  ` : dot}${guild.name}`, iconURL: icon })
     .setDescription(guild.description ? `> ${guild.description}` : null)
     .setFields(
       {
@@ -119,7 +113,7 @@ export async function serverEmbed(options: Options) {
     .setFooter({
       text: `${pages && pages > 1 ? `Page ${page} of ${pages} • ` : ""}Server ID: ${guild.id}`,
     })
-    .setColor(await colorize({ avatar: icon, hue: 200 }));
+    .setColor(await colorize({ avatar: icon, hue: Sokolors.Blue }));
 
   if (invite?.show) {
     async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
@@ -137,7 +131,7 @@ export async function serverEmbed(options: Options) {
             `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
           ].join("\n"),
         })
-        .setColor(genColor(60));
+        .setColor(await colorize({ hue: Sokolors.Yellow }));
 
       await logChannel(guild, { embeds: [errEmbed] }, true, {
         silent: false,
@@ -161,24 +155,20 @@ export async function serverEmbed(options: Options) {
 
     const invites = await guild.invites.fetch();
     const previousInvite = invites.find(invite => invite.inviter?.id == client);
-    const possiblyFetchedInviteChannel = await guild.channels.fetch(
+    const possibleInviteChannel = await safeChannel(
+      guild,
       invite.channel ??
         guild.channels.cache
-          .filter(
-            channel =>
-              channel.type == ChannelType.GuildText ||
-              channel.type == ChannelType.GuildAnnouncement ||
-              channel.type == ChannelType.GuildVoice ||
-              channel.type == ChannelType.GuildStageVoice,
-          )
+          .filter(channel => channel.isTextBased() && !channel.isThread())
           .find(channel => channel.position == 0)!.id,
     );
 
     const inviteChannel =
-      possiblyFetchedInviteChannel &&
-      possiblyFetchedInviteChannel.isTextBased() &&
-      !possiblyFetchedInviteChannel.isThread()
-        ? possiblyFetchedInviteChannel
+      possibleInviteChannel &&
+      possibleInviteChannel.isTextBased() &&
+      !possibleInviteChannel.isThread() &&
+      !possibleInviteChannel.isDMBased()
+        ? possibleInviteChannel
         : guild.rulesChannel;
 
     if (!inviteChannel) return embed;
@@ -190,7 +180,7 @@ export async function serverEmbed(options: Options) {
       : await inviteChannel.createInvite({ maxAge: 0, reason: "Serverboard invite" });
 
     embed.addFields({
-      name: `🚪 • Join in!`,
+      name: "🚪 • Join in!",
       value: `This server allows you to join from here! ${inviteUrl}`,
     });
   }

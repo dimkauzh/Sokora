@@ -10,15 +10,16 @@ const definition = {
     author: "TEXT",
     authorPFP: "TEXT",
     createdAt: "TIMESTAMP",
-    updatedAt: "TIMESTAMP",
+    updatedAt: "mTIMESTAMP",
     messageID: "TEXT",
+    imageURL: "mTEXT",
     id: "TEXT",
   },
 } satisfies TableDefinition;
 
 const database = getDatabase(definition);
 const sendQuery = database.query(
-  "INSERT INTO news (guildID, title, body, author, authorPFP, createdAt, updatedAt, messageID, id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9);",
+  "INSERT INTO news (guildID, title, body, author, authorPFP, createdAt, updatedAt, messageID, imageURL, id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);",
 );
 export const listAllQuery = database.query("SELECT * FROM news WHERE guildID = $1;");
 const getIdQuery = database.query("SELECT * FROM news WHERE guildID = $1 AND id = $2;");
@@ -31,9 +32,10 @@ export function addNews(
   author: string,
   authorPFP: string,
   messageID: string,
+  imageURL: string | null,
   id: string,
 ) {
-  sendQuery.run(guildID, title, body, author, authorPFP, Date.now(), 0, messageID, id);
+  sendQuery.run(guildID, title, body, author, authorPFP, Date.now(), 0, messageID, imageURL, id);
 }
 
 export function listAllNews(guildID: string) {
@@ -50,6 +52,7 @@ export function updateNews(
   title?: string,
   body?: string,
   messageID?: string,
+  imageURL?: string,
 ) {
   const lastElem = get(guildID, id)!;
   deleteQuery.run(guildID, id);
@@ -62,6 +65,7 @@ export function updateNews(
     Date.now(),
     0,
     messageID ?? lastElem.messageID,
+    imageURL ?? lastElem.imageURL,
     id,
   );
 }

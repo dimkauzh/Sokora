@@ -9,22 +9,23 @@ import { TypeOfDefinition } from "database/types";
 import {
   ActionRowBuilder,
   ButtonBuilder,
-  ButtonInteraction,
   ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
-  User,
+  type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type User,
 } from "discord.js";
-import { errorEmbed } from "embeds/errorEmbed";
+import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
 import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
-import { genColor } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorGen";
 import { dotCheck } from "utils/dotCheck";
+import { mention } from "utils/mention";
 import { randomize } from "utils/randomize";
 import { replace } from "utils/replace";
-import { safeMember } from "utils/safeThings";
+import { safeGuild, safeMember } from "utils/safeThings";
 
 async function generateEmbed(params: {
   cases: TypeOfDefinition<ModerationCase>[];
@@ -52,17 +53,16 @@ async function generateEmbed(params: {
   ];
 
   const start = (page - 1) * 5;
-  const end = start + 5;
-  const displayedCases = cases.sort((a, b) => Number(b.id) - Number(a.id)).slice(start, end);
-  const avatar = user ? user.avatarURL() : client.guilds.cache.get(guildID)?.iconURL();
+  const displayedCases = cases.sort((a, b) => Number(b.id) - Number(a.id)).slice(start, start + 5);
+  const avatar = user ? user.avatarURL() : (await safeGuild(client, guildID))?.iconURL();
   let fields = displayedCases.map(c => {
     const val = [
-      `**Moderator**: <@${c.moderator}>`,
+      `**Moderator**: ${mention(c.moderator, "USER")}`,
       c.reason ? `**Reason**: ${c.reason}` : "*No reason provided*",
-      `**Time of action**: <t:${Math.floor(Number(c.timestamp) / 1000)}:d>`,
+      `**Time of action**: ${mention(c.timestamp.valueOf(), "SIMPLE_TIMESTAMP")}`,
     ];
 
-    if (!user) val.unshift(`**User**: <@${c.user}>`);
+    if (!user) val.unshift(`**User**: ${mention(c.user, "USER")}`);
     if (c.expiresAt) val.push(`**Duration**: ${ms(Number(c.expiresAt), "fullPrecision")}`);
 
     return {
@@ -90,7 +90,7 @@ async function generateEmbed(params: {
     .setFooter({
       text: `${totalPages > 1 ? `Page ${page} of ${totalPages}` : ""}${user ? `\nUser ID: ${user.id} • Server ID: ${guildID}` : `${totalPages > 1 ? ` • Server ID: ${guildID}` : `Server ID: ${guildID}`}`}`,
     })
-    .setColor(genColor(200));
+    .setColor(await colorize({ hue: Sokolors.Blue }));
 }
 
 export const data = new SlashCommandSubcommandBuilder()
@@ -184,23 +184,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 30000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (i.message.id != (await reply.fetch()).id)
-      return await errorEmbed({
-        interaction: i,
-        title:
-          "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
-      });
-
-    if (i.user.id != interaction.user.id)
-      return await errorEmbed({
-        interaction: i,
-        title: "You are not the person who executed this command.",
-      });
-
+    if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 30000 });
+
     if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;
     else page = page < totalPages ? page + 1 : 1;
-
     await i.update({
       embeds: [await generateEmbed({ cases, page, totalPages, guildID, type, user })],
       components: [row],

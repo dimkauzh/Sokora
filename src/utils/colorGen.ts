@@ -1,52 +1,63 @@
-import { ColorResolvable, type User } from "discord.js";
-import { Vibrant } from "node-vibrant/node";
-import sharp from "sharp";
-import { kominator } from "./kominator";
+import { Color, getColor, getSwatches } from "colorthief";
+import { type User } from "discord.js";
 
-/**
- * Randomizes a color and outputs HEX.
- * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
- * @returns Color in HEX.
- */
-export function genColor(hue: number): ColorResolvable {
-  return Bun.color(
-    `hsl(${hue + 15 * Math.random()}, ${80 + 20 * Math.random()}%, ${60 + 15 * Math.random()}%)`,
-    "hex",
-  ) as ColorResolvable;
+/** Sokolors, colors of Sokora, get it? */
+export enum Sokolors {
+  Red = 30,
+  Yellow = 110,
+  Green = 140,
+  Blue = 240,
+  Purple = 300,
 }
 
-/**
- * Randomizes a color and outputs RGB for the accent color of CV2 containers.
- * @param hue Hue of the color to randomize. `0` and `360` are red, `120` is green, `240` is blue. Value should be between `0` and `360`.
- * @returns Color in RGB.
- */
-export function genColorCV2(hue: number) {
-  return Bun.color(
-    `hsl(${hue + 15 * Math.random()}, ${80 + 20 * Math.random()}%, ${60 + 15 * Math.random()}%)`,
-    "[rgb]",
-  );
-}
+export type ColorOptions = {
+  hue: Sokolors;
+  user?: User;
+  avatar?: string;
+};
 
-/**
- * Outputs the most vibrant color from the image.
- * @param {?string} url Image URL.
- * @returns {Promise<ColorResolvable | undefined>} The color in HEX, or undefined if both URLs are missing.
- */
-export async function genImageColor(url: string): Promise<ColorResolvable | undefined> {
-  if (!url) return;
-
-  const imageBuffer = await (await fetch(url)).arrayBuffer();
-  const { r, g, b } = (
-    await new Vibrant(await sharp(imageBuffer).toFormat("jpg").toBuffer()).getPalette()
-  ).Vibrant!;
-  const hsl = kominator(Bun.color([r, g, b], "hsl")!);
-  const h = Math.round(parseInt(hsl[0].replace("hsl(", "")) + 15 * Math.random());
-  const l = Math.round(parseFloat(hsl[2].replace(")", "")) * 100 + 15 * Math.random());
-
-  return Bun.color(`hsl(${h}, 100%, ${l}%)`, "hex") as ColorResolvable;
-}
-
-export async function colorize(options: { user?: User; avatar?: string; hue?: number }) {
+export async function colorize(options: ColorOptions): Promise<[number, number, number] | null> {
   const { user, avatar, hue } = options;
-  return user?.hexAccentColor ?? (await genImageColor(avatar!)) ?? genColor(hue!);
+
+  function genColor(): [number, number, number] | null {
+    return Bun.color(
+      `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
+      "[rgb]",
+    );
+  }
+
+  function randomizeColor(hue: number, saturation: number, lightness: number) {
+    const [h, s, l] = [
+      hue + 10 * Math.random(),
+      saturation + 15 * Math.random(),
+      lightness + 15 * Math.random(),
+    ];
+    return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "[rgb]");
+  }
+
+  if (!avatar) return genColor();
+  const buffer = Buffer.from(await (await fetch(avatar!)).arrayBuffer());
+  if (!buffer) return genColor();
+
+  let color = (await getSwatches(buffer, { quality: 5 })).Vibrant?.color;
+  if (!color) color = (await getColor(buffer, { quality: 5 })) as Color | undefined;
+  if (!color)
+    if (user) {
+      const accentColor = user.hexAccentColor;
+      if (!accentColor) return genColor();
+      const hsl = Bun.color(accentColor, "hsl")!;
+      return randomizeColor(
+        parseInt(hsl[0].replace("hsl(", "")),
+        parseInt(hsl[1]),
+        parseInt(hsl[2].replace(")", "")),
+      );
+    } else return genColor();
+
+  const [r, g, b] = color.array();
+  const hsl = color.hsl();
+  return randomizeColor(
+    hsl.h,
+    hsl.s,
+    (Math.abs(r - g) < 15 && Math.abs(g - b) < 15) || (r == g && g == b) ? 70 : hsl.l,
+  );
 }

@@ -14,7 +14,9 @@ export const data = new SlashCommandSubcommandBuilder()
   .addStringOption(string =>
     string
       .setName("time")
-      .setDescription("Time to slow the channel down to (e.g 30m, 1d, 2h). 0 to remove slowdown.")
+      .setDescription(
+        "Time to slow the channel down to (e.g 30m, 2h, max - 6h). 0 for no slowdown.",
+      )
       .setRequired(true),
   )
   .addStringOption(string =>
@@ -50,27 +52,25 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return;
 
   const time = interaction.options.getString("time")!;
+  const timeMs = ms(time);
   const reason = interaction.options.getString("reason");
   let title = `Set the slowdown to ${ms(ms(time), "fullPrecision")}`;
-  if (!ms(time)) title = "Removed the slowdown";
 
-  if (
-    !(
-      channel.type == ChannelType.GuildText ||
-      channel.type == ChannelType.GuildAnnouncement ||
-      channel.type == ChannelType.GuildVoice ||
-      channel.type == ChannelType.GuildStageVoice ||
-      channel.type == ChannelType.PublicThread ||
-      channel.type == ChannelType.PrivateThread
-    )
-  )
+  if (!timeMs) title = "Removed the slowdown";
+  if (timeMs > 21600000)
+    return await errorEmbed({
+      interaction,
+      title: "You have provided a duration longer than 6 hours.",
+    });
+
+  if (!channel.isTextBased() || channel.isDMBased())
     return await errorEmbed({
       interaction,
       title: "You have provided a channel that can't be slowed down.",
     });
 
   await Promise.all([
-    channel.setRateLimitPerUser(ms(time) / 1000, interaction.options.getString("reason")!),
+    channel.setRateLimitPerUser(timeMs / 1000, interaction.options.getString("reason")!),
     modEmbed(
       {
         interaction,

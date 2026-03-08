@@ -18,8 +18,8 @@ export function replace(
   text: string,
   replaceText?: { text: string; replacement: string | number }[],
 ) {
-  for (const mention of replaceText ? replaceText || replacements : replacements)
-    if (text?.includes(mention.text))
+  for (const mention of replaceText ?? replacements)
+    if (text.includes(mention.text))
       text = text.replaceAll(mention.text, mention.replacement.toString());
 
   return text;
@@ -50,6 +50,13 @@ export async function replaceVariables(text: string, guild: Guild, user: User): 
       replacement: mention(Date.now(), "DETAILED_TIMESTAMP"),
     },
   ];
+
+  text = text.replace(
+    /\((\d+), (user|role|default_timestamp|simple_timestamp|detailed_timestamp|channel)\)/g,
+    (_, id: string, indicator: string) => {
+      return mention(id, indicator.toUpperCase() as any);
+    },
+  );
 
   return replace(text, replacementVariables);
 }

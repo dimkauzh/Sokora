@@ -1,8 +1,9 @@
 import type { Message, TextChannel } from "discord.js";
+import { mention } from "utils/mention";
 import { randomize } from "utils/randomize";
 
 export async function run(message: Message) {
-  if (message.content.trim().toLowerCase() != `<@${message.client.user.id}>`) return;
+  if (message.content.trim().toLowerCase() != mention(message.client.user.id, "USER")) return;
   const GIFs = randomize([
     "https://tenor.com/view/who-pinged-me-ping-discord-up-opening-door-gif-20065356",
     "https://tenor.com/view/discord-who-pinged-me-who-pinged-me-gif-25140226",
