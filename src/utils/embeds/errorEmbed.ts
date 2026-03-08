@@ -15,7 +15,7 @@ import {
 import { safeChannel, safeReply } from "utils/safeThings";
 import { Sokolors } from "../colorGen";
 import { errorType } from "../errorType";
-import { SimpleEmbedBuilder } from "./SimpleEmbedBuilder";
+import { simpleEmbedBuilder } from "./simpleEmbedBuilder";
 
 /**
  * Sends the embed containing an error.
@@ -53,7 +53,7 @@ export async function errorEmbed(options: {
       `The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)`,
     );
 
-  const embed = await SimpleEmbedBuilder({
+  const embed = await simpleEmbedBuilder({
     author: "Something went wrong!",
     desc: content.join("\n"),
     fields: options.error
@@ -84,9 +84,7 @@ export async function errorEmbed(options: {
 
   const messageObject: MessageCreateOptions = { files };
   if (embed instanceof EmbedBuilder) messageObject.embeds = [embed];
-  else {
-    messageObject.components = [embed];
-  }
+  else messageObject.components = [embed];
 
   if (forward) {
     if (!process.env.DEV_ERROR_CHANNEL_ID) {
@@ -110,12 +108,11 @@ export async function errorEmbed(options: {
   }
 
   if (log) console.error(error);
-  if (interaction) {
+  if (interaction)
     return await safeReply({
       interaction,
       replyOptions: { ...messageObject, flags: ["IsComponentsV2", "Ephemeral"] },
     });
-  }
 }
 
 export async function buttonCheck(options: {
@@ -125,19 +122,17 @@ export async function buttonCheck(options: {
   noExecuteError?: boolean;
 }) {
   const { i, interaction, reply, noExecuteError } = options;
-  if (i.message.id != (await reply.fetch()).id) {
+  if (i.message.id != (await reply.fetch()).id)
     return await errorEmbed({
       interaction: i,
       title:
         "For some reason, this click would've caused the bot to error. Thankfully, this message right here prevents that.",
     });
-  }
 
   if (noExecuteError) return;
-  if (i.user.id != interaction.user.id) {
+  if (i.user.id != interaction.user.id)
     return await errorEmbed({
       interaction: i,
       title: "You are not the person who executed this command.",
     });
-  }
 }

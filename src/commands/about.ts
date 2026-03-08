@@ -2,13 +2,12 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  ContainerBuilder,
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
   SlashCommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { SimpleEmbedBuilder } from "embeds/SimpleEmbedBuilder";
+import { simpleEmbedBuilder } from "embeds/simpleEmbedBuilder";
 import { version } from "package";
 import { Sokolors } from "utils/colorGen";
 import { pluralOrNot } from "utils/pluralOrNot";
@@ -27,7 +26,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const shards = client.shard?.count;
   const avatar = user.displayAvatarURL();
   const banner = user.bannerURL({ size: 512 });
-  const embed = await SimpleEmbedBuilder({
+  const embed = await simpleEmbedBuilder({
     author: "About Sokora",
     desc: "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
     fields: [
@@ -48,34 +47,33 @@ export async function run(interaction: ChatInputCommandInteraction) {
           "Also, please read the [ToS](https://sokora.org/terms) and the [privacy policy](https://sokora.org/privacy).",
         ].join("\n"),
       },
+      { divider: false },
     ],
     footer: replace("(madeWith)"),
     color: { user, avatar, hue: Sokolors.Purple },
   });
 
   if (banner)
-    (embed as ContainerBuilder).spliceComponents(
+    embed.spliceComponents(
       0,
       0,
       new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(banner)),
     );
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setLabel("•  Vote")
-      .setURL(`https://top.gg/bot/${user.id}/vote`)
-      .setEmoji("🗳️")
-      .setStyle(ButtonStyle.Link),
-    new ButtonBuilder()
-      .setLabel("•  Donate through Ko-Fi")
-      .setURL("https://ko-fi.com/sokoradesu")
-      .setEmoji("☕")
-      .setStyle(ButtonStyle.Link),
+  embed.addActionRowComponents(
+    new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setLabel("•  Vote")
+        .setURL(`https://top.gg/bot/${user.id}/vote`)
+        .setEmoji("🗳️")
+        .setStyle(ButtonStyle.Link),
+      new ButtonBuilder()
+        .setLabel("•  Donate")
+        .setURL("https://ko-fi.com/sokoradesu")
+        .setEmoji("☕")
+        .setStyle(ButtonStyle.Link),
+    ),
   );
 
-  const messageObject: any = { components: [row], flags: ["Ephemeral"] };
-  messageObject.components.splice(0, 0, embed);
-  messageObject.flags.push("IsComponentsV2");
-
-  await interaction.reply(messageObject);
+  await interaction.reply({ components: [embed], flags: ["Ephemeral", "IsComponentsV2"] });
 }

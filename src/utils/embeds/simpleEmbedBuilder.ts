@@ -38,15 +38,14 @@ type embedProperties = {
   color?: ColorOptions;
 };
 
-export async function SimpleEmbedBuilder(content: embedProperties): Promise<ContainerBuilder> {
+export async function simpleEmbedBuilder(content: embedProperties): Promise<ContainerBuilder> {
   const embed = new ContainerBuilder();
 
   if (content.author) content.author = `**${content.author}**`;
   if (content.title) content.title = `## ${content.title}`;
+  if (content.footer) content.footer = `-# ${content.footer}`;
   if (content.timestamp)
-    content.footer = [content.footer, new Date(content.timestamp).toLocaleString()]
-      .filter(Boolean)
-      .join(" • ");
+    content.footer = `-# ${[content.footer, new Date(content.timestamp).toLocaleString()].filter(Boolean).join(" • ")}`;
 
   // Order matters here btw, the footer won't be a footer anymore if you put it before the fields in the object
   const headerSection = new SectionBuilder(); // for thumbnails
@@ -65,7 +64,7 @@ export async function SimpleEmbedBuilder(content: embedProperties): Promise<Cont
       for (const field of content[prop]) {
         if (isSeparator(field)) {
           const separator = new SeparatorBuilder();
-          if (field.divider) separator.setDivider(field.divider);
+          separator.setDivider(field.divider);
           if (field.spacing) separator.setSpacing(field.spacing);
           if (buildingHeader) {
             embed.addSectionComponents(headerSection);
