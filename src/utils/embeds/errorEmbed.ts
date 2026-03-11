@@ -1,9 +1,10 @@
 import {
   AttachmentBuilder,
   codeBlock,
-  EmbedBuilder,
+  ContainerBuilder,
   FileBuilder,
-  MessageCreateOptions,
+  SeparatorBuilder,
+  TextDisplayBuilder,
   type AnySelectMenuInteraction,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
@@ -12,10 +13,9 @@ import {
   type Message,
   type ModalSubmitInteraction,
 } from "discord.js";
+import { colorize, Sokolors } from "utils/colorGen";
 import { safeChannel, safeReply } from "utils/safeThings";
-import { Sokolors } from "../colorGen";
 import { errorType } from "../errorType";
-import { simpleEmbedBuilder } from "./simpleEmbedBuilder";
 
 /**
  * Sends the embed containing an error.
@@ -53,65 +53,65 @@ export async function errorEmbed(options: {
       `The bot has experienced an internal error.\nThe team has been informed. [If you keep encountering this issue, please go to our support server to report it.](https://discord.gg/c6C25P4BuY)`,
     );
 
-  const embed = await simpleEmbedBuilder({
-    author: "Something went wrong!",
-    desc: content.join("\n"),
-    fields: options.error
-      ? [
-          { divider: true },
-          {
-            name: "💬 • Error message",
-            value: `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
-          },
-          {
-            name: "📜 • Error stack",
-            value: stack
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent("**Something went wrong!**"),
+      new TextDisplayBuilder().setContent(content.join("\n")),
+    )
+    .setAccentColor(await colorize({ hue: Sokolors.Red }));
+
+  if (options.error)
+    container
+      .addSeparatorComponents(new SeparatorBuilder())
+      .addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(
+          [
+            "**💬 • Error message**",
+            `${codeBlock(error.message)}${fileName ? `in \`${fileName}\`` : ""}`,
+          ].join("\n"),
+        ),
+        new TextDisplayBuilder().setContent(
+          [
+            "**📜 • Error stack**",
+            stack
               ? stack.length <= 4096
                 ? codeBlock(stack)
                 : "The error stacktrace is an attachment below this embed due to it being too large."
               : "No error stacktrace.",
-          },
-        ]
-      : [],
-    color: { hue: Sokolors.Red },
-  });
+          ].join("\n"),
+        ),
+      );
 
   const files: AttachmentBuilder[] = [];
   if (stack && stack.length >= 4096) {
     files.push(new AttachmentBuilder(Buffer.from(stack, "utf8"), { name: "error.txt" }));
-    embed.addFileComponents(new FileBuilder().setURL("attachment://error.txt"));
+    container.addFileComponents(new FileBuilder().setURL("attachment://error.txt"));
   }
 
-  const messageObject: MessageCreateOptions = { files };
-  if (embed instanceof EmbedBuilder) messageObject.embeds = [embed];
-  else messageObject.components = [embed];
-
   if (forward) {
-    if (!process.env.DEV_ERROR_CHANNEL_ID) {
+    const devErrorChannel = process.env.DEV_ERROR_CHANNEL_ID;
+    if (!devErrorChannel) {
       console.log(
         "hey, you don't have DEV_ERROR_CHANNEL_ID set in .env and the bot tried to forward an error message to undefined :D",
       );
       return console.error(error);
     }
 
-    const channel = await safeChannel(
-      client ?? interaction!.client,
-      process.env.DEV_ERROR_CHANNEL_ID,
-    );
+    const channel = await safeChannel(client ?? interaction!.client, devErrorChannel);
     if (!channel?.isTextBased() || !channel.isSendable()) return;
-    await channel.send({ ...messageObject, flags: "IsComponentsV2" });
+    await channel.send({ components: [container], files, flags: "IsComponentsV2" });
   }
 
   if (dmOwner) {
     const dm = await (await interaction?.guild!.fetchOwner())?.createDM().catch(() => null);
-    if (dm) await dm.send({ ...messageObject, flags: "IsComponentsV2" });
+    if (dm) await dm.send({ components: [container], files, flags: "IsComponentsV2" });
   }
 
   if (log) console.error(error);
   if (interaction)
     return await safeReply({
       interaction,
-      replyOptions: { ...messageObject, flags: ["IsComponentsV2", "Ephemeral"] },
+      replyOptions: { components: [container], files, flags: ["IsComponentsV2", "Ephemeral"] },
     });
 }
 

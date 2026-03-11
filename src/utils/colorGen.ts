@@ -1,5 +1,5 @@
-import { Color, getColor, getSwatches } from "colorthief";
-import { type User } from "discord.js";
+import { getColor, getSwatches, type Color } from "colorthief";
+import type { ColorResolvable, RGBTuple, User } from "discord.js";
 
 /** Sokolors, colors of Sokora, get it? */
 export enum Sokolors {
@@ -16,26 +16,28 @@ export type ColorOptions = {
   avatar?: string;
 };
 
-export async function colorize(options: ColorOptions): Promise<[number, number, number] | null> {
+export async function colorize(
+  options: ColorOptions,
+): Promise<(ColorResolvable | null) & (RGBTuple | undefined)> {
   const { user, avatar, hue } = options;
 
-  function genColor(): [number, number, number] | null {
+  function genColor(): (ColorResolvable | null) & (RGBTuple | undefined) {
     return Bun.color(
       `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
       "[rgb]",
-    );
-  }
-
-  function randomizeColor(hue: number, saturation: number, lightness: number) {
-    const [h, s, l] = [
-      hue + 10 * Math.random(),
-      saturation + 15 * Math.random(),
-      lightness + 15 * Math.random(),
-    ];
-    return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "[rgb]");
+    ) as RGBTuple;
   }
 
   if (!avatar) return genColor();
+  function randomizeColor(hue: number, saturation: number, lightness: number) {
+    const [h, s, l] = [
+      hue + 10 * Math.random(),
+      saturation + 10 * Math.random(),
+      lightness + 10 * Math.random(),
+    ];
+    return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "[rgb]") as RGBTuple;
+  }
+
   const buffer = Buffer.from(await (await fetch(avatar!)).arrayBuffer());
   if (!buffer) return genColor();
 
