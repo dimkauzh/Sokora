@@ -1,7 +1,11 @@
-import { EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import {
+  ContainerBuilder,
+  SlashCommandBuilder,
+  TextDisplayBuilder,
+  type ChatInputCommandInteraction,
+} from "discord.js";
 import { version } from "package";
 import { colorize, Sokolors } from "utils/colorGen";
-import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
@@ -11,17 +15,17 @@ export const data = new SlashCommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
-  const avatar = user.displayAvatarURL();
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}Changelog for ${version}`,
-      iconURL: avatar,
-    })
-    .setDescription(
-      "See Sokora's changelog [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`## Changelog for ${version}`),
+      new TextDisplayBuilder().setContent(
+        "See Sokora's changelog [here](https://github.com/SokoraDesu/Sokora/blob/dev/CHANGELOG.md).",
+      ),
+      new TextDisplayBuilder().setContent(`-# ${replace("(madeWith)")}`),
     )
-    .setFooter({ text: replace("(madeWith)") })
-    .setColor(await colorize({ user, avatar, hue: Sokolors.Purple }));
+    .setAccentColor(
+      await colorize({ user, avatar: user.displayAvatarURL(), hue: Sokolors.Purple }),
+    );
 
-  await interaction.reply({ embeds: [embed], flags: "Ephemeral" });
+  await interaction.reply({ components: [container], flags: ["Ephemeral", "IsComponentsV2"] });
 }

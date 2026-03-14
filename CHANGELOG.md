@@ -23,31 +23,31 @@
 - Fixed `/moderation ban` not working on members not in the guild.
 - Fixed some minor issues with timestamps.
 
-## 0.3.2
+## 0.3.2 - 26/08/2025
 
-## Changed
+### Changed
 
 - User can't use any commands in DMs (thanks @userandaname)
 - You can use /user info for people outside of the server
 
-## Fixed
+### Fixed
 
 - Top.gg reminders are fixed once more, now they should send **only** when you didn't vote
 - Attempt to fix temporary bans not unbanning the user due to Sokora not finding them through the cache (by fetching the ban list instead)
 - "Unknown guild" error in serverboard
 
-## Removed
+### Removed
 
 - Executor in message delete events
 
-## 0.3.1
+## 0.3.1 - 23/08/2025
 
-## Changed
+### Changed
 
 - Made /help, /about, /changelog, /credits, /ping, /settings and /user settings ephemeral (only visible to you)
 - Sokora alerts server owners if they enable but misconfigure showing a server invite in serverboard
 
-## Fixed
+### Fixed
 
 - Fixed issues with timestamps
 - Fixed some moderation commands "failing" (even though they did the job)
@@ -55,37 +55,30 @@
 - Fixed topgg reminders
 - Some internal fixes
 
-## 0.3.0
+## 0.3.0 - 20/08/2025
 
 ### Added
 
-- New commands.
-  - Added a new `/games` category.
-    - Added `/games rps` to play Rock, Paper, Scissors.
-    - Added `/games coin` to flip a coin.
-  - Added a new `/math` category.
-    - Added `/math graph` to graphically represent a function.
-    - Added `/math calc` to execute a mathematical expression.
-  - Added `/help variables` to show help with _Dynamic (variables)_.
-  - Added `/ping` to view bot ping and latency.
-- Dynamic (variables)
-  - Gave a proper name to replaceable variables (`Dynamic (variables)`), and added more options:
-  - - `(serverowner)` - Server owner's name
-  - - `(currentdate)` - Current date in the 'July 10, 2025' format
-  - - `(currentdate, simple)` - Current date in the '7/10/25' format
-  - - `(currentdate, detailed)` - Current date in the 'July 10, 2025, at 1:11 PM' format
-- User settings
-  - Added user settings as a feature.
-    - Added TopGG reminders setting.
+- Added a new `/games` category.
+  - Added `/games rps` to play Rock, Paper, Scissors.
+  - Added `/games coin` to flip a coin.
+- Added a new `/math` category.
+  - Added `/math graph` to graphically represent a function.
+  - Added `/math calc` to execute a mathematical expression.
+- Added `/help variables` to show help with _Dynamic (variables)_.
+- Added `/ping` to view bot ping and latency.
+- Gave a proper name to replaceable variables (`Dynamic (variables)`), and added more options:
+  - `(serverowner)` - Server owner's name
+  - `(currentdate)` - Current date in the 'July 10, 2025' format
+  - `(currentdate, simple)` - Current date in the '7/10/25' format
+  - `(currentdate, detailed)` - Current date in the 'July 10, 2025, at 1:11 PM' format
+- Added user settings as a feature.
+  - Added TopGG reminders setting.
 - Moderation
   - Added the ability to clear messages for a single user.
   - Added reason field to `/moderation unmute`.
   - Added the ability to silently perform moderation actions.
   - Added the ability to view all cases of a server, and to filter by case type.
-- Other additions
-  - Added a starboard. It can be configured from `/settings starboard`.
-  - Added unique member count to `/about`.
-  - Added the ability for server owners to display an invite link to their servers from the serverboard.
 - Easter eggs
   - Added two new easter eggs.
 - Settings
@@ -93,12 +86,14 @@
   - Enable easter eggs in specific channels only.
   - Give roles to users when they join.
   - Now you can set different channels for join and leave messages.
-  - Whether to show an invite to your server or not in serverboard.
-    - What channel the invite should point to.
+  - Whether to show an invite to your server or not in serverboard and what channel the invite should point to.
   - Whether all moderation actions should be silent or not.
   - What kind of moderation events should be logged.
-  - Settings for the new starboard feature.
-    - Channel to send starred messages to, emoji to be reacted, and reaction threshold.
+  - Channel to send starred messages to, emoji to be reacted, and reaction threshold.
+- Other additions
+  - Added a starboard. It can be configured from `/settings starboard`.
+  - Added unique member count to `/about`.
+  - Added the ability for server owners to display an invite link to their servers from the serverboard.
 
 ### Changed
 
@@ -124,17 +119,14 @@
 - Changelog
   - Changelog itself won't be shown in embeds anymore (it's too long). `/changelog` will show a link to this file.
 
----
-
-## 0.2.0
+## 0.2.0 - 24/12/2024
 
 ### Added
 
-#### Commands
-
-- `/changelog`
-- `/credits`
-- `/moderation notes`
+- Commands
+  - `/changelog`
+  - `/credits`
+  - `/moderation notes`
 
 ### Changed
 
@@ -144,33 +136,29 @@
 - Remade the message logs
 - Edit logs will let you jump to the message that got edited
 
-#### /settings
+- `/settings`
+  - Autocompletes with channels/users/roles (you don't have to copy IDs now :tada:)
+  - In the embed it will show links to channels/users/roles instead of showing IDs
 
-- Autocompletes with channels/users/roles (you don't have to copy IDs now :tada:)
-- In the embed it will show links to channels/users/roles instead of showing IDs
-
-#### /about
-
-- Vote button added
-- Moved credits into a different command to reduce the height of the embed
+- `/about`
+  - Vote button added
+  - Moved credits into a different command to reduce the height of the embed
 
 ### Fixed
 
-#### News
+- News
+  - Major issue related to the database, where the guild wasn't provided to ensure that news would be unique to every server, **thank you @Golem642!!!!**
+  - `/news` edit's modal errored when sending
 
-- Major issue related to the database, where the guild wasn't provided to ensure that news would be unique to every server, **thank you @Golem642!!!!**
-- `/news` edit's modal errored when sending
-
-#### Moderation commands
-
-- `/moderation clear` removed one more message than the user provided
-- `/moderation unban` errored internally (it should send an error embed) when the user didn\'t have the "Ban Members" permission
+- Moderation commands
+  - `/moderation clear` removed one more message than the user provided
+  - `/moderation unban` errored internally (it should send an error embed) when the user didn\'t have the "Ban Members" permission
 
 ### Typos
 
 - warn mentions in `/moderation warn` are now warning to be more consistent
 - Removed old markdown remnants from `/moderation slowdown`
 
-## 0.1.0
+## 0.1.0 - 16/11/2024
 
 ### Initial release :)

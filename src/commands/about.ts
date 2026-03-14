@@ -5,7 +5,6 @@ import {
   ContainerBuilder,
   MediaGalleryBuilder,
   MediaGalleryItemBuilder,
-  SeparatorBuilder,
   SlashCommandBuilder,
   TextDisplayBuilder,
   type ChatInputCommandInteraction,
@@ -35,11 +34,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   container
     .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent("## About Sokora"),
       new TextDisplayBuilder().setContent(
-        [
-          "**About Sokora**",
-          "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
-        ].join("\n"),
+        "Sokora is a multipurpose Discord bot that lets you manage your servers easily.",
       ),
       new TextDisplayBuilder().setContent(
         [
@@ -59,7 +56,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ].join("\n"),
       ),
     )
-    .addSeparatorComponents(new SeparatorBuilder().setDivider(false))
     .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ${replace("(madeWith)")}`))
     .addActionRowComponents(
       new ActionRowBuilder<ButtonBuilder>().addComponents(

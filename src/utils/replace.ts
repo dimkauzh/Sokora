@@ -4,6 +4,7 @@ import { randomize } from "./randomize";
 import { safeMember } from "./safeThings";
 import type { Replacements } from "./types";
 
+// ok the fact that this is here is an issue since it doesn't actually randomize at all...
 let emojis = ["💖", "💝", "💓", "💗", "💘", "💟", "💕", "💞"];
 if (Math.round(Math.random() * 100) <= 5) emojis = ["⌨️", "💻", "🖥️"];
 
