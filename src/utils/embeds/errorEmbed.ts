@@ -111,7 +111,7 @@ export async function errorEmbed(options: {
   if (interaction)
     return await safeReply({
       interaction,
-      replyOptions: { components: [container], files, flags: ["IsComponentsV2", "Ephemeral"] },
+      replyOptions: { components: [container], files, flags: ["Ephemeral", "IsComponentsV2"] },
     });
 }
 

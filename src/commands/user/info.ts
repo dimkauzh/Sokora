@@ -1,12 +1,22 @@
-import { calculateLevel, getUserXp, getXpForNextLevel } from "database/leveling";
+import {
+  calculateLevel,
+  getGuildLeaderboard,
+  getUserXp,
+  getXpForNextLevel,
+} from "database/leveling";
 import { getSetting } from "database/settings";
 import {
-  EmbedBuilder,
+  ContainerBuilder,
+  MediaGalleryBuilder,
+  MediaGalleryItemBuilder,
+  SectionBuilder,
+  SeparatorBuilder,
   SlashCommandSubcommandBuilder,
+  TextDisplayBuilder,
+  ThumbnailBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { colorize, Sokolors } from "utils/colorGen";
-import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";
@@ -18,39 +28,21 @@ export const data = new SlashCommandSubcommandBuilder()
   .addUserOption(user => user.setName("user").setDescription("Select the user."));
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  const guild = interaction.guild!;
-  let user = interaction.options.getUser("user") ?? interaction.user;
+  const guild = interaction.guild;
+  if (!guild) return;
+  const user = await (interaction.options.getUser("user") ?? interaction.user).fetch(true);
+  const name = user.displayName;
   let avatar = user.displayAvatarURL();
-  let name = user.displayName;
-
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}${name}`,
-      iconURL: avatar,
-    })
-    .setFields({
-      name: `<:discord:${replace("(discord)")}> • Discord info`,
-      value: [
-        `Username is **${user.username}**`,
-        `Display name is ${
-          user.displayName == user.username ? "*not there*" : `**${user.displayName}**`
-        }`,
-        `Created their account on **${mention(user.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}**`,
-      ].join("\n"),
-    })
-    .setFooter({ text: `User ID: ${user.id}` })
-    .setColor(await colorize({ user, avatar, hue: Sokolors.Blue }));
+  let banner = user.bannerURL({ size: 512 });
+  let serverInfo;
 
   if ((await safeMembers(guild)).has(user.id)) {
     const target = await safeMember(guild, user.id);
     avatar = target.displayAvatarURL();
-    name = target.nickname ?? name;
-    user = target.user;
+    banner = target.displayBannerURL({ size: 512 });
+    serverInfo = [];
 
-    const serverInfo = [
-      `Joined this server on **${mention(target.joinedAt!.valueOf(), "DEFAULT_TIMESTAMP")}**`,
-    ];
-    const guildRoles = guild.roles.cache.filter(role => target.roles.cache.has(role.id))!;
+    const guildRoles = guild.roles.cache.filter(role => target.roles.cache.has(role.id));
     const memberRoles = [...guildRoles].sort(
       (role1, role2) => role2[1].position - role1[1].position,
     );
@@ -61,15 +53,26 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
     const level = calculateLevel({ difficulty, xp });
 
+    if (target.nickname) serverInfo.push(`**${target.nickname}** in the server`);
+
     if (target.premiumSinceTimestamp)
       serverInfo.push(
         `Boosting since **${mention(target.premiumSinceTimestamp, "DEFAULT_TIMESTAMP")}**`,
       );
 
-    if ((await getSetting(`${guild.id}`, "leveling", "enabled")) && !user.bot)
+    if ((await getSetting(`${guild.id}`, "leveling", "enabled")) && !user.bot) {
+      const leaderboard = (await getGuildLeaderboard(guild.id)).sort((a, b) => {
+        if (b.level != a.level) return b.level - a.level;
+        else return b.xp - a.xp;
+      });
       serverInfo.push(
-        `Level **${level}** • ${xp && xp > 0 ? `**${xp.toLocaleString("en-US")}**/*${nextLevelXp.toLocaleString("en-US")} (level ${level + 1})* XP` : "**No** XP!"}`,
+        `Level **${level}** • ${xp && xp > 0 ? `**${xp.toLocaleString("en-US")}**/*${nextLevelXp.toLocaleString("en-US")} (level ${level + 1})* XP` : "**No** XP!"} ${
+          leaderboard.find(entry => entry.user == user.id)
+            ? `• #**${leaderboard.findIndex(entry => entry.user == user.id) + 1}** on the leaderboard`
+            : ""
+        }`,
       );
+    }
 
     if (memberRoles.length)
       serverInfo.push(
@@ -81,9 +84,40 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .map(role => mention(role[1].id, "ROLE"))
           .join(" • ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`,
       );
-
-    embed.addFields({ name: "📒 • Server info", value: serverInfo.join("\n") });
   }
 
-  await interaction.reply({ embeds: [embed] });
+  const container = new ContainerBuilder().setAccentColor(
+    await colorize({ user, avatar, hue: Sokolors.Blue }),
+  );
+
+  if (banner)
+    container.addMediaGalleryComponents(
+      new MediaGalleryBuilder().addItems(new MediaGalleryItemBuilder().setURL(banner)),
+    );
+
+  const createdText = [
+    `<:discord:${replace("(discord)")}> ${mention(user.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}`,
+    (await safeMember(guild, user.id))
+      ? `• ${mention((await safeMember(guild, user.id)).joinedAt!.valueOf(), "DEFAULT_TIMESTAMP")}`
+      : "",
+  ].join(" ");
+  const start = new TextDisplayBuilder().setContent(
+    [`## ${name}`, `@${user.username}`, "**Member since**", createdText].join("\n"),
+  );
+
+  avatar
+    ? container.addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(start)
+          .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar)),
+      )
+    : container.addTextDisplayComponents(start);
+
+  if (serverInfo)
+    container
+      .addSeparatorComponents(new SeparatorBuilder())
+      .addTextDisplayComponents(new TextDisplayBuilder().setContent(serverInfo.join("\n")));
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# User ID: ${user.id}`));
+  await interaction.reply({ components: [container], flags: ["IsComponentsV2"] });
 }

@@ -1,6 +1,10 @@
-import { EmbedBuilder, SlashCommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import {
+  ContainerBuilder,
+  SlashCommandBuilder,
+  TextDisplayBuilder,
+  type ChatInputCommandInteraction,
+} from "discord.js";
 import { colorize, Sokolors } from "utils/colorGen";
-import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 
 export const data = new SlashCommandBuilder()
@@ -10,24 +14,24 @@ export const data = new SlashCommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
-  const avatar = user.displayAvatarURL();
-  const embed = new EmbedBuilder()
-    .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}Entities involved`,
-      iconURL: avatar,
-    })
-    .setDescription(
-      [
-        "**Founder**: Goos",
-        "**Developers**: Froxcey, Golem64, Koslz, Nikkerudon",
-        "**Designer lead**: ZakaHaceCosas",
-        "**Designers**: ArtyH, Pjanda, trvhz",
-        "**Translators**: Dimkauzh, flojo, Golem64, GraczNet, Nikkerudon, SaFire, TrulyBlue, ZakaHaceCosas",
-        "**Testers**: Blaze, fishy, Trynera",
-      ].join("\n"),
+  const container = new ContainerBuilder()
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent("## Entities involved"),
+      new TextDisplayBuilder().setContent(
+        [
+          "**Founder**: Goos",
+          "**Developers**: Froxcey, Golem64, Koslz, Nikkerudon",
+          "**Designer lead**: ZakaHaceCosas",
+          "**Designers**: Pjanda, trvhz",
+          "**Translators**: Dimkauzh, flojo, Golem64, GraczNet, Nikkerudon, SaFire, TrulyBlue, ZakaHaceCosas",
+          "**Testers**: Blaze, fishy, Trynera",
+        ].join("\n"),
+      ),
     )
-    .setFooter({ text: replace("(madeWith)") })
-    .setColor(await colorize({ user, avatar, hue: Sokolors.Purple }));
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ${replace("(madeWith)")}`))
+    .setAccentColor(
+      await colorize({ user, avatar: user.displayAvatarURL(), hue: Sokolors.Purple }),
+    );
 
-  await interaction.reply({ embeds: [embed], flags: "Ephemeral" });
+  await interaction.reply({ components: [container], flags: ["Ephemeral", "IsComponentsV2"] });
 }
