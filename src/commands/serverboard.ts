@@ -1,8 +1,5 @@
 import { deletePublicServer, listPublicServers } from "database/settings";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   SlashCommandBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
@@ -10,7 +7,6 @@ import {
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
-import { replace } from "utils/replace";
 import { safeGuild } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
@@ -75,19 +71,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
   }
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId("left")
-      .setEmoji(replace("(leftArrow)"))
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("right")
-      .setEmoji(replace("(rightArrow)"))
-      .setStyle(ButtonStyle.Primary),
-  );
-
   const reply = await interaction.reply({
-    components: [await getContainer(), pages > 1 ? row : undefined].filter(v => v !== undefined),
+    components: [await getContainer()].filter(v => v !== undefined),
     flags: "IsComponentsV2",
   });
 
@@ -107,12 +92,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         break;
     }
 
-    await i.update({ components: [await getContainer(), row] });
+    await i.update({ components: [await getContainer()] });
   });
 
   collector.on("end", async () => {
+    // [TODO] disable all buttons instead of deleting the message (should apply to all cv2 commands with buttons)
     try {
-      await interaction.editReply({ components: [] });
+      await interaction.deleteReply();
     } catch (error) {
       if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
       throw error;

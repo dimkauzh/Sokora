@@ -11,10 +11,10 @@ import {
   TextDisplayBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
+import { buttonCheck } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorGen";
 import { replace } from "utils/replace";
 import { getChangelog, getVersions } from "../utils/changelog";
-import { buttonCheck } from "embeds/errorEmbed";
 
 export const data = new SlashCommandBuilder()
   .setName("changelog")
@@ -129,5 +129,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
       ],
       flags: ["IsComponentsV2"],
     });
+  });
+
+  collector.on("end", async () => {
+    try {
+      await interaction.deleteReply();
+    } catch (error) {
+      if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
+      throw error;
+    }
   });
 }

@@ -1,5 +1,8 @@
 import { resetSetting } from "database/settings";
 import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
   ContainerBuilder,
   EmbedBuilder,
   NewsChannel,
@@ -13,6 +16,7 @@ import {
   type Guild,
 } from "discord.js";
 import { logChannel } from "utils/logChannel";
+import { replace } from "utils/replace";
 import { safeChannel, safeMember } from "utils/safeThings";
 import { colorize, Sokolors } from "../colorGen";
 import { dotCheck } from "../dotCheck";
@@ -97,7 +101,6 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
 
   const dot = dotCheck({ string: icon, doubleSpace: true });
   const container = new ContainerBuilder();
-
   const start = new TextDisplayBuilder().setContent(
     [`## ${guild.name}`, generalValues, safetyValues.join(" • ")].join("\n"),
   );
@@ -118,7 +121,6 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
     );
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statValues.join("\n")));
-
   if (invite?.show) {
     async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
       resetSetting(guild.id, "serverboard", "server_invite");
@@ -184,18 +186,31 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
       : await inviteChannel.createInvite({ maxAge: 0, reason: "Serverboard invite" });
 
     container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `🚪 • This server allows you to join from here! ${inviteUrl}`,
-      ),
+      new TextDisplayBuilder().setContent(`This server allows you to join from here! ${inviteUrl}`),
     );
   }
 
-  container
-    .addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(
-        `-# ${pages && pages > 1 ? `Page ${page} of ${pages} • ` : ""}Server ID: ${guild.id}`,
+  if (pages && pages > 1)
+    container.addActionRowComponents(
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId("left")
+          .setEmoji(replace("(leftArrow)"))
+          .setStyle(ButtonStyle.Primary),
+        new ButtonBuilder()
+          .setCustomId("pagecount")
+          .setLabel(`Page ${page} of ${pages}`)
+          .setStyle(ButtonStyle.Secondary)
+          .setDisabled(true),
+        new ButtonBuilder()
+          .setCustomId("right")
+          .setEmoji(replace("(rightArrow)"))
+          .setStyle(ButtonStyle.Primary),
       ),
-    )
+    );
+
+  container
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# Server ID: ${guild.id}`))
     .setAccentColor(await colorize({ avatar: icon, hue: Sokolors.Blue }));
 
   return container;
