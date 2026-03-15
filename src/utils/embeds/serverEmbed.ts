@@ -91,7 +91,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
           : `${sortedRoles
               .slice(0, 3)
               .map(role => mention(role[0], "ROLE"))
-              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 3}** more` : ""}`
+              .join(" • ")}${rolesLength > 3 ? ` and **${rolesLength - 3}** more` : ""}`
       }`,
     );
 
