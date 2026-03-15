@@ -8,5 +8,5 @@ export const data = new SlashCommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const embed = await serverEmbed({ guild: interaction.guild!, roles: true });
-  await interaction.reply({ embeds: [embed] });
+  await interaction.reply({ components: [embed], flags: "IsComponentsV2" });
 }

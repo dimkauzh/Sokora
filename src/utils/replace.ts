@@ -4,22 +4,21 @@ import { randomize } from "./randomize";
 import { safeMember } from "./safeThings";
 import type { Replacements } from "./types";
 
-// ok the fact that this is here is an issue since it doesn't actually randomize at all...
-let emojis = ["💖", "💝", "💓", "💗", "💘", "💟", "💕", "💞"];
-if (Math.round(Math.random() * 100) <= 5) emojis = ["⌨️", "💻", "🖥️"];
-
-export const replacements = [
-  { text: "(madeWith)", replacement: `Made with ${randomize(emojis)} by the Sokora team` },
-  { text: "(leftArrow)", replacement: "1298708251256291379" },
-  { text: "(rightArrow)", replacement: "1298708281493160029" },
-  { text: "(discord)", replacement: "1266797021126459423" },
-];
+const emojis =
+  Math.round(Math.random() * 100) <= 5
+    ? ["⌨️", "💻", "🖥️"]
+    : ["💖", "💝", "💓", "💗", "💘", "💟", "💕", "💞"];
 
 export function replace(
   text: string,
   replaceText?: { text: string; replacement: string | number }[],
 ) {
-  for (const mention of replaceText ?? replacements)
+  for (const mention of replaceText ?? [
+    { text: "(madeWith)", replacement: `Made with ${randomize(emojis)} by the Sokora team` },
+    { text: "(leftArrow)", replacement: "1298708251256291379" },
+    { text: "(rightArrow)", replacement: "1298708281493160029" },
+    { text: "(discord)", replacement: "1266797021126459423" },
+  ])
     if (text.includes(mention.text))
       text = text.replaceAll(mention.text, mention.replacement.toString());
 
