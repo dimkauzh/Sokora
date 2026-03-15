@@ -1,9 +1,14 @@
 import { resetSetting } from "database/settings";
 import {
+  ContainerBuilder,
   EmbedBuilder,
   NewsChannel,
+  SectionBuilder,
+  SeparatorBuilder,
   StageChannel,
   TextChannel,
+  TextDisplayBuilder,
+  ThumbnailBuilder,
   VoiceChannel,
   type Guild,
 } from "discord.js";
@@ -26,11 +31,11 @@ type Options = {
 };
 
 /**
- * Sends an embed containing information about the guild.
+ * Gives you a CONTAINER containing information about the guild.
  * @param options Options of the embed.
- * @returns Embed that contains the guild info.
+ * @returns Container that contains the guild info.
  */
-export async function serverEmbed(options: Options) {
+export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
   const { page, pages, guild, invite } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
   const boosters = guild.members.cache.filter(member => member.premiumSince);
@@ -54,7 +59,7 @@ export async function serverEmbed(options: Options) {
   const generalValues = [
     `Owned by **${owner.user.displayName}**`,
     `Created on **${mention(guild.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}**`,
-  ];
+  ].join("\n");
 
   const vl = guild.verificationLevel;
   const nsfw = guild.nsfwLevel;
@@ -84,36 +89,35 @@ export async function serverEmbed(options: Options) {
         roles.size == 1
           ? "*None*"
           : `${sortedRoles
-              .slice(0, 5)
+              .slice(0, 3)
               .map(role => mention(role[0], "ROLE"))
-              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 5}** more` : ""}`
+              .join(" • ")}${rolesLength > 5 ? ` and **${rolesLength - 3}** more` : ""}`
       }`,
     );
 
   const dot = dotCheck({ string: icon, doubleSpace: true });
-  const embed = new EmbedBuilder()
-    .setAuthor({ name: `${pages ? `#${page}  •  ` : dot}${guild.name}`, iconURL: icon })
-    .setDescription(guild.description ? `> ${guild.description}` : null)
-    .setFields(
-      {
-        name: "📃 • General",
-        value: generalValues.join("\n"),
-        inline: true,
-      },
-      {
-        name: "🛡 • Safety setup",
-        value: safetyValues.join("\n"),
-        inline: true,
-      },
-      {
-        name: "📈 • Stats",
-        value: statValues.join("\n"),
-      },
-    )
-    .setFooter({
-      text: `${pages && pages > 1 ? `Page ${page} of ${pages} • ` : ""}Server ID: ${guild.id}`,
-    })
-    .setColor(await colorize({ avatar: icon, hue: Sokolors.Blue }));
+  const container = new ContainerBuilder();
+
+  const start = new TextDisplayBuilder().setContent(
+    [`## ${guild.name}`, generalValues, safetyValues.join(" • ")].join("\n"),
+  );
+
+  icon
+    ? container.addSectionComponents(
+        new SectionBuilder()
+          .addTextDisplayComponents(start)
+          .setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)),
+      )
+    : container.addTextDisplayComponents(start);
+
+  container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+
+  if (guild.description)
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(`> ${guild.description}`),
+    );
+
+  container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statValues.join("\n")));
 
   if (invite?.show) {
     async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
@@ -143,7 +147,7 @@ export async function serverEmbed(options: Options) {
         },
       });
 
-      return embed;
+      return container;
     }
 
     const clientMember = await safeMember(guild, client);
@@ -171,7 +175,7 @@ export async function serverEmbed(options: Options) {
         ? possibleInviteChannel
         : guild.rulesChannel;
 
-    if (!inviteChannel) return embed;
+    if (!inviteChannel) return container;
     if (!inviteChannel.permissionsFor(client)?.has("CreateInstantInvite"))
       return noPerms(inviteChannel);
 
@@ -179,11 +183,20 @@ export async function serverEmbed(options: Options) {
       ? previousInvite.url
       : await inviteChannel.createInvite({ maxAge: 0, reason: "Serverboard invite" });
 
-    embed.addFields({
-      name: "🚪 • Join in!",
-      value: `This server allows you to join from here! ${inviteUrl}`,
-    });
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `🚪 • This server allows you to join from here! ${inviteUrl}`,
+      ),
+    );
   }
 
-  return embed;
+  container
+    .addTextDisplayComponents(
+      new TextDisplayBuilder().setContent(
+        `-# ${pages && pages > 1 ? `Page ${page} of ${pages} • ` : ""}Server ID: ${guild.id}`,
+      ),
+    )
+    .setAccentColor(await colorize({ avatar: icon, hue: Sokolors.Blue }));
+
+  return container;
 }

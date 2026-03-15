@@ -62,7 +62,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const argPage = interaction.options.getNumber("page") as number;
   let page = (argPage - 1 <= 0 ? 0 : argPage - 1 > pages ? pages - 1 : argPage - 1) || 0;
 
-  async function getEmbed() {
+  async function getContainer() {
     return await serverEmbed({
       guild: guildList[page].guild,
       invite: {
@@ -87,8 +87,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   );
 
   const reply = await interaction.reply({
-    embeds: [await getEmbed()],
-    components: pages > 1 ? [row] : [],
+    components: [await getContainer(), pages > 1 ? row : undefined].filter(v => v !== undefined),
+    flags: "IsComponentsV2",
   });
 
   if (pages == 1) return;
@@ -107,7 +107,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         break;
     }
 
-    await i.update({ embeds: [await getEmbed()], components: [row] });
+    await i.update({ components: [await getContainer(), row] });
   });
 
   collector.on("end", async () => {
