@@ -3,15 +3,16 @@
 
 # Sokora Changelog
 
-## 0.4.0 (work in progress)
+## 0.4.0 - Heijun - Work in progress
 
 ### Added
 
-- Added the ability to import levelling data from MEE6, Tatsu, and Lurkr.
-- (WIP) Added level rewards.
-- Added the ability to upload one image to your news. (Cannot edit or remove images, nor add images from the edit modal.)
-- Added the ability to ping users and roles, link channels, and add custom timestamps to news. Discord doesn't allow this from the modal editor, so it uses a Dynamic Variables-ish syntax (Dynamic Mentions). See `/help variables` for info.
-- Added the ability to remove a user's messages when banning them. Use `/moderation ban user:@USER del:true` for this.
+- Importing levelling data from MEE6, Tatsu, and Lurkr.
+- (WIP) Level rewards.
+- Upload one image to your news. (Cannot edit or remove images, nor add images from the edit modal.)
+- Pinging users and roles, linking channels and adding custom timestamps to news. Discord doesn't allow this from the modal editor, so it uses a Dynamic Variables-ish syntax (Dynamic Mentions). See `/help variables` for info.
+- Removing a user's messages when banning them. Use `/moderation ban user:@USER del:true` for this.
+- Functional `/changelog` command (view all version logs directly from the bot).
 
 ### Changed
 
@@ -55,7 +56,7 @@
 - Fixed topgg reminders
 - Some internal fixes
 
-## 0.3.0 - 20/08/2025
+## 0.3.0 - Antei - 20/08/2025
 
 ### Added
 
@@ -119,7 +120,9 @@
 - Changelog
   - Changelog itself won't be shown in embeds anymore (it's too long). `/changelog` will show a link to this file.
 
-## 0.2.0 - 24/12/2024
+## 0.2.0 - Kaishi - 24/12/2024
+
+<!--[TODO] is this also Kaishi? i've been looking through the commit history and couldn't find a codename for 0.2, it's also called Kaishi-->
 
 ### Added
 
@@ -159,6 +162,6 @@
 - warn mentions in `/moderation warn` are now warning to be more consistent
 - Removed old markdown remnants from `/moderation slowdown`
 
-## 0.1.0 - 16/11/2024
+## 0.1.0 - Kaishi - 16/11/2024
 
-### Initial release :)
+### Initial release :D
