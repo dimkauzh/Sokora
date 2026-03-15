@@ -23,6 +23,7 @@
 
 - Fixed `/moderation ban` not working on members not in the guild.
 - Fixed some minor issues with timestamps.
+- The "made with ❤️ by the Sokora team" footer in many embeds was supposed to randomize the emoji but it never did; fixed that too.
 
 ## 0.3.2 - 26/08/2025
 
@@ -156,12 +157,12 @@
 - Moderation commands
   - `/moderation clear` removed one more message than the user provided
   - `/moderation unban` errored internally (it should send an error embed) when the user didn\'t have the "Ban Members" permission
-
-### Typos
-
-- warn mentions in `/moderation warn` are now warning to be more consistent
-- Removed old markdown remnants from `/moderation slowdown`
+- Typos
+  - warn mentions in `/moderation warn` are now warning to be more consistent
+  - Removed old markdown remnants from `/moderation slowdown`
 
 ## 0.1.0 - Kaishi - 16/11/2024
 
-### Initial release :D
+### Added
+
+Initial release :D
