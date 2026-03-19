@@ -9,7 +9,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { replace } from "utils/replace";
 import { safeUser } from "utils/safeThings";
 

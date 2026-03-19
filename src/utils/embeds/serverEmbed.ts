@@ -18,7 +18,7 @@ import {
 import { logChannel } from "utils/logChannel";
 import { replace } from "utils/replace";
 import { safeChannel, safeMember } from "utils/safeThings";
-import { colorize, Sokolors } from "../colorGen";
+import { colorize, Sokolors } from "../colorize";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
 import { pluralOrNot } from "../pluralOrNot";
@@ -32,6 +32,7 @@ type Options = {
   roles?: boolean;
   page?: number;
   pages?: number;
+  disableButtons?: boolean;
 };
 
 /**
@@ -40,7 +41,7 @@ type Options = {
  * @returns Container that contains the guild info.
  */
 export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
-  const { page, pages, guild, invite } = options;
+  const { page, pages, guild, invite, disableButtons } = options;
   const { premiumTier: boostTier, premiumSubscriptionCount: boostCount } = guild;
   const boosters = guild.members.cache.filter(member => member.premiumSince);
   const client = guild.client.user.id;
@@ -196,16 +197,18 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
         new ButtonBuilder()
           .setCustomId("left")
           .setEmoji(replace("(leftArrow)"))
-          .setStyle(ButtonStyle.Primary),
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(disableButtons),
         new ButtonBuilder()
           .setCustomId("pagecount")
-          .setLabel(`Page ${page} of ${pages}`)
+          .setLabel(`${page} of ${pages}`)
           .setStyle(ButtonStyle.Secondary)
           .setDisabled(true),
         new ButtonBuilder()
           .setCustomId("right")
           .setEmoji(replace("(rightArrow)"))
-          .setStyle(ButtonStyle.Primary),
+          .setStyle(ButtonStyle.Primary)
+          .setDisabled(disableButtons),
       ),
     );
 

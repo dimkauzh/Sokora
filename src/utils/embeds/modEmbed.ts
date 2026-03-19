@@ -8,7 +8,7 @@ import {
 import ms from "enhanced-ms";
 import { mention } from "utils/mention";
 import { safeChannel, safeMember, safeReply } from "utils/safeThings";
-import { colorize, Sokolors } from "../colorGen";
+import { colorize, Sokolors } from "../colorize";
 import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
 import { errorEmbed } from "./errorEmbed";

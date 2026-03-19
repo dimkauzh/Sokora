@@ -19,6 +19,7 @@ import {
   ButtonStyle,
   ChannelSelectMenuBuilder,
   ChannelType,
+  codeBlock,
   ContainerBuilder,
   LabelBuilder,
   MentionableSelectMenuBuilder,
@@ -33,13 +34,11 @@ import {
   TextInputBuilder,
   TextInputStyle,
   UserSelectMenuBuilder,
-  codeBlock,
   type AnySelectMenuInteraction,
   type ChatInputCommandInteraction,
-  type RGBTuple,
 } from "discord.js";
 import { easterEggNames } from "handlers/events";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
@@ -158,7 +157,7 @@ export async function settingsEmbed(
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
   const exemptButtons = ["reset_start", "reset_category", "cancel", "yes", "no", "return", "add"];
   const eventNames = ["messageUpdate", "messageDelete"];
-  const color = (await colorize({ hue: Sokolors.Blue })) as RGBTuple;
+  const color = await colorize({ hue: Sokolors.Blue });
   let settingsObj = settingsDef.settings;
   let settingName = "";
   let reset = false;
@@ -453,10 +452,7 @@ export async function settingsEmbed(
           new TextDisplayBuilder().setContent(settingsDef.description),
         );
 
-      return await safeReply({
-        interaction: i,
-        editOptions: { components: [newContainer], flags: "IsComponentsV2" },
-      });
+      return await safeReply({ interaction: i, editOptions: { components: [newContainer] } });
     }
 
     switch (cID.replace("obj", "")) {
@@ -542,7 +538,7 @@ export async function settingsEmbed(
               .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
               .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
               .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
-              .setAccentColor((await colorize({ hue })) as RGBTuple);
+              .setAccentColor(await colorize({ hue }));
           }
 
           const value = modalInteraction.fields.getTextInputValue("setting");
@@ -562,7 +558,6 @@ export async function settingsEmbed(
             interaction: modalInteraction,
             replyOptions: {
               components: [await constructModalContainer(settingText, valueText, hue)],
-              flags: ["Ephemeral", "IsComponentsV2"],
             },
           });
           await end(reset, confirm, editView, itrObjectView);

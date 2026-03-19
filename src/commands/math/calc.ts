@@ -5,7 +5,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import * as math from "mathjs";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("calc")

@@ -7,7 +7,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { safeChannel, safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()

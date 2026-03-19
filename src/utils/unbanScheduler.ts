@@ -1,7 +1,7 @@
 import { getPendingBans, removeModeration } from "database/moderation";
 import { Client, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "./colorGen";
+import { colorize, Sokolors } from "./colorize";
 import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
 import { safeGuild, safeMember } from "./safeThings";

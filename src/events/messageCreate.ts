@@ -11,7 +11,7 @@ import { EmbedBuilder, PermissionsBitField, type TextChannel } from "discord.js"
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggs } from "handlers/events";
 import { channelCheck } from "utils/channelCheck";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { mention } from "utils/mention";

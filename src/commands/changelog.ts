@@ -4,7 +4,6 @@ import {
   ButtonInteraction,
   ButtonStyle,
   ClientUser,
-  ComponentType,
   ContainerBuilder,
   SeparatorBuilder,
   SlashCommandBuilder,
@@ -12,7 +11,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { replace } from "utils/replace";
 import { getChangelog, getVersions } from "../utils/changelog";
 
@@ -90,7 +89,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
   const logList = getVersions();
   const changelog = getChangelog(logList[0].ver);
-  const container = await genChangelog(
+  let container = await genChangelog(
     user,
     changelog,
     getDefaultCategoryToView(changelog),
@@ -101,10 +100,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     components: [container],
     flags: ["Ephemeral", "IsComponentsV2"],
   });
-  const collector = reply.createMessageComponentCollector({
-    componentType: ComponentType.Button,
-    time: 120000,
-  });
+  const collector = reply.createMessageComponentCollector({ time: 120000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 120000 });
@@ -115,6 +111,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     )
       ? split[1]
       : split[0];
+
     const found = logList.findIndex(v => v.ver === newVer);
     const idx = Math.max(0, Math.min(found - 2, logList.length - 3));
     const log = getChangelog(newVer);
@@ -127,7 +124,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
           logList.slice(idx, idx + 5).filter(v => v !== undefined),
         ),
       ],
-      flags: ["IsComponentsV2"],
     });
   });
 

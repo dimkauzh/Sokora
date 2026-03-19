@@ -20,7 +20,7 @@ import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import ms from "enhanced-ms";
 import { client } from "src/bot";
 import { capitalize } from "utils/capitalize";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { randomize } from "utils/randomize";

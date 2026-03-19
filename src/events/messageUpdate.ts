@@ -7,7 +7,7 @@ import {
   EmbedBuilder,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
 import { fetchMedia } from "utils/media";

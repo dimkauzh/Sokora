@@ -58,7 +58,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const argPage = interaction.options.getNumber("page") as number;
   let page = (argPage - 1 <= 0 ? 0 : argPage - 1 > pages ? pages - 1 : argPage - 1) || 0;
 
-  async function getContainer() {
+  async function getContainer(disableButtons?: boolean) {
     return await serverEmbed({
       guild: guildList[page].guild,
       invite: {
@@ -68,11 +68,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
       page: page + 1,
       pages,
       roles: false,
+      disableButtons,
     });
   }
 
   const reply = await interaction.reply({
-    components: [await getContainer()].filter(v => v !== undefined),
+    components: [await getContainer(false)].filter(v => v !== undefined),
     flags: "IsComponentsV2",
   });
 
@@ -92,13 +93,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
         break;
     }
 
-    await i.update({ components: [await getContainer()] });
+    await i.update({ components: [await getContainer(false)] });
   });
 
   collector.on("end", async () => {
-    // [TODO] disable all buttons instead of deleting the message (should apply to all cv2 commands with buttons)
     try {
-      await interaction.deleteReply();
+      await interaction.editReply({ components: [await getContainer(true)] });
     } catch (error) {
       if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
       throw error;
