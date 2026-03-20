@@ -100,10 +100,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     components: [container],
     flags: ["Ephemeral", "IsComponentsV2"],
   });
-  const collector = reply.createMessageComponentCollector({ time: 120000 });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 120000 });
+    collector.resetTimer({ time: 60000 });
 
     const split = i.customId.replace("-", "").split("+");
     const newVer = ["Added", "Changed", "Fixed", "Removed"].some(s =>

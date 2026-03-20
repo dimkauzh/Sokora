@@ -150,10 +150,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     interaction,
     replyOptions: { components: [await containerHelper(container, {})] },
   });
-  const collector = reply.createMessageComponentCollector({ time: 120000 });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 120000 });
+    collector.resetTimer({ time: 60000 });
     const cID = i.customId as keyof typeof SupportedBots;
     const bots = {
       name: cID === "MEE6" ? cID.toUpperCase() : cID,
@@ -195,11 +195,11 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
         if (modalInteraction) await reply.delete();
         collector.stop("bot_chosen");
-        const collector1 = reply1.createMessageComponentCollector({ time: 120000 });
+        const collector1 = reply1.createMessageComponentCollector({ time: 60000 });
         collector1.on("collect", async (i1: ButtonInteraction) => {
           if (await buttonCheck({ i: i1, interaction: replyInteraction, reply: reply1 })) return;
 
-          collector1.resetTimer({ time: 120000 });
+          collector1.resetTimer({ time: 60000 });
           let content;
           switch (i1.customId) {
             case "check": {
