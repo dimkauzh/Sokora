@@ -3,7 +3,7 @@ import { getStarred, setStarred } from "database/starboard";
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { channelCheck } from "utils/channelCheck";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { safeChannel } from "utils/safeThings";
 import { Event } from "utils/types";

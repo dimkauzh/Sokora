@@ -10,7 +10,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { version } from "package";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";
 
@@ -56,7 +56,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ].join("\n"),
       ),
     )
-    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ${replace("(madeWith)")}`))
     .addActionRowComponents(
       new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
@@ -71,6 +70,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           .setStyle(ButtonStyle.Link),
       ),
     )
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# ${replace("(madeWith)")}`))
     .setAccentColor(
       await colorize({ user, avatar: user.displayAvatarURL(), hue: Sokolors.Purple }),
     );

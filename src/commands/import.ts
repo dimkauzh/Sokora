@@ -21,10 +21,9 @@ import {
   type ButtonInteraction,
   type ChatInputCommandInteraction,
   type ModalSubmitInteraction,
-  type RGBTuple,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { safeReply } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
@@ -46,7 +45,15 @@ async function collapse(
   error: any,
   cID: keyof typeof SupportedBots,
   interaction: ChatInputCommandInteraction,
-  containerHelper: (...args: any) => Promise<ContainerBuilder>,
+  containerHelper: (
+    container: ContainerBuilder,
+    options: {
+      content?: string;
+      buttons?: boolean;
+      error?: boolean;
+      json?: boolean;
+    },
+  ) => Promise<ContainerBuilder>,
 ) {
   await interaction.deleteReply();
   const errorContainer = new ContainerBuilder().addTextDisplayComponents(
@@ -86,7 +93,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
       buttons?: boolean;
       error?: boolean;
       json?: boolean;
-      footer?: boolean;
     },
   ): Promise<ContainerBuilder> {
     const { content, buttons, error, json } = options;
@@ -111,8 +117,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ),
       );
 
-    const color = (await colorize({ user, avatar, hue: 300 })) as RGBTuple;
-    const errorColor = (await colorize({ user, avatar, hue: Sokolors.Red })) as RGBTuple;
+    const color = await colorize({ user, avatar, hue: 300 });
+    const errorColor = await colorize({ user, avatar, hue: Sokolors.Red });
     container
       .addTextDisplayComponents(
         new TextDisplayBuilder().setContent(
@@ -142,15 +148,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const container = new ContainerBuilder().addSectionComponents(containerComponents);
   const reply = await safeReply({
     interaction,
-    replyOptions: {
-      components: [await containerHelper(container, {})],
-      flags: ["IsComponentsV2"],
-    },
+    replyOptions: { components: [await containerHelper(container, {})] },
   });
-  const collector = reply.createMessageComponentCollector({ time: 120000 });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 120000 });
+    collector.resetTimer({ time: 60000 });
     const cID = i.customId as keyof typeof SupportedBots;
     const bots = {
       name: cID === "MEE6" ? cID.toUpperCase() : cID,
@@ -187,19 +190,16 @@ export async function run(interaction: ChatInputCommandInteraction) {
         const replyInteraction = modalInteraction ?? i;
         const reply1 = await safeReply({
           interaction: replyInteraction,
-          editOptions: {
-            components: [await containerHelper(container1, { buttons: true })],
-            flags: "IsComponentsV2",
-          },
+          editOptions: { components: [await containerHelper(container1, { buttons: true })] },
         });
 
         if (modalInteraction) await reply.delete();
         collector.stop("bot_chosen");
-        const collector1 = reply1.createMessageComponentCollector({ time: 120000 });
+        const collector1 = reply1.createMessageComponentCollector({ time: 60000 });
         collector1.on("collect", async (i1: ButtonInteraction) => {
           if (await buttonCheck({ i: i1, interaction: replyInteraction, reply: reply1 })) return;
 
-          collector1.resetTimer({ time: 120000 });
+          collector1.resetTimer({ time: 60000 });
           let content;
           switch (i1.customId) {
             case "check": {
@@ -231,7 +231,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
                     await containerHelper(checkContainer, { buttons: true, json: true }),
                   ],
                   files: files,
-                  flags: "IsComponentsV2",
                 },
               });
               break;
@@ -239,7 +238,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
             case "return":
               await safeReply({
                 interaction: i1,
-                replyOptions: { components: [container1], flags: "IsComponentsV2" },
+                replyOptions: { components: [container1] },
               });
               break;
             case "merge":
@@ -250,7 +249,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 interaction: i1,
                 replyOptions: {
                   components: [await containerHelper(new ContainerBuilder(), { content })],
-                  flags: "IsComponentsV2",
                 },
               });
 
@@ -281,7 +279,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 interaction: i1,
                 replyOptions: {
                   components: [await containerHelper(new ContainerBuilder(), { content })],
-                  flags: "IsComponentsV2",
                 },
               });
             }

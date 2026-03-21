@@ -1,6 +1,6 @@
 import { ChatInputCommandInteraction, EmbedBuilder, SlashCommandBuilder } from "discord.js";
 import ms from "enhanced-ms";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 

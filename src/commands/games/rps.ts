@@ -8,7 +8,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { randomize } from "utils/randomize";
 

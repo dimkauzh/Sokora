@@ -4,7 +4,8 @@ import { noErrorsPlease } from "utils/noErrorsPlease";
 import type { Event } from "utils/types";
 
 export default (async function run(interaction) {
-  if (!interaction.isChatInputCommand() && !interaction.isAutocomplete()) return;
+  if ((!interaction.isChatInputCommand() && !interaction.isAutocomplete()) || !interaction.guild)
+    return;
 
   let command;
   const subCommand = subCommands.filter(subCommand =>

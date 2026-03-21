@@ -9,7 +9,7 @@ import {
   PermissionResolvable,
   type TextChannel,
 } from "discord.js";
-import { colorize, Sokolors } from "./colorGen";
+import { colorize, Sokolors } from "./colorize";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
 

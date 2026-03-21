@@ -16,7 +16,7 @@ import {
   ThumbnailBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { mention } from "utils/mention";
 import { pluralOrNot } from "utils/pluralOrNot";
 import { replace } from "utils/replace";

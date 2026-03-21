@@ -1,7 +1,7 @@
 import { EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { commands } from "handlers/commands";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { replace } from "utils/replace";
 import type { Event } from "utils/types";

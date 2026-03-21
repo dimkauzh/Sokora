@@ -2,7 +2,7 @@ import { getSetting } from "database/settings";
 import { EmbedBuilder, type TextChannel } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { channelCheck } from "utils/channelCheck";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { kominator } from "utils/kominator";
 import { replaceVariables } from "utils/replace";

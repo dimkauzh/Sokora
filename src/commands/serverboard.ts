@@ -1,8 +1,5 @@
 import { deletePublicServer, listPublicServers } from "database/settings";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   SlashCommandBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
@@ -10,7 +7,6 @@ import {
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
-import { replace } from "utils/replace";
 import { safeGuild } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
@@ -62,7 +58,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const argPage = interaction.options.getNumber("page") as number;
   let page = (argPage - 1 <= 0 ? 0 : argPage - 1 > pages ? pages - 1 : argPage - 1) || 0;
 
-  async function getContainer() {
+  async function getContainer(disableButtons?: boolean) {
     return await serverEmbed({
       guild: guildList[page].guild,
       invite: {
@@ -72,30 +68,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
       page: page + 1,
       pages,
       roles: false,
+      disableButtons,
     });
   }
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId("left")
-      .setEmoji(replace("(leftArrow)"))
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("right")
-      .setEmoji(replace("(rightArrow)"))
-      .setStyle(ButtonStyle.Primary),
-  );
-
   const reply = await interaction.reply({
-    components: [await getContainer(), pages > 1 ? row : undefined].filter(v => v !== undefined),
+    components: [await getContainer(false)],
     flags: "IsComponentsV2",
   });
-
   if (pages == 1) return;
-  const collector = reply.createMessageComponentCollector({ time: 30000 });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 30000 });
+    collector.resetTimer({ time: 60000 });
     switch (i.customId) {
       case "left":
         page--;
@@ -107,12 +92,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
         break;
     }
 
-    await i.update({ components: [await getContainer(), row] });
+    await i.update({ components: [await getContainer(false)] });
   });
 
   collector.on("end", async () => {
     try {
-      await interaction.editReply({ components: [] });
+      await interaction.editReply({ components: [await getContainer(true)] });
     } catch (error) {
       if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
       throw error;

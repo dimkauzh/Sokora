@@ -12,7 +12,7 @@ import {
   type TextChannel,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
 import { safeChannel, safeMember, safeRole } from "utils/safeThings";

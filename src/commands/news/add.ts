@@ -10,7 +10,7 @@ import {
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { replaceVariables } from "utils/replace";
 import { safeMember } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";

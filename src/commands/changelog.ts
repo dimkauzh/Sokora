@@ -4,17 +4,16 @@ import {
   ButtonInteraction,
   ButtonStyle,
   ClientUser,
-  ComponentType,
   ContainerBuilder,
   SeparatorBuilder,
   SlashCommandBuilder,
   TextDisplayBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { colorize, Sokolors } from "utils/colorGen";
+import { buttonCheck } from "embeds/errorEmbed";
+import { colorize, Sokolors } from "utils/colorize";
 import { replace } from "utils/replace";
 import { getChangelog, getVersions } from "../utils/changelog";
-import { buttonCheck } from "embeds/errorEmbed";
 
 export const data = new SlashCommandBuilder()
   .setName("changelog")
@@ -101,13 +100,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     components: [container],
     flags: ["Ephemeral", "IsComponentsV2"],
   });
-  const collector = reply.createMessageComponentCollector({
-    componentType: ComponentType.Button,
-    time: 120000,
-  });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 120000 });
+    collector.resetTimer({ time: 60000 });
 
     const split = i.customId.replace("-", "").split("+");
     const newVer = ["Added", "Changed", "Fixed", "Removed"].some(s =>
@@ -115,6 +111,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     )
       ? split[1]
       : split[0];
+
     const found = logList.findIndex(v => v.ver === newVer);
     const idx = Math.max(0, Math.min(found - 2, logList.length - 3));
     const log = getChangelog(newVer);
@@ -127,7 +124,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
           logList.slice(idx, idx + 5).filter(v => v !== undefined),
         ),
       ],
-      flags: ["IsComponentsV2"],
     });
+  });
+
+  collector.on("end", async () => {
+    try {
+      await interaction.deleteReply();
+    } catch (error) {
+      if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
+      throw error;
+    }
   });
 }

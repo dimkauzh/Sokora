@@ -123,8 +123,6 @@
 
 ## 0.2.0 - Kaishi - 24/12/2024
 
-<!--[TODO] is this also Kaishi? i've been looking through the commit history and couldn't find a codename for 0.2, it's also called Kaishi-->
-
 ### Added
 
 - Commands

@@ -8,7 +8,7 @@ import {
   type TextChannel,
 } from "discord.js";
 import { channelCheck } from "./channelCheck";
-import { colorize, Sokolors } from "./colorGen";
+import { colorize, Sokolors } from "./colorize";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";
 import { safeChannel, safeRole } from "./safeThings";

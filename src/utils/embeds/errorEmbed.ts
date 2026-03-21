@@ -13,7 +13,7 @@ import {
   type Message,
   type ModalSubmitInteraction,
 } from "discord.js";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { safeChannel, safeReply } from "utils/safeThings";
 import { errorType } from "../errorType";
 

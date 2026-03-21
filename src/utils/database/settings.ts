@@ -254,6 +254,8 @@ const insertQuery = database.query(
   "INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);",
 );
 
+// [TODO] autocomplete support for get/setSetting
+// [TODO] proper type validation for get/setSetting
 export async function getSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],

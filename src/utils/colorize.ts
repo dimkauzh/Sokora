@@ -10,15 +10,11 @@ export enum Sokolors {
   Purple = 300,
 }
 
-export type ColorOptions = {
+export async function colorize(options: {
   hue: Sokolors;
   user?: User;
   avatar?: string;
-};
-
-export async function colorize(
-  options: ColorOptions,
-): Promise<(ColorResolvable | null) & (RGBTuple | undefined)> {
+}): Promise<(ColorResolvable | null) & (RGBTuple | undefined)> {
   const { user, avatar, hue } = options;
 
   function genColor(): (ColorResolvable | null) & (RGBTuple | undefined) {

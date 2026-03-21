@@ -2,7 +2,7 @@ import { getSetting } from "database/settings";
 import { AttachmentBuilder, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
-import { colorize, Sokolors } from "utils/colorGen";
+import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { logChannel } from "utils/logChannel";
 import { fetchMedia } from "utils/media";
