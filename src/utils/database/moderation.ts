@@ -20,34 +20,18 @@ export type ModerationCase = typeof definition;
 export type ModType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
 
 const database = getDatabase(definition);
-const addQuery = database.query(
-  "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
-);
-const listGuildQuery = database.query("SELECT * FROM moderation WHERE guild = $1;");
-const listGuildTypeQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND type = $2;",
-);
-const listUserQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND user = $2;");
-const listUserTypeQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND user = $2 AND type = $3;",
-);
-const listModQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND moderator = $2;",
-);
-const getIdQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND id = $2;");
-const getLastIdQuery = database.query(
-  "SELECT CAST(id AS int) AS id FROM moderation WHERE guild = ? ORDER BY id DESC LIMIT 1;",
-);
-const editQuery = database.query(
-  "UPDATE moderation SET reason = ?3, expiresAt = ?4 WHERE guild = ?1 AND id = ?2;",
-);
-const removeQuery = database.query("DELETE FROM moderation WHERE guild = $1 AND id = $2");
-const getExpiredBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= $1;",
-);
-const getPendingBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt > $1;",
-);
+const addQuery = database`INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);`;
+const listGuildQuery = database`SELECT * FROM moderation WHERE guild = $1;`;
+const listGuildTypeQuery = database`SELECT * FROM moderation WHERE guild = $1 AND type = $2;`;
+const listUserQuery = database`SELECT * FROM moderation WHERE guild = $1 AND user = $2;`;
+const listUserTypeQuery = database`SELECT * FROM moderation WHERE guild = $1 AND user = $2 AND type = $3;`;
+const listModQuery = database`SELECT * FROM moderation WHERE guild = $1 AND moderator = $2;`;
+const getIdQuery = database`SELECT * FROM moderation WHERE guild = $1 AND id = $2;`;
+const getLastIdQuery = database`SELECT CAST(id AS int) AS id FROM moderation WHERE guild = ? ORDER BY id DESC LIMIT 1;`;
+const editQuery = database`UPDATE moderation SET reason = ?3, expiresAt = ?4 WHERE guild = ?1 AND id = ?2;`;
+const removeQuery = database`DELETE FROM moderation WHERE guild = $1 AND id = $2;`;
+const getExpiredBansQuery = database`SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= $1;`;
+const getPendingBansQuery = database`SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt > $1;`;
 
 export function addModeration(
   guildID: string | number,

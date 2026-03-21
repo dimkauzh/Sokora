@@ -236,23 +236,13 @@ export const settingsDefinition: SettingsDefinition = {
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 const database = getDatabase(tableDefinition);
-const getQuery = database.query("SELECT * FROM settings WHERE guildID = $1 AND key = $2;");
-const listPublicQuery = database.query(
-  "SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';",
-);
-const deletePublicQuery = database.query(
-  "DELETE FROM settings WHERE guildID = $1 AND key = 'serverboard.shown' AND value = '1'",
-);
-const listPublicWithInvitesEnabledQuery = database.query(
-  "SELECT * FROM settings WHERE key = 'serverboard.server_invite' AND value = '1';",
-);
-const deleteQuery = database.query("DELETE FROM settings WHERE guildID = $1 AND key = $2;");
-const deleteCategoryQuery = database.query(
-  "DELETE FROM settings WHERE guildID = $1 AND key LIKE $2;",
-);
-const insertQuery = database.query(
-  "INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);",
-);
+const getQuery = database`SELECT * FROM settings WHERE guildID = $1 AND key = $2;`;
+const listPublicQuery = database`SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';`;
+const deletePublicQuery = database`DELETE FROM settings WHERE guildID = $1 AND key = 'serverboard.shown' AND value = '1';`;
+const listPublicWithInvitesEnabledQuery = database`SELECT * FROM settings WHERE key = 'serverboard.server_invite' AND value = '1';`;
+const deleteQuery = database`DELETE FROM settings WHERE guildID = $1 AND key = $2;`;
+const deleteCategoryQuery = database`DELETE FROM settings WHERE guildID = $1 AND key LIKE $2;`;
+const insertQuery = database`INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);`;
 
 // [TODO] autocomplete support for get/setSetting
 // [TODO] proper type validation for get/setSetting

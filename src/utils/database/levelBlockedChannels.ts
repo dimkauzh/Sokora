@@ -10,16 +10,10 @@ const tableDefinition = {
 } satisfies TableDefinition;
 
 const database = getDatabase(tableDefinition);
-const getQuery = database.query(
-  "SELECT * FROM levelBlockedChannels WHERE guild = $1 AND channel = $2;",
-);
-const listQuery = database.query("SELECT * FROM levelBlockedChannels WHERE guild = $1;");
-const addQuery = database.query(
-  "INSERT INTO levelBlockedChannels (guild, channel) VALUES (?1, ?2);",
-);
-const removeQuery = database.query(
-  "DELETE FROM levelBlockedChannels WHERE guild = $1 AND channel = $2;",
-);
+const getQuery = database`SELECT * FROM levelBlockedChannels WHERE guild = $1 AND channel = $2;`;
+const listQuery = database`SELECT * FROM levelBlockedChannels WHERE guild = $1`;
+const addQuery = database`INSERT INTO levelBlockedChannels (guild, channel) VALUES (?1, ?2);`;
+const removeQuery = database`DELETE FROM levelBlockedChannels WHERE guild = $1 AND channel = $2;`;
 
 export function getBlockedChannels(guildID: string, channelID: string) {
   return getQuery.all(guildID, channelID).length == 0;

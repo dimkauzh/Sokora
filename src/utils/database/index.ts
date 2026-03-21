@@ -1,15 +1,19 @@
-import { Database } from "bun:sqlite";
+import { SQL } from "bun";
 import { TableDefinition } from "./types";
 
-// Get (or create) an SQLite database
-const database = new Database("data.db", { create: true });
+// Connect into the PostgreSQL database
+const user = process.env.POSTGRE_USER;
+const pass = process.env.POSTGRE_PASS;
+const port = process.env.POSTGRE_PORT;
+const dbName = process.env.POSTGRE_DB;
+const db = new SQL(`postgres://${user}:${pass}@localhost:${port}/${dbName}`);
 
-export function getDatabase(definition: TableDefinition) {
+export function getDatabase(def: TableDefinition) {
   // Create table if it doesn't exist
-  const defStr = Object.entries(definition.definition)
+  const defStr = Object.entries(def.definition)
     .map(([field, type]) => field.concat(" ", type))
     .join(", ");
 
-  database.run(`CREATE TABLE IF NOT EXISTS ${definition.name} (${defStr});`);
-  return database;
+  db`CREATE TABLE IF NOT EXISTS ${def.name} (${defStr});`.execute();
+  return db;
 }

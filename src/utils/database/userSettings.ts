@@ -28,12 +28,10 @@ export const settingsDefinition: SettingsDefinition = {
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 const database = getDatabase(tableDefinition);
-const getQuery = database.query("SELECT * FROM user_settings WHERE userID = $1 AND key = $2;");
-const getByKeyQuery = database.query("SELECT * FROM user_settings WHERE key = $1;");
-const deleteQuery = database.query("DELETE FROM user_settings WHERE userID = $1 AND key = $2;");
-const insertQuery = database.query(
-  "INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);",
-);
+const getQuery = database`SELECT * FROM user_settings WHERE userID = $1 AND key = $2;`;
+const getByKeyQuery = database`SELECT * FROM user_settings WHERE key = $1;`;
+const deleteQuery = database`DELETE FROM user_settings WHERE userID = $1 AND key = $2;`;
+const insertQuery = database`INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);`;
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,
@@ -63,7 +61,7 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  return getByKeyQuery.all(`${key}.${setting}`) as TypeOfDefinition<typeof tableDefinition>[];
+  return getByKeyQuery.values();
 }
 
 export async function getUserSetting<
@@ -85,9 +83,7 @@ export async function getUserSetting<
     return null;
   }
 
-  const res = getQuery.all(JSON.stringify(userID), `${key}.${setting}`) as TypeOfDefinition<
-    typeof tableDefinition
-  >[];
+  const res = getQuery.values();
   const set = settingsDefinition[key].settings[setting];
 
   if (!res.length) {

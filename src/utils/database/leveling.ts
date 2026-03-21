@@ -13,10 +13,10 @@ const tableDefinition = {
 } satisfies TableDefinition;
 
 const database = getDatabase(tableDefinition);
-const getQuery = database.query("SELECT * FROM leveling WHERE guild = $1 AND user = $2;");
-const deleteQuery = database.query("DELETE FROM leveling WHERE guild = $1 AND user = $2;");
-const insertQuery = database.query("INSERT INTO leveling (guild, user, xp) VALUES (?1, ?2, ?3);");
-const getGuildQuery = database.query("SELECT * FROM leveling WHERE guild = $1;");
+const getQuery = database`SELECT * FROM leveling WHERE guild = $1 AND user = $2;`;
+const getGuildQuery = database`SELECT * FROM leveling WHERE guild = $1;`;
+const deleteQuery = database`DELETE FROM leveling WHERE guild = $1 AND user = $2;`;
+const insertQuery = database`INSERT INTO leveling (guild, user, xp) VALUES (?1, ?2, ?3);`;
 
 export function getUserXp(guildID: string, userID: string): number {
   const res = getQuery.all(guildID, userID) as TypeOfDefinition<typeof tableDefinition>[];

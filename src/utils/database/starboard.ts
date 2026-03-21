@@ -16,15 +16,10 @@ const tableDefinition = {
 } satisfies TableDefinition;
 
 const database = getDatabase(tableDefinition);
-
-const getQuery = database.query("SELECT * FROM starboard WHERE guild = $1 AND message = $2;");
-const deleteQuery = database.query("DELETE FROM starboard WHERE guild = $1 AND message = $2;");
-const insertQuery = database.query(
-  "INSERT INTO starboard (guild, message, channel, author, star_message, stars, content, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
-);
-const getTopQuery = database.query(
-  "SELECT * FROM starboard WHERE guild = $1 ORDER BY stars DESC LIMIT ?2;",
-);
+const getQuery = database`SELECT * FROM starboard WHERE guild = $1 AND message = $2;`;
+const deleteQuery = database`DELETE FROM starboard WHERE guild = $1 AND message = $2;`;
+const insertQuery = database`INSERT INTO starboard (guild, message, channel, author, star_message, stars, content, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);`;
+const getTopQuery = database`SELECT * FROM starboard WHERE guild = $1 ORDER BY stars DESC LIMIT ?2;`;
 
 export function getStarred(
   guildID: string,
