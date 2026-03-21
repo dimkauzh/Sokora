@@ -77,10 +77,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
 
   if (page <= 1) return;
-  const collector = reply.createMessageComponentCollector({ time: 30000 });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 30000 });
+    collector.resetTimer({ time: 60000 });
     switch (i.customId) {
       case "left":
         page--;

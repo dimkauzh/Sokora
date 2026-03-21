@@ -73,15 +73,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
   }
 
   const reply = await interaction.reply({
-    components: [await getContainer(false)].filter(v => v !== undefined),
+    components: [await getContainer(false)],
     flags: "IsComponentsV2",
   });
-
   if (pages == 1) return;
-  const collector = reply.createMessageComponentCollector({ time: 30000 });
+  const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 30000 });
+    collector.resetTimer({ time: 60000 });
     switch (i.customId) {
       case "left":
         page--;

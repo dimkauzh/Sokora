@@ -89,7 +89,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.client.user;
   const logList = getVersions();
   const changelog = getChangelog(logList[0].ver);
-  let container = await genChangelog(
+  const container = await genChangelog(
     user,
     changelog,
     getDefaultCategoryToView(changelog),
