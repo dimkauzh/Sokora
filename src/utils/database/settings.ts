@@ -1,10 +1,10 @@
+import { sql } from "bun";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
-import { getDatabase } from ".";
 import { FieldData, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
-const tableDefinition = {
+const def = {
   name: "settings",
   definition: {
     guildID: "TEXT",
@@ -235,14 +235,14 @@ export const settingsDefinition: SettingsDefinition = {
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-const database = getDatabase(tableDefinition);
-const getQuery = database`SELECT * FROM settings WHERE guildID = $1 AND key = $2;`;
-const listPublicQuery = database`SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';`;
-const deletePublicQuery = database`DELETE FROM settings WHERE guildID = $1 AND key = 'serverboard.shown' AND value = '1';`;
-const listPublicWithInvitesEnabledQuery = database`SELECT * FROM settings WHERE key = 'serverboard.server_invite' AND value = '1';`;
-const deleteQuery = database`DELETE FROM settings WHERE guildID = $1 AND key = $2;`;
-const deleteCategoryQuery = database`DELETE FROM settings WHERE guildID = $1 AND key LIKE $2;`;
-const insertQuery = database`INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);`;
+await sql`CREATE TABLE IF NOT EXISTS settings (guildID TEXT, key TEXT, value TEXT);`;
+const getQuery = sql`SELECT * FROM settings WHERE guildID = $1 AND key = $2;`;
+const listPublicQuery = sql`SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';`;
+const deletePublicQuery = sql`DELETE FROM settings WHERE guildID = $1 AND key = 'serverboard.shown' AND value = '1';`;
+const listPublicWithInvitesEnabledQuery = sql`SELECT * FROM settings WHERE key = 'serverboard.server_invite' AND value = '1';`;
+const deleteQuery = sql`DELETE FROM settings WHERE guildID = $1 AND key = $2;`;
+const deleteCategoryQuery = sql`DELETE FROM settings WHERE guildID = $1 AND key LIKE $2;`;
+const insertQuery = sql`INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);`;
 
 // [TODO] autocomplete support for get/setSetting
 // [TODO] proper type validation for get/setSetting
@@ -270,9 +270,7 @@ export async function getSetting<
     return null;
   }
 
-  const res = getQuery.all(guildID, `${key}.${setting}`) as TypeOfDefinition<
-    typeof tableDefinition
-  >[];
+  const res = getQuery.all(guildID, `${key}.${setting}`) as TypeOfDefinition<typeof def>[];
   const set = settingsDefinition[key].settings[setting];
 
   if (!res.length) {
@@ -344,13 +342,11 @@ export function listPublicServers(): Promise<
   }[]
 > {
   const publicGuildSet = new Set(
-    (listPublicQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
-      entry => entry.guildID,
-    ),
+    (listPublicQuery.all() as TypeOfDefinition<typeof def>[]).map(entry => entry.guildID),
   );
 
   const inviteGuildsSet = new Set(
-    (listPublicWithInvitesEnabledQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
+    (listPublicWithInvitesEnabledQuery.all() as TypeOfDefinition<typeof def>[]).map(
       entry => entry.guildID,
     ),
   );

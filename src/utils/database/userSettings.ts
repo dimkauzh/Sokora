@@ -1,9 +1,9 @@
+import { sql } from "bun";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
-import { getDatabase } from ".";
 import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
-const tableDefinition = {
+const def = {
   name: "user_settings",
   definition: {
     userID: "TEXT",
@@ -27,11 +27,11 @@ export const settingsDefinition: SettingsDefinition = {
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-const database = getDatabase(tableDefinition);
-const getQuery = database`SELECT * FROM user_settings WHERE userID = $1 AND key = $2;`;
-const getByKeyQuery = database`SELECT * FROM user_settings WHERE key = $1;`;
-const deleteQuery = database`DELETE FROM user_settings WHERE userID = $1 AND key = $2;`;
-const insertQuery = database`INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);`;
+await sql`CREATE TABLE IF NOT EXISTS user_settings (userID TEXT, key TEXT, value TEXT);`;
+const getQuery = sql`SELECT * FROM user_settings WHERE userID = $1 AND key = $2;`;
+const getByKeyQuery = sql`SELECT * FROM user_settings WHERE key = $1;`;
+const deleteQuery = sql`DELETE FROM user_settings WHERE userID = $1 AND key = $2;`;
+const insertQuery = sql`INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);`;
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,

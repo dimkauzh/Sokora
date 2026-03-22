@@ -1,7 +1,7 @@
-import { getDatabase } from ".";
+import { sql } from "bun";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
-const definition = {
+const def = {
   name: "news",
   definition: {
     guildID: "TEXT",
@@ -17,11 +17,22 @@ const definition = {
   },
 } satisfies TableDefinition;
 
-const database = getDatabase(definition);
-const sendQuery = database`INSERT INTO news (guildID, title, body, author, authorPFP, createdAt, updatedAt, messageID, imageURL, id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);`;
-export const listAllQuery = database`SELECT * FROM news WHERE guildID = $1;`;
-const getIdQuery = database`SELECT * FROM news WHERE guildID = $1 AND id = $2;`;
-const deleteQuery = database`DELETE FROM news WHERE guildID = $1 AND id = $2;`;
+await sql`CREATE TABLE IF NOT EXISTS news (
+  guildID TEXT,
+  title TEXT,
+  body TEXT,
+  author TEXT,
+  authorPFP TEXT,
+  createdAt TIMESTAMP,
+  updatedAt TIMESTAMP,
+  messageID TEXT,
+  imageURL TEXT,
+  id TEXT
+);`;
+const sendQuery = sql`INSERT INTO news (guildID, title, body, author, authorPFP, createdAt, updatedAt, messageID, imageURL, id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);`;
+export const listAllQuery = sql`SELECT * FROM news WHERE guildID = $1;`;
+const getIdQuery = sql`SELECT * FROM news WHERE guildID = $1 AND id = $2;`;
+const deleteQuery = sql`DELETE FROM news WHERE guildID = $1 AND id = $2;`;
 
 export function addNews(
   guildID: string,
@@ -37,11 +48,11 @@ export function addNews(
 }
 
 export function listAllNews(guildID: string) {
-  return listAllQuery.all(guildID) as TypeOfDefinition<typeof definition>[];
+  return listAllQuery.all(guildID) as TypeOfDefinition<typeof def>[];
 }
 
 export function get(guildID: string, id: string) {
-  return getIdQuery.get(guildID, id) as TypeOfDefinition<typeof definition> | null;
+  return getIdQuery.get(guildID, id) as TypeOfDefinition<typeof def> | null;
 }
 
 export function updateNews(

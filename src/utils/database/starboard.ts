@@ -1,7 +1,7 @@
-import { getDatabase } from ".";
+import { sql } from "bun";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
-const tableDefinition = {
+const def = {
   name: "starboard",
   definition: {
     guild: "TEXT",
@@ -15,17 +15,26 @@ const tableDefinition = {
   },
 } satisfies TableDefinition;
 
-const database = getDatabase(tableDefinition);
-const getQuery = database`SELECT * FROM starboard WHERE guild = $1 AND message = $2;`;
-const deleteQuery = database`DELETE FROM starboard WHERE guild = $1 AND message = $2;`;
-const insertQuery = database`INSERT INTO starboard (guild, message, channel, author, star_message, stars, content, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);`;
-const getTopQuery = database`SELECT * FROM starboard WHERE guild = $1 ORDER BY stars DESC LIMIT ?2;`;
+await sql`CREATE TABLE IF NOT EXISTS starboard (
+  guild TEXT,
+  message TEXT,
+  channel TEXT,
+  author TEXT,
+  star_message TEXT,
+  stars INTEGER,
+  content TEXT,
+  timestamp TEXT
+);`;
+const getQuery = sql`SELECT * FROM starboard WHERE guild = $1 AND message = $2;`;
+const deleteQuery = sql`DELETE FROM starboard WHERE guild = $1 AND message = $2;`;
+const insertQuery = sql`INSERT INTO starboard (guild, message, channel, author, star_message, stars, content, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);`;
+const getTopQuery = sql`SELECT * FROM starboard WHERE guild = $1 ORDER BY stars DESC LIMIT ?2;`;
 
 export function getStarred(
   guildID: string,
   messageID: string,
 ): [string, string, string, number, string, string] | null {
-  const res = getQuery.all(guildID, messageID) as TypeOfDefinition<typeof tableDefinition>[];
+  const res = getQuery.all(guildID, messageID) as TypeOfDefinition<typeof def>[];
   if (!res.length) return null;
   return [
     res[0].channel as string,
@@ -63,6 +72,6 @@ export function setStarred(
 export function getGuildStarboard(
   guildID: string,
   limit: number = 10,
-): TypeOfDefinition<typeof tableDefinition>[] {
-  return getTopQuery.all(guildID, limit) as TypeOfDefinition<typeof tableDefinition>[];
+): TypeOfDefinition<typeof def>[] {
+  return getTopQuery.all(guildID, limit) as TypeOfDefinition<typeof def>[];
 }

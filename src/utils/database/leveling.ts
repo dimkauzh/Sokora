@@ -1,25 +1,25 @@
-import { getDatabase } from ".";
+import { sql } from "bun";
 import { dekominator } from "../kominator";
 import { getSetting, setSetting } from "./settings";
 import { LevelReward, TableDefinition, TypeOfDefinition } from "./types";
 
-const tableDefinition = {
+const def = {
   name: "leveling",
   definition: {
     guild: "TEXT",
-    user: "TEXT",
+    userID: "TEXT",
     xp: "INTEGER",
   },
 } satisfies TableDefinition;
 
-const database = getDatabase(tableDefinition);
-const getQuery = database`SELECT * FROM leveling WHERE guild = $1 AND user = $2;`;
-const getGuildQuery = database`SELECT * FROM leveling WHERE guild = $1;`;
-const deleteQuery = database`DELETE FROM leveling WHERE guild = $1 AND user = $2;`;
-const insertQuery = database`INSERT INTO leveling (guild, user, xp) VALUES (?1, ?2, ?3);`;
+await sql`CREATE TABLE IF NOT EXISTS leveling (guild TEXT, userID TEXT, xp INTEGER);`;
+const getQuery = sql`SELECT * FROM leveling WHERE guild = $1 AND userID = $2;`;
+const getGuildQuery = sql`SELECT * FROM leveling WHERE guild = $1;`;
+const deleteQuery = sql`DELETE FROM leveling WHERE guild = $1 AND userID = $2;`;
+const insertQuery = sql`INSERT INTO leveling (guild, userID, xp) VALUES (?1, ?2, ?3);`;
 
 export function getUserXp(guildID: string, userID: string): number {
-  const res = getQuery.all(guildID, userID) as TypeOfDefinition<typeof tableDefinition>[];
+  const res = getQuery.all(guildID, userID) as TypeOfDefinition<typeof def>[];
   if (!res.length) return 0;
   return res[0].xp;
 }
@@ -31,8 +31,8 @@ export function setUserXp(guildID: string | number, userID: string, xp: number) 
 
 export async function getGuildLeaderboard(
   guildID: string,
-): Promise<{ guild: string; user: string; xp: number; level: number }[]> {
-  const xpData = getGuildQuery.all(guildID) as TypeOfDefinition<typeof tableDefinition>[];
+): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
+  const xpData = getGuildQuery.all(guildID) as TypeOfDefinition<typeof def>[];
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
   return xpData.map(x => {
     return { ...x, level: calculateLevel({ xp: x.xp, difficulty }) };
@@ -65,8 +65,7 @@ export async function getXpForCurrentLevel(guildID: string, userID: string): Pro
 }
 
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
-  // const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
-  const content = ["20#1408912300634542100", "5#1343140645132308532"];
+  const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
   if (!content) return null;
   return content.map(s => {
     const channel = s.includes("#");
