@@ -266,7 +266,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
                   );
                   continue;
                 }
-                const prevXp = getUserXp(interaction.guildId!, user[1].id);
+                const prevXp = await getUserXp(interaction.guildId!, user[1].id);
                 const newXp = (i1.customId == "merge" ? prevXp : 0) + imported.current_xp;
                 setUserXp(interaction.guildId!, user[1].id, newXp);
                 res.push(

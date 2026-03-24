@@ -29,7 +29,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const name = user.username;
   const id = interaction.options.getNumber("id");
-  const warns = listUserModeration(guild.id, user.id, "WARN");
+  const warns = await listUserModeration(guild.id, user.id, "WARN");
   const newWarns = warns.filter(warn => warn.id != `${id}`);
 
   if (

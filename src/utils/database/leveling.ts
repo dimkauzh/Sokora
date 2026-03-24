@@ -13,26 +13,32 @@ const def = {
 } satisfies TableDefinition;
 
 await sql`CREATE TABLE IF NOT EXISTS leveling (guild TEXT, userID TEXT, xp INTEGER);`;
-const getQuery = sql`SELECT * FROM leveling WHERE guild = $1 AND userID = $2;`;
-const getGuildQuery = sql`SELECT * FROM leveling WHERE guild = $1;`;
-const deleteQuery = sql`DELETE FROM leveling WHERE guild = $1 AND userID = $2;`;
-const insertQuery = sql`INSERT INTO leveling (guild, userID, xp) VALUES (?1, ?2, ?3);`;
+const getQuery = (guild: string | number, userID: string) =>
+  sql`SELECT * FROM leveling WHERE guild = ${sql(guild)} AND userID = ${sql(userID)};`;
 
-export function getUserXp(guildID: string, userID: string): number {
-  const res = getQuery.all(guildID, userID) as TypeOfDefinition<typeof def>[];
+export async function getUserXp(guildID: string, userID: string): Promise<number> {
+  const res = (await getQuery(guildID, userID)) as TypeOfDefinition<typeof def>[];
   if (!res.length) return 0;
   return res[0].xp;
 }
 
-export function setUserXp(guildID: string | number, userID: string, xp: number) {
-  if (getQuery.all(guildID, userID).length) deleteQuery.run(guildID, userID);
-  insertQuery.run(guildID, userID, xp);
+export async function setUserXp(guildID: string | number, userID: string, xp: number) {
+  const guild = sql(guildID);
+  const user = sql(userID);
+  if ((await getQuery(guildID, userID)).length)
+    await sql`DELETE FROM leveling WHERE guild = ${guild} AND userID = ${user};`;
+
+  await sql`INSERT INTO leveling (guild, userID, xp) VALUES (${guild}, ${user}, ${sql(xp)});`;
 }
 
 export async function getGuildLeaderboard(
   guildID: string,
 ): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
-  const xpData = getGuildQuery.all(guildID) as TypeOfDefinition<typeof def>[];
+  const xpData =
+    (await sql`SELECT * FROM leveling WHERE guild = ${sql(guildID)};`) as TypeOfDefinition<
+      typeof def
+    >[];
+
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
   return xpData.map(x => {
     return { ...x, level: calculateLevel({ xp: x.xp, difficulty }) };
@@ -56,12 +62,15 @@ export function calculateLevel(arg: { difficulty: number; xp: number }) {
 
 export async function getXpForNextLevel(guildID: string, userID: string): Promise<number> {
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
-  return formula(difficulty, calculateLevel({ difficulty, xp: getUserXp(guildID, userID) }) + 1);
+  return formula(
+    difficulty,
+    calculateLevel({ difficulty, xp: await getUserXp(guildID, userID) }) + 1,
+  );
 }
 
 export async function getXpForCurrentLevel(guildID: string, userID: string): Promise<number> {
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
-  return formula(difficulty, calculateLevel({ difficulty, xp: getUserXp(guildID, userID) }));
+  return formula(difficulty, calculateLevel({ difficulty, xp: await getUserXp(guildID, userID) }));
 }
 
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {

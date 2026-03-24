@@ -1,4 +1,4 @@
-import { get, updateNews } from "database/news";
+import { getNews, updateNews } from "database/news";
 import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
@@ -35,7 +35,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const id = interaction.options.getString("id")!;
-  const news = get(guild.id, id);
+  const news = getNews(guild.id, id);
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
 
   const editModal = new ModalBuilder()

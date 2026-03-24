@@ -51,7 +51,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     for (let i = 0; i < pageData.length; i++) {
       const userData = pageData[i];
       embed.addFields({
-        name: `#${start + i + 1} • ${(await safeUser(interaction.client, userData.user)).tag}`,
+        name: `#${start + i + 1} • ${(await safeUser(interaction.client, userData.userID)).tag}`,
         value: `Level **${Math.floor(userData.level)}** • **${Math.floor(userData.xp)}** XP`,
       });
     }

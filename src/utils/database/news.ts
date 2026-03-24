@@ -29,12 +29,49 @@ await sql`CREATE TABLE IF NOT EXISTS news (
   imageURL TEXT,
   id TEXT
 );`;
-const sendQuery = sql`INSERT INTO news (guildID, title, body, author, authorPFP, createdAt, updatedAt, messageID, imageURL, id) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8, ?9, ?10);`;
-export const listAllQuery = sql`SELECT * FROM news WHERE guildID = $1;`;
-const getIdQuery = sql`SELECT * FROM news WHERE guildID = $1 AND id = $2;`;
-const deleteQuery = sql`DELETE FROM news WHERE guildID = $1 AND id = $2;`;
+const sendQuery = (
+  guildID: string,
+  title: string,
+  body: string,
+  author: string,
+  authorPFP: string,
+  createdAt: number,
+  updatedAt: number,
+  messageID: string,
+  imageURL: string | null,
+  id: string,
+) =>
+  sql`INSERT INTO news (
+    guildID,
+    title,
+    body,
+    author,
+    authorPFP,
+    createdAt,
+    updatedAt,
+    messageID,
+    imageURL,
+    id
+  ) VALUES (
+    ${sql(guildID)},
+    ${sql(title)},
+    ${sql(body)},
+    ${sql(author)},
+    ${sql(authorPFP)},
+    ${sql(createdAt)},
+    ${sql(updatedAt)},
+    ${sql(messageID)},
+    ${sql(imageURL)},
+    ${sql(id)}
+  );`;
 
-export function addNews(
+export const listAllQuery = (guildID: string) =>
+  sql`SELECT * FROM news WHERE guildID = ${sql(guildID)};`;
+
+const deleteQuery = (guildID: string, id: string) =>
+  sql`DELETE FROM news WHERE guildID = ${sql(guildID)} AND id = ${sql(id)};`;
+
+export async function addNews(
   guildID: string,
   title: string,
   body: string,
@@ -44,18 +81,20 @@ export function addNews(
   imageURL: string | null,
   id: string,
 ) {
-  sendQuery.run(guildID, title, body, author, authorPFP, Date.now(), 0, messageID, imageURL, id);
+  await sendQuery(guildID, title, body, author, authorPFP, Date.now(), 0, messageID, imageURL, id);
 }
 
-export function listAllNews(guildID: string) {
-  return listAllQuery.all(guildID) as TypeOfDefinition<typeof def>[];
+export async function listAllNews(guildID: string) {
+  (await listAllQuery(guildID)) as TypeOfDefinition<typeof def>[];
 }
 
-export function get(guildID: string, id: string) {
-  return getIdQuery.get(guildID, id) as TypeOfDefinition<typeof def> | null;
+export async function getNews(guildID: string, id: string) {
+  return (await sql`SELECT * FROM news WHERE guildID = ${sql(guildID)} AND id = ${sql(id)};`) as TypeOfDefinition<
+    typeof def
+  > | null;
 }
 
-export function updateNews(
+export async function updateNews(
   guildID: string,
   id: string,
   title?: string,
@@ -63,22 +102,22 @@ export function updateNews(
   messageID?: string,
   imageURL?: string,
 ) {
-  const lastElem = get(guildID, id)!;
-  deleteQuery.run(guildID, id);
-  sendQuery.run(
+  const lastElem = (await getNews(guildID, id))!;
+  await deleteQuery(guildID, id);
+  await sendQuery(
     lastElem.guildID,
     title ?? lastElem.title,
     body ?? lastElem.body,
     lastElem.author,
     lastElem.authorPFP,
+    lastElem.createdAt,
     Date.now(),
-    0,
     messageID ?? lastElem.messageID,
     imageURL ?? lastElem.imageURL,
     id,
   );
 }
 
-export function deleteNews(guildID: string, id: string) {
-  deleteQuery.run(guildID, id);
+export async function deleteNews(guildID: string, id: string) {
+  await deleteQuery(guildID, id);
 }

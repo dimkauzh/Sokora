@@ -84,7 +84,7 @@ export function scheduleUnban(
 
 export async function rescheduleUnbans(client: Client) {
   const now = Date.now();
-  for (const ban of getPendingBans(now)) {
+  for (const ban of await getPendingBans(now)) {
     if (!ban.expiresAt) continue;
     if (typeof ban.expiresAt != "number" || isNaN(ban.expiresAt)) {
       await errorEmbed({
@@ -98,7 +98,7 @@ export async function rescheduleUnbans(client: Client) {
     }
 
     const delay = ban.expiresAt - now;
-    if (delay > 0) scheduleUnban(client, ban.guild, ban.user, ban.moderator, delay);
+    if (delay > 0) scheduleUnban(client, ban.guild, ban.userID, ban.moderator, delay);
     else removeModeration(ban.guild, ban.id);
   }
 }

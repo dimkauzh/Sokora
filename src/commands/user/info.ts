@@ -48,7 +48,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
     memberRoles.pop();
     const rolesLength = memberRoles.length;
-    const xp = getUserXp(guild.id, target.id);
+    const xp = await getUserXp(guild.id, target.id);
     const nextLevelXp = await getXpForNextLevel(guild.id, user.id);
     const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
     const level = calculateLevel({ difficulty, xp });
@@ -67,8 +67,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       });
       serverInfo.push(
         `Level **${level}** • ${xp && xp > 0 ? `**${xp.toLocaleString("en-US")}**/*${nextLevelXp.toLocaleString("en-US")} (level ${level + 1})* XP` : "**No** XP!"} ${
-          leaderboard.find(entry => entry.user == user.id)
-            ? `• #**${leaderboard.findIndex(entry => entry.user == user.id) + 1}** on the leaderboard`
+          leaderboard.find(entry => entry.userID == user.id)
+            ? `• #**${leaderboard.findIndex(entry => entry.userID == user.id) + 1}** on the leaderboard`
             : ""
         }`,
       );

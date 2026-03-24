@@ -28,28 +28,11 @@ export const settingsDefinition: SettingsDefinition = {
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 await sql`CREATE TABLE IF NOT EXISTS user_settings (userID TEXT, key TEXT, value TEXT);`;
-const getQuery = sql`SELECT * FROM user_settings WHERE userID = $1 AND key = $2;`;
-const getByKeyQuery = sql`SELECT * FROM user_settings WHERE key = $1;`;
-const deleteQuery = sql`DELETE FROM user_settings WHERE userID = $1 AND key = $2;`;
-const insertQuery = sql`INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);`;
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
->(
-  key: K,
-  setting: S,
-): Promise<
-  | TypeOfDefinition<{
-      name: string;
-      definition: {
-        userID: "TEXT";
-        key: "TEXT";
-        value: "TEXT";
-      };
-    }>[]
-  | null
-> {
+>(key: K, setting: S): Promise<TypeOfDefinition<typeof def>[] | null> {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
@@ -61,7 +44,9 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  return getByKeyQuery.values();
+  return (await sql`SELECT * FROM user_settings WHERE key = ${sql(`${key}.${setting}`)};`) as TypeOfDefinition<
+    typeof def
+  >[];
 }
 
 export async function getUserSetting<
@@ -83,9 +68,13 @@ export async function getUserSetting<
     return null;
   }
 
-  const res = getQuery.values();
-  const set = settingsDefinition[key].settings[setting];
+  const res =
+    (await sql`SELECT * FROM user_settings WHERE userID = ${sql(userID)} AND key = ${sql(`${key}.${setting}`)};`) as TypeOfDefinition<
+      typeof def
+    >[];
 
+  console.log(res);
+  const set = settingsDefinition[key].settings[setting];
   if (!res.length) {
     if (!set) return null;
     return set.val;
@@ -107,6 +96,9 @@ export async function setUserSetting<
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(userID: string, key: K, setting: S, value: any) {
   const doInsert = (await getUserSetting(userID, key, setting)) == null;
-  if (!doInsert) deleteQuery.all(JSON.stringify(userID), `${key}.${setting}`);
-  insertQuery.run(JSON.stringify(userID), `${key}.${setting}`, value);
+  const id = sql(JSON.stringify(userID));
+  const keySetting = sql(`${key}.${setting}`);
+
+  if (!doInsert) await sql`DELETE FROM user_settings WHERE userID = ${id} AND key = ${keySetting};`;
+  await sql`INSERT INTO user_settings (userID, key, value) VALUES (${id}, ${keySetting}, ${sql(value)});`;
 }

@@ -1,4 +1,4 @@
-import { get, updateNews } from "database/news";
+import { getNews, updateNews } from "database/news";
 import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
@@ -30,7 +30,7 @@ export async function sendChannelNews(
   body?: string,
   imageURL?: string,
 ): Promise<void> {
-  const news = get(guild.id, id)!;
+  const news = (await getNews(guild.id, id))!;
   const role = (await getSetting(guild.id, "news", "role")) as string;
   let roleToSend: Role | undefined;
   if (role) roleToSend = await safeRole(guild, role);

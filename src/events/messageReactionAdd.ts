@@ -69,7 +69,7 @@ export default (async function run(reaction, user) {
   const threshold = parseInt((await getSetting(guild.id, "starboard", "threshold")) as string) || 3;
   if (starCount < threshold) return;
 
-  const existingStarred = getStarred(guild.id, message.id);
+  const existingStarred = await getStarred(guild.id, message.id);
   const author = message.author;
   const avatar = author.displayAvatarURL();
   const embed = new EmbedBuilder()

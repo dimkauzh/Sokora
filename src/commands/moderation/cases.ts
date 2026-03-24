@@ -62,7 +62,7 @@ async function generateEmbed(params: {
       `**Time of action**: ${mention(c.timestamp.valueOf(), "SIMPLE_TIMESTAMP")}`,
     ];
 
-    if (!user) val.unshift(`**User**: ${mention(c.user, "USER")}`);
+    if (!user) val.unshift(`**User**: ${mention(c.userID, "USER")}`);
     if (c.expiresAt) val.push(`**Duration**: ${ms(Number(c.expiresAt), "fullPrecision")}`);
 
     return {
@@ -157,11 +157,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
   let cases;
   if (user)
     cases = actionID
-      ? getModeration(guildID, user.id, actionID)
+      ? await getModeration(guildID, user.id, actionID)
       : type
-        ? listUserModeration(guildID, user.id, type as ModType)
-        : listUserModeration(guildID, user.id);
-  else cases = type ? listGuildModeration(guildID, type as ModType) : listGuildModeration(guildID);
+        ? await listUserModeration(guildID, user.id, type as ModType)
+        : await listUserModeration(guildID, user.id);
+  else
+    cases = type
+      ? await listGuildModeration(guildID, type as ModType)
+      : await listGuildModeration(guildID);
 
   const totalPages = Math.ceil(cases.length / 5);
   let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));

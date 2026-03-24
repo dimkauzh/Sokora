@@ -168,9 +168,9 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
   if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
 
   if (previousID) {
-    const previousCase = getModeration(guild.id, user!.id, `${previousID}`);
+    const previousCase = await getModeration(guild.id, user!.id, `${previousID}`);
     if (
-      (!previousCase.length && previousCase[0].user != user!.id) ||
+      (!previousCase.length && previousCase[0].userID != user!.id) ||
       previousCase[0].type != dbAction
     )
       return await errorEmbed({

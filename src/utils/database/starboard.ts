@@ -25,16 +25,14 @@ await sql`CREATE TABLE IF NOT EXISTS starboard (
   content TEXT,
   timestamp TEXT
 );`;
-const getQuery = sql`SELECT * FROM starboard WHERE guild = $1 AND message = $2;`;
-const deleteQuery = sql`DELETE FROM starboard WHERE guild = $1 AND message = $2;`;
-const insertQuery = sql`INSERT INTO starboard (guild, message, channel, author, star_message, stars, content, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);`;
-const getTopQuery = sql`SELECT * FROM starboard WHERE guild = $1 ORDER BY stars DESC LIMIT ?2;`;
+const getQuery = (guild: string, message: string) =>
+  sql`SELECT * FROM starboard WHERE guild = ${sql(guild)} AND message = ${sql(message)};`;
 
-export function getStarred(
+export async function getStarred(
   guildID: string,
   messageID: string,
-): [string, string, string, number, string, string] | null {
-  const res = getQuery.all(guildID, messageID) as TypeOfDefinition<typeof def>[];
+): Promise<[string, string, string, number, string, string] | null> {
+  const res = (await getQuery(guildID, messageID)) as TypeOfDefinition<typeof def>[];
   if (!res.length) return null;
   return [
     res[0].channel as string,
@@ -46,7 +44,7 @@ export function getStarred(
   ];
 }
 
-export function setStarred(
+export async function setStarred(
   guildID: string,
   messageID: string,
   channelID: string,
@@ -56,22 +54,37 @@ export function setStarred(
   content: string,
   timestamp: string,
 ) {
-  if (getQuery.all(guildID, messageID).length) deleteQuery.run(guildID, messageID);
-  insertQuery.run(
-    guildID,
-    messageID,
-    channelID,
-    authorID,
-    starMessageID,
+  const guild = sql(guildID);
+  const message = sql(messageID);
+  if ((await getQuery(guildID, messageID)).length)
+    await sql`DELETE FROM starboard WHERE guild = ${guild} AND message = ${message};`;
+
+  await sql`INSERT INTO starboard (
+    guild,
+    message,
+    channel,
+    author,
+    star_message,
     stars,
     content,
-    timestamp,
-  );
+    timestamp
+  ) VALUES (
+    ${guild},
+    ${message},
+    ${sql(channelID)},
+    ${sql(authorID)},
+    ${sql(starMessageID)},
+    ${sql(stars)},
+    ${sql(content)},
+    ${sql(timestamp)}
+  );`;
 }
 
-export function getGuildStarboard(
+export async function getGuildStarboard(
   guildID: string,
   limit: number = 10,
-): TypeOfDefinition<typeof def>[] {
-  return getTopQuery.all(guildID, limit) as TypeOfDefinition<typeof def>[];
+): Promise<TypeOfDefinition<typeof def>[]> {
+  return (await sql`SELECT * FROM starboard WHERE guild = ${sql(guildID)} ORDER BY stars DESC LIMIT ${sql(limit)};`) as TypeOfDefinition<
+    typeof def
+  >[];
 }

@@ -81,8 +81,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
 
     const image = i.fields.getUploadedFiles("image")?.at(0)?.url;
-
-    const id = (listAllQuery.all(guild.id).length + 1).toString();
+    const id = ((await listAllQuery(guild.id)).length + 1).toString();
     addNews(
       guild.id,
       title,
