@@ -237,7 +237,7 @@ export const settingsDefinition: SettingsDefinition = {
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 await sql`CREATE TABLE IF NOT EXISTS settings (guildID TEXT, key TEXT, value TEXT);`;
 const deleteQuery = async (guildID: string, key: string) =>
-  sql`DELETE FROM settings WHERE guildID = ${sql(guildID)} AND key = ${sql(key)};`;
+  sql`DELETE FROM settings WHERE guildID = ${guildID} AND key = ${key};`;
 
 // [TODO] autocomplete support for get/setSetting
 // [TODO] proper type validation for get/setSetting
@@ -266,7 +266,7 @@ export async function getSetting<
   }
 
   const res =
-    (await sql`SELECT * FROM settings WHERE guildID = ${sql(guildID)} AND key = ${sql(`${key}.${setting}`)};`) as TypeOfDefinition<
+    (await sql`SELECT * FROM settings WHERE guildID = ${guildID} AND key = ${`${key}.${setting}`};`) as TypeOfDefinition<
       typeof def
     >[];
 
@@ -315,7 +315,7 @@ export async function setSetting<
 >(guildID: string, key: K, setting: S, value: any) {
   const set = Array.isArray(value) ? dekominator(value) : value;
   await deleteQuery(guildID, `${key}.${setting}`);
-  await sql`INSERT INTO settings (guildID, key, value) VALUES (${sql(guildID)}, ${sql(`${key}.${setting}`)}, ${sql(set)});`;
+  await sql`INSERT INTO settings (guildID, key, value) VALUES (${guildID}, ${`${key}.${setting}`}, ${set});`;
 }
 
 export async function resetSetting<
@@ -329,7 +329,7 @@ export async function resetSettingCategory<K extends keyof typeof settingsDefini
   guildID: string,
   key: K,
 ) {
-  await sql`DELETE FROM settings WHERE guildID = ${guildID} AND key LIKE %${sql(key)}%;`;
+  await sql`DELETE FROM settings WHERE guildID = ${guildID} AND key LIKE ${`%${key}%`};`;
 }
 
 export async function listPublicServers(): Promise<
@@ -369,7 +369,7 @@ export async function listPublicServers(): Promise<
 
 export async function deletePublicServer(guildID: string) {
   try {
-    await sql`DELETE FROM settings WHERE guildID = ${sql(guildID)} AND key = 'serverboard.shown' AND value = '1';`;
+    await sql`DELETE FROM settings WHERE guildID = ${guildID} AND key = 'serverboard.shown' AND value = '1';`;
   } catch (error) {
     return await errorEmbed({
       client,
