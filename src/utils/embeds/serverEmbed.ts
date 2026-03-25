@@ -124,8 +124,8 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statValues.join("\n")));
   if (invite?.show) {
     async function noPerms(channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel) {
-      resetSetting(guild.id, "serverboard", "server_invite");
-      resetSetting(guild.id, "serverboard", "invite_channel");
+      await resetSetting(guild.id, "serverboard", "server_invite");
+      await resetSetting(guild.id, "serverboard", "invite_channel");
       const errEmbed = new EmbedBuilder()
         .setAuthor({
           name: `${dot}Serverboard is misconfigured in your server!`,

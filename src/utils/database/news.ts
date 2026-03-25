@@ -53,23 +53,23 @@ const sendQuery = (
     imageURL,
     id
   ) VALUES (
-    ${sql(guildID)},
-    ${sql(title)},
-    ${sql(body)},
-    ${sql(author)},
-    ${sql(authorPFP)},
-    ${sql(createdAt)},
-    ${sql(updatedAt)},
-    ${sql(messageID)},
-    ${sql(imageURL)},
-    ${sql(id)}
+    ${guildID},
+    ${title},
+    ${body},
+    ${author},
+    ${authorPFP},
+    ${createdAt},
+    ${updatedAt},
+    ${messageID},
+    ${imageURL},
+    ${id}
   );`;
 
 export const listAllQuery = (guildID: string) =>
-  sql`SELECT * FROM news WHERE guildID = ${sql(guildID)};`;
+  sql`SELECT * FROM news WHERE guildID = ${guildID};`;
 
 const deleteQuery = (guildID: string, id: string) =>
-  sql`DELETE FROM news WHERE guildID = ${sql(guildID)} AND id = ${sql(id)};`;
+  sql`DELETE FROM news WHERE guildID = ${guildID} AND id = ${id};`;
 
 export async function addNews(
   guildID: string,
@@ -89,7 +89,7 @@ export async function listAllNews(guildID: string) {
 }
 
 export async function getNews(guildID: string, id: string) {
-  return (await sql`SELECT * FROM news WHERE guildID = ${sql(guildID)} AND id = ${sql(id)};`) as TypeOfDefinition<
+  return (await sql`SELECT * FROM news WHERE guildID = ${guildID} AND id = ${id};`) as TypeOfDefinition<
     typeof def
   > | null;
 }

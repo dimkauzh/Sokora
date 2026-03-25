@@ -44,7 +44,7 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  return (await sql`SELECT * FROM user_settings WHERE key = ${sql(`${key}.${setting}`)};`) as TypeOfDefinition<
+  return (await sql`SELECT * FROM user_settings WHERE key = ${`${key}.${setting}`};`) as TypeOfDefinition<
     typeof def
   >[];
 }
@@ -69,7 +69,7 @@ export async function getUserSetting<
   }
 
   const res =
-    (await sql`SELECT * FROM user_settings WHERE userID = ${sql(userID)} AND key = ${sql(`${key}.${setting}`)};`) as TypeOfDefinition<
+    (await sql`SELECT * FROM user_settings WHERE userID = ${userID} AND key = ${`${key}.${setting}`};`) as TypeOfDefinition<
       typeof def
     >[];
 
@@ -96,9 +96,9 @@ export async function setUserSetting<
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(userID: string, key: K, setting: S, value: any) {
   const doInsert = (await getUserSetting(userID, key, setting)) == null;
-  const id = sql(JSON.stringify(userID));
-  const keySetting = sql(`${key}.${setting}`);
+  const id = JSON.stringify(userID);
+  const keySetting = `${key}.${setting}`;
 
   if (!doInsert) await sql`DELETE FROM user_settings WHERE userID = ${id} AND key = ${keySetting};`;
-  await sql`INSERT INTO user_settings (userID, key, value) VALUES (${id}, ${keySetting}, ${sql(value)});`;
+  await sql`INSERT INTO user_settings (userID, key, value) VALUES (${id}, ${keySetting}, ${value});`;
 }

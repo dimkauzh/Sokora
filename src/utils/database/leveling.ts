@@ -14,7 +14,7 @@ const def = {
 
 await sql`CREATE TABLE IF NOT EXISTS leveling (guild TEXT, userID TEXT, xp INTEGER);`;
 const getQuery = (guild: string | number, userID: string) =>
-  sql`SELECT * FROM leveling WHERE guild = ${sql(guild)} AND userID = ${sql(userID)};`;
+  sql`SELECT * FROM leveling WHERE guild = ${guild} AND userID = ${userID};`;
 
 export async function getUserXp(guildID: string, userID: string): Promise<number> {
   const res = (await getQuery(guildID, userID)) as TypeOfDefinition<typeof def>[];
@@ -23,21 +23,18 @@ export async function getUserXp(guildID: string, userID: string): Promise<number
 }
 
 export async function setUserXp(guildID: string | number, userID: string, xp: number) {
-  const guild = sql(guildID);
-  const user = sql(userID);
   if ((await getQuery(guildID, userID)).length)
-    await sql`DELETE FROM leveling WHERE guild = ${guild} AND userID = ${user};`;
+    await sql`DELETE FROM leveling WHERE guild = ${guildID} AND userID = ${userID};`;
 
-  await sql`INSERT INTO leveling (guild, userID, xp) VALUES (${guild}, ${user}, ${sql(xp)});`;
+  await sql`INSERT INTO leveling (guild, userID, xp) VALUES (${guildID}, ${userID}, ${xp});`;
 }
 
 export async function getGuildLeaderboard(
   guildID: string,
 ): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
-  const xpData =
-    (await sql`SELECT * FROM leveling WHERE guild = ${sql(guildID)};`) as TypeOfDefinition<
-      typeof def
-    >[];
+  const xpData = (await sql`SELECT * FROM leveling WHERE guild = ${guildID};`) as TypeOfDefinition<
+    typeof def
+  >[];
 
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
   return xpData.map(x => {
@@ -88,9 +85,14 @@ export async function addLevelRewards(guildID: string, rewards: LevelReward[]): 
     rewards.map(reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`),
   );
   const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
-  if (!content) return setSetting(guildID, "leveling", "rewards", encodedRewards);
+  if (!content) return await setSetting(guildID, "leveling", "rewards", encodedRewards);
 
-  return setSetting(guildID, "leveling", "rewards", dekominator([...encodedRewards, ...content]));
+  return await setSetting(
+    guildID,
+    "leveling",
+    "rewards",
+    dekominator([...encodedRewards, ...content]),
+  );
 }
 
 export async function removeLevelRewards(guildID: string, rewards: LevelReward[]): Promise<void> {
@@ -102,5 +104,5 @@ export async function removeLevelRewards(guildID: string, rewards: LevelReward[]
   const newRewards = [];
   for (const reward of content) if (!encodedRewards.includes(reward)) newRewards.push(reward);
 
-  return setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
+  return await setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
 }
