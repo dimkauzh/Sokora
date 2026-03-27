@@ -180,7 +180,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
       });
 
     try {
-      editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
+      await editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
     } catch (error) {
       return await errorEmbed({
         interaction,
@@ -204,7 +204,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
           reason: "Cannot find the moderator.",
         });
 
-      const id = addModeration(
+      const id = await addModeration(
         guild.id,
         user!.id,
         dbAction,

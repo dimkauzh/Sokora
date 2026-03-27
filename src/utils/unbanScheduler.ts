@@ -6,7 +6,7 @@ import { dotCheck } from "./dotCheck";
 import { logChannel } from "./logChannel";
 import { safeGuild, safeMember } from "./safeThings";
 
-export function scheduleUnban(
+export async function scheduleUnban(
   client: Client,
   guildID: string,
   userID: string,
@@ -20,7 +20,7 @@ export function scheduleUnban(
   const timeout = setTimeout(
     async () => {
       try {
-        removeModeration(guildID, userID);
+        await removeModeration(guildID, userID);
         scheduledUnbans.delete(key);
         const guild = await safeGuild(client, guildID);
         if (!guild) return;
@@ -98,7 +98,7 @@ export async function rescheduleUnbans(client: Client) {
     }
 
     const delay = ban.expiresAt - now;
-    if (delay > 0) scheduleUnban(client, ban.guild, ban.userID, ban.moderator, delay);
-    else removeModeration(ban.guild, ban.id);
+    if (delay > 0) await scheduleUnban(client, ban.guild, ban.userID, ban.moderator, delay);
+    else await removeModeration(ban.guild, ban.id);
   }
 }

@@ -268,7 +268,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
                 }
                 const prevXp = await getUserXp(interaction.guildId!, user[1].id);
                 const newXp = (i1.customId == "merge" ? prevXp : 0) + imported.current_xp;
-                setUserXp(interaction.guildId!, user[1].id, newXp);
+                await setUserXp(interaction.guildId!, user[1].id, newXp);
                 res.push(
                   `${user[1].user.username} updated from ${prevXp} XP (level ${calculateLevel({ xp: prevXp, difficulty })}) to **XP ${newXp} (level ${calculateLevel({ xp: newXp, difficulty })})**.`,
                 );

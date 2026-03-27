@@ -73,7 +73,6 @@ export async function getUserSetting<
       typeof def
     >[];
 
-  console.log(res);
   const set = settingsDefinition[key].settings[setting];
   if (!res.length) {
     if (!set) return null;

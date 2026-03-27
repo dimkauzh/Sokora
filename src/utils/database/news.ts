@@ -29,7 +29,7 @@ await sql`CREATE TABLE IF NOT EXISTS news (
   imageURL TEXT,
   id TEXT
 );`;
-const sendQuery = (
+const sendQuery = async (
   guildID: string,
   title: string,
   body: string,
@@ -41,7 +41,7 @@ const sendQuery = (
   imageURL: string | null,
   id: string,
 ) =>
-  sql`INSERT INTO news (
+  await sql`INSERT INTO news (
     guildID,
     title,
     body,
@@ -65,11 +65,11 @@ const sendQuery = (
     ${id}
   );`;
 
-export const listAllQuery = (guildID: string) =>
-  sql`SELECT * FROM news WHERE guildID = ${guildID};`;
+export const listAllQuery = async (guildID: string) =>
+  await sql`SELECT * FROM news WHERE guildID = ${guildID};`;
 
-const deleteQuery = (guildID: string, id: string) =>
-  sql`DELETE FROM news WHERE guildID = ${guildID} AND id = ${id};`;
+const deleteQuery = async (guildID: string, id: string) =>
+  await sql`DELETE FROM news WHERE guildID = ${guildID} AND id = ${id};`;
 
 export async function addNews(
   guildID: string,
@@ -85,7 +85,7 @@ export async function addNews(
 }
 
 export async function listAllNews(guildID: string) {
-  (await listAllQuery(guildID)) as TypeOfDefinition<typeof def>[];
+  return (await listAllQuery(guildID)) as TypeOfDefinition<typeof def>[];
 }
 
 export async function getNews(guildID: string, id: string) {

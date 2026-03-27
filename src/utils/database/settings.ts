@@ -237,7 +237,7 @@ export const settingsDefinition: SettingsDefinition = {
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 await sql`CREATE TABLE IF NOT EXISTS settings (guildID TEXT, key TEXT, value TEXT);`;
 const deleteQuery = async (guildID: string, key: string) =>
-  sql`DELETE FROM settings WHERE guildID = ${guildID} AND key = ${key};`;
+  await sql`DELETE FROM settings WHERE guildID = ${guildID} AND key = ${key};`;
 
 // [TODO] autocomplete support for get/setSetting
 // [TODO] proper type validation for get/setSetting
@@ -282,7 +282,7 @@ export async function getSetting<
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
       case "BOOL":
-        return (Number(value) == 1 ? true : false) as SqlType<typeof set.type>;
+        return (value == "true" ? true : false) as SqlType<typeof set.type>;
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
       default:

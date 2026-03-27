@@ -25,8 +25,8 @@ await sql`CREATE TABLE IF NOT EXISTS starboard (
   content TEXT,
   timestamp TEXT
 );`;
-const getQuery = (guild: string, message: string) =>
-  sql`SELECT * FROM starboard WHERE guild = ${guild} AND message = ${message};`;
+const getQuery = async (guild: string, message: string) =>
+  await sql`SELECT * FROM starboard WHERE guild = ${guild} AND message = ${message};`;
 
 export async function getStarred(
   guildID: string,
@@ -76,13 +76,4 @@ export async function setStarred(
     ${content},
     ${timestamp}
   );`;
-}
-
-export async function getGuildStarboard(
-  guildID: string,
-  limit: number = 10,
-): Promise<TypeOfDefinition<typeof def>[]> {
-  return (await sql`SELECT * FROM starboard WHERE guild = ${guildID} ORDER BY stars DESC LIMIT ${limit};`) as TypeOfDefinition<
-    typeof def
-  >[];
 }

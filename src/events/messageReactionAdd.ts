@@ -119,7 +119,7 @@ export default (async function run(reaction, user) {
   if (attachment?.contentType?.startsWith("image/")) embed.setImage(attachment.url);
   try {
     if (!existingStarred)
-      return setStarred(
+      return await setStarred(
         guild.id,
         message.id,
         message.channel.id,
@@ -134,7 +134,7 @@ export default (async function run(reaction, user) {
     await (
       await starboardChannel.messages.fetch(starMessageId)
     ).edit({ embeds, components: [row] });
-    setStarred(
+    await setStarred(
       guild.id,
       message.id,
       channelId,

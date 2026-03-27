@@ -100,12 +100,6 @@ export async function getModeration(guildID: number | string, userID: number | s
   return [];
 }
 
-export async function listModeratorLog(guildID: number | string, moderator: number | string) {
-  return (await sql`SELECT * FROM moderation WHERE guild = ${guildID} AND moderator = ${moderator};`) as TypeOfDefinition<
-    typeof def
-  >[];
-}
-
 export async function editModeration(
   guildID: number | string,
   id: string,
@@ -117,12 +111,6 @@ export async function editModeration(
 
 export async function removeModeration(guildID: string | number, id: string) {
   await sql`DELETE FROM moderation WHERE guild = ${guildID} AND id = ${id};`;
-}
-
-export async function getExpiredBans(currentTime: number) {
-  return (await sql`SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= ${new Date(currentTime)};`) as TypeOfDefinition<
-    typeof def
-  >[];
 }
 
 export async function getPendingBans(currentTime: number) {

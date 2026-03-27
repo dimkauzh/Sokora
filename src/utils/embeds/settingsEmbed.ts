@@ -47,7 +47,10 @@ import { safeMember, safeReply } from "utils/safeThings";
 import { buttonCheck } from "./errorEmbed";
 
 async function construct(
-  settingsObj: Record<string, SingleSettingDefinition> | Record<string, SingleSettingDefinition>[],
+  settingsObj:
+    | Record<string, SingleSettingDefinition>
+    | Record<string, SingleSettingDefinition>[]
+    | null,
   settingComponent: SettingComponent,
   container: ContainerBuilder,
   reset: boolean,
@@ -67,6 +70,12 @@ async function construct(
       )
       .addSeparatorComponents(new SeparatorBuilder().setDivider(true));
 
+  if (itrObjView)
+    container.addTextDisplayComponents(
+      new TextDisplayBuilder().setContent("# idfk what to say here yet"),
+    );
+
+  if (!settingsObj) return;
   async function constructLoop(object: SettingSection) {
     if (!object) return;
     const component = object.component;
@@ -215,7 +224,7 @@ export async function settingsEmbed(
         ? (settingsObj as Record<string, SingleSettingDefinition>)[name]
         : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!;
 
-    // todo: make this support objView (currently outputs an error)
+    // [TODO] make this support objView (currently outputs an error)
     let setting = await getSettingPlease(id, key, name, table);
     const maxValues = settingObject.iterable ? 25 : 1;
     text = `${dotCheck({ string: settingObject.emoji as string, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
@@ -338,7 +347,7 @@ export async function settingsEmbed(
       return [
         actionRow.addComponents(
           new ButtonBuilder()
-            .setCustomId("objcancel")
+            .setCustomId("cancel")
             .setLabel("Cancel")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(false),
@@ -350,20 +359,24 @@ export async function settingsEmbed(
       if (!itrObjView) actionRow.addComponents(category.setDisabled(disableCategory));
       return [
         actionRow.addComponents(
-          new ButtonBuilder().setCustomId("objyes").setLabel("Yes").setStyle(ButtonStyle.Secondary),
-          new ButtonBuilder().setCustomId("objcancel").setLabel("No").setStyle(ButtonStyle.Primary),
+          new ButtonBuilder().setCustomId("yes").setLabel("Yes").setStyle(ButtonStyle.Secondary),
+          new ButtonBuilder().setCustomId("no").setLabel("No").setStyle(ButtonStyle.Primary),
         ),
       ];
     }
 
-    const buttonArray = [
-      new ButtonBuilder()
-        .setCustomId("desc")
-        .setLabel(itrObjView ? settingsObj["rewards"].desc : settingsDef.description)
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-    ];
+    const buttonArray = itrObjView
+      ? []
+      : [
+          new ButtonBuilder()
+            .setCustomId("desc")
+            .setLabel(itrObjView ? settingsObj["rewards"].desc : settingsDef.description)
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true),
+        ];
 
+    // [TODO] figure out what the hell is happening with this...
+    // context: changing any setting that's not a boolean doesn't make the reset button appear
     const actual = (await getSettingCategory(id, key)).map(setting => setting ?? null);
     const defaults = Object.values(settingsObj).map(setting => setting.val ?? null);
     const nullCheck = itrObjView
@@ -378,6 +391,7 @@ export async function settingsEmbed(
           .setStyle(ButtonStyle.Danger),
       );
 
+    // [TODO] make buttons for when you're adding a new object
     if (itrObjView)
       buttonArray.unshift(
         new ButtonBuilder().setCustomId("objadd").setLabel("Add").setStyle(ButtonStyle.Success),
@@ -409,9 +423,11 @@ export async function settingsEmbed(
       const newContainer = new ContainerBuilder().setAccentColor(color);
       await construct(
         itrObjView
-          ? ((await getLevelRewards(id))!.sort(
-              (reward1, reward2) => reward1.level - reward2.level,
-            ) as any)
+          ? (await getLevelRewards(id))
+            ? ((await getLevelRewards(id))!.sort(
+                (reward1, reward2) => reward1.level - reward2.level,
+              ) as any)
+            : null
           : settingsObj,
         settingComponent,
         newContainer,
@@ -445,7 +461,7 @@ export async function settingsEmbed(
         resetCategory = true;
         break;
       case "yes":
-        if (resetCategory) resetSettingCategory(id, key);
+        if (resetCategory) await resetSettingCategory(id, key);
         else await setSettingPlease(id, key, settingName, null, table);
         reset = false;
         confirm = false;
@@ -536,6 +552,7 @@ export async function settingsEmbed(
             interaction: modalInteraction,
             replyOptions: {
               components: [await constructModalContainer(settingText, valueText, hue)],
+              flags: ["Ephemeral", "IsComponentsV2"],
             },
           });
           await end(reset, confirm, objView, itrObjView);
@@ -543,7 +560,8 @@ export async function settingsEmbed(
         break;
       }
       default:
-        await setSettingPlease(id, key, cID, (i as AnySelectMenuInteraction).values, table);
+        if (!(exemptButtons.includes(cID) || exemptButtons.map(id => `obj${id}`).includes(cID)))
+          await setSettingPlease(id, key, cID, (i as AnySelectMenuInteraction).values, table);
     }
 
     if (componentType != "text" && componentType != "integer")

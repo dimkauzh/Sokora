@@ -29,7 +29,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "This command can only be used in a server.",
     });
 
-  const news = listAllNews(interaction.guild.id);
+  const news = await listAllNews(interaction.guild.id);
   const sortedNews = Object.values(news).sort((a, b) => b.createdAt - a.createdAt);
 
   if (!news || !sortedNews || !sortedNews.length)

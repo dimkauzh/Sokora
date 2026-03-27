@@ -35,7 +35,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const id = interaction.options.getString("id")!;
-  const news = getNews(guild.id, id);
+  const news = await getNews(guild.id, id);
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
 
   const editModal = new ModalBuilder()
@@ -104,7 +104,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
     });
 
-    updateNews(guild.id, id, title, body);
+    await updateNews(guild.id, id, title, body);
     await i.reply({
       embeds: [
         new EmbedBuilder()

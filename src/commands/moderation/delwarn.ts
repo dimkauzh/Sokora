@@ -46,7 +46,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed({ interaction, title: `There is no warning with the id of ${id}.` });
 
   try {
-    removeModeration(guild.id, `${id}`);
+    await removeModeration(guild.id, `${id}`);
   } catch (error) {
     return await errorEmbed({
       interaction,

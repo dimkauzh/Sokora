@@ -30,7 +30,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const id = interaction.options.getString("id")!;
-  const news = getNews(guild.id, id);
+  const news = await getNews(guild.id, id);
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
   const newsChannel = (await safeChannel(
     guild,
@@ -38,7 +38,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   )) as TextChannel;
 
   if (newsChannel) await newsChannel.messages.delete(news.messageID);
-  deleteNews(guild.id, id);
+  await deleteNews(guild.id, id);
   await interaction.reply({
     embeds: [
       new EmbedBuilder()

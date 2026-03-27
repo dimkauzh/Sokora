@@ -67,5 +67,5 @@ export async function sendChannelNews(
       embeds: [embed],
       content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
     })
-    .then(message => updateNews(guild.id, id, undefined, undefined, message.id));
+    .then(async message => await updateNews(guild.id, id, undefined, undefined, message.id));
 }

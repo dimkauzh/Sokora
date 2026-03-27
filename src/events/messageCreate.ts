@@ -69,7 +69,7 @@ export default (async function run(message) {
   const xp = await getUserXp(guild.id, author.id);
   const newXp = xp + xpGain;
   const newLevel = calculateLevel({ xp: newXp, difficulty });
-  setUserXp(guild.id, author.id, newXp);
+  await setUserXp(guild.id, author.id, newXp);
   if (newLevel <= calculateLevel({ xp, difficulty })) return;
   const avatar = author.displayAvatarURL();
   const rewards = (await getLevelRewards(guild.id))?.filter(r => r.level <= newLevel);

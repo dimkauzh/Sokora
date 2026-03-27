@@ -13,8 +13,8 @@ const def = {
 } satisfies TableDefinition;
 
 await sql`CREATE TABLE IF NOT EXISTS leveling (guild TEXT, userID TEXT, xp INTEGER);`;
-const getQuery = (guild: string | number, userID: string) =>
-  sql`SELECT * FROM leveling WHERE guild = ${guild} AND userID = ${userID};`;
+const getQuery = async (guild: string | number, userID: string) =>
+  await sql`SELECT * FROM leveling WHERE guild = ${guild} AND userID = ${userID};`;
 
 export async function getUserXp(guildID: string, userID: string): Promise<number> {
   const res = (await getQuery(guildID, userID)) as TypeOfDefinition<typeof def>[];
@@ -63,11 +63,6 @@ export async function getXpForNextLevel(guildID: string, userID: string): Promis
     difficulty,
     calculateLevel({ difficulty, xp: await getUserXp(guildID, userID) }) + 1,
   );
-}
-
-export async function getXpForCurrentLevel(guildID: string, userID: string): Promise<number> {
-  const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
-  return formula(difficulty, calculateLevel({ difficulty, xp: await getUserXp(guildID, userID) }));
 }
 
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
