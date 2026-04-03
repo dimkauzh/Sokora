@@ -247,7 +247,7 @@ export async function getSetting<
 >(
   guildID: string,
   key: K,
-  setting: keyof (typeof settingsDefinition)[K]["settings"],
+  setting: S,
 ): Promise<
   | SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>
   | SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>[]
