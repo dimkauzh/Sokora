@@ -144,7 +144,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const guildID = guild.id;
   const user = interaction.options.getUser("user");
-  const type = interaction.options.getString("type") as ModType;
+  const modType = interaction.options.getString("type") as ModType;
   let actionID = interaction.options.getString("id");
   if (actionID && actionID?.startsWith("#")) actionID = actionID.slice(1);
   if (actionID && !user)
@@ -158,13 +158,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (user)
     cases = actionID
       ? await getModeration(guildID, user.id, actionID)
-      : type
-        ? await listUserModeration(guildID, user.id, type as ModType)
-        : await listUserModeration(guildID, user.id);
-  else
-    cases = type
-      ? await listGuildModeration(guildID, type as ModType)
-      : await listGuildModeration(guildID);
+      : await listUserModeration(guildID, user.id, modType);
+  else cases = await listGuildModeration(guildID, modType);
 
   const totalPages = Math.ceil(cases.length / 5);
   let page = Math.max(1, Math.min(interaction.options.getNumber("page") || 1, totalPages));
@@ -180,7 +175,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   );
 
   const reply = await interaction.reply({
-    embeds: [await generateEmbed({ cases, page, totalPages, guildID, type, user })],
+    embeds: [await generateEmbed({ cases, page, totalPages, guildID, type: modType, user })],
     components: totalPages > 1 ? [row] : [],
   });
 
@@ -193,7 +188,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;
     else page = page < totalPages ? page + 1 : 1;
     await i.update({
-      embeds: [await generateEmbed({ cases, page, totalPages, guildID, type, user })],
+      embeds: [await generateEmbed({ cases, page, totalPages, guildID, type: modType, user })],
       components: [row],
     });
   });

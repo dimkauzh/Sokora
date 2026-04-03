@@ -1,20 +1,15 @@
 {
   "compilerOptions": {
-    "lib": ["ESNext", "ES2021.String"],
-    "module": "ESNext",
-    "target": "ESNext",
-    "moduleResolution": "Node",
+    "lib": ["ESNext"],
+    "module": "Preserve",
+    "moduleResolution": "bundler",
     "moduleDetection": "force",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
     "noEmit": true,
     "composite": true,
-    "strict": true,
-    "downlevelIteration": true,
     "skipLibCheck": true,
-    "allowSyntheticDefaultImports": true,
     "forceConsistentCasingInFileNames": true,
-    "allowJs": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "types": ["bun-types"],
@@ -25,7 +20,7 @@
       "handlers/*": ["./src/handlers/*"],
       "utils/*": ["./src/utils/*"],
       "src/*": ["./src/*"],
-      "package": ["./package.json"]
-    }
-  }
+      "package": ["./package.json"],
+    },
+  },
 }

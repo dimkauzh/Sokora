@@ -247,7 +247,7 @@ export async function getSetting<
 >(
   guildID: string,
   key: K,
-  setting: S,
+  setting: keyof (typeof settingsDefinition)[K]["settings"],
 ): Promise<
   | SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>
   | SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>[]
@@ -282,7 +282,7 @@ export async function getSetting<
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
       case "BOOL":
-        return (value == "true" ? true : false) as SqlType<typeof set.type>;
+        return (value == "true") as SqlType<typeof set.type>;
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
       default:
@@ -314,7 +314,7 @@ export async function setSetting<
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S, value: any) {
   const set = Array.isArray(value) ? dekominator(value) : value;
-  await deleteQuery(guildID, `${key + "." + setting}`);
+  await deleteQuery(guildID, `${key}.${setting}`);
   await sql`INSERT INTO settings (guildID, key, value) VALUES (${guildID}, ${key + "." + setting}, ${set});`;
 }
 
