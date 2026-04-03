@@ -33,7 +33,7 @@ await sql`CREATE TABLE IF NOT EXISTS moderation (
 export async function addModeration(
   guildID: string | number,
   userID: string,
-  type: ModType,
+  modType: ModType,
   moderator: string,
   reason = "",
   expiresAt?: number | null,
@@ -54,7 +54,7 @@ export async function addModeration(
   ) VALUES (
     ${guildID},
     ${userID},
-    ${type},
+    ${modType},
     ${moderator},
     ${reason},
     ${id},
@@ -64,9 +64,9 @@ export async function addModeration(
   return id;
 }
 
-export async function listGuildModeration(guildID: number | string, type?: ModType) {
-  if (type)
-    return (await sql`SELECT * FROM moderation WHERE guild = ${guildID} AND type = ${type};`) as TypeOfDefinition<
+export async function listGuildModeration(guildID: number | string, modType?: ModType) {
+  if (modType)
+    return (await sql`SELECT * FROM moderation WHERE guild = ${guildID} AND type = ${modType};`) as TypeOfDefinition<
       typeof def
     >[];
 
@@ -78,10 +78,10 @@ export async function listGuildModeration(guildID: number | string, type?: ModTy
 export async function listUserModeration(
   guildID: number | string,
   userID: number | string,
-  type?: ModType,
+  modType?: ModType,
 ) {
-  if (type)
-    return (await sql`SELECT * FROM moderation WHERE guild = ${guildID} AND userID = ${userID} AND type = ${type};`) as TypeOfDefinition<
+  if (modType)
+    return (await sql`SELECT * FROM moderation WHERE guild = ${guildID} AND userID = ${userID} AND type = ${modType};`) as TypeOfDefinition<
       typeof def
     >[];
 

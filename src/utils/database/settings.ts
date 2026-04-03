@@ -314,8 +314,9 @@ export async function setSetting<
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S, value: any) {
   const set = Array.isArray(value) ? dekominator(value) : value;
-  await deleteQuery(guildID, `${key}.${setting}`);
-  await sql`INSERT INTO settings (guildID, key, value) VALUES (${guildID}, ${key + "." + setting}, ${set});`;
+  const keySetting = `${key}.${setting}`;
+  await deleteQuery(guildID, keySetting);
+  await sql`INSERT INTO settings (guildID, key, value) VALUES (${guildID}, ${keySetting}, ${set});`;
 }
 
 export async function resetSetting<
