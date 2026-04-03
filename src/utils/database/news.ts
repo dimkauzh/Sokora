@@ -40,8 +40,10 @@ const sendQuery = async (
   messageID: string,
   imageURL: string | null,
   id: string,
-) =>
-  await sql`INSERT INTO news (
+) => {
+  // [TODO] fix issue
+  // column "guildID" of relation "news" does not exist??
+  const insObject = {
     guildID,
     title,
     body,
@@ -51,19 +53,10 @@ const sendQuery = async (
     updatedAt,
     messageID,
     imageURL,
-    id
-  ) VALUES (
-    ${guildID},
-    ${title},
-    ${body},
-    ${author},
-    ${authorPFP},
-    ${createdAt},
-    ${updatedAt},
-    ${messageID},
-    ${imageURL},
-    ${id}
-  );`;
+    id,
+  };
+  await sql`INSERT INTO news ${sql(insObject)};`;
+};
 
 export const listAllQuery = async (guildID: string) =>
   await sql`SELECT * FROM news WHERE guildID = ${guildID};`;

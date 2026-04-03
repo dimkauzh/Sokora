@@ -57,23 +57,15 @@ export async function setStarred(
   if ((await getQuery(guildID, messageID)).length)
     await sql`DELETE FROM starboard WHERE guild = ${guildID} AND message = ${messageID};`;
 
-  await sql`INSERT INTO starboard (
-    guild,
-    message,
-    channel,
-    author,
-    star_message,
+  const insObject = {
+    guild: guildID,
+    message: messageID,
+    channel: channelID,
+    author: authorID,
+    star_message: starMessageID,
     stars,
     content,
-    timestamp
-  ) VALUES (
-    ${guildID},
-    ${messageID},
-    ${channelID},
-    ${authorID},
-    ${starMessageID},
-    ${stars},
-    ${content},
-    ${timestamp}
-  );`;
+    timestamp,
+  };
+  await sql`INSERT INTO starboard ${sql(insObject)};`;
 }

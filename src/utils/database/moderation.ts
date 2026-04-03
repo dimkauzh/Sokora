@@ -42,25 +42,17 @@ export async function addModeration(
     await sql`SELECT CAST(id AS int) AS id FROM moderation WHERE guild = ${guildID} ORDER BY id DESC LIMIT 1;`;
 
   id = parseInt(id.length ? (id[0] as { id: string }).id : "0") + 1;
-  sql`INSERT INTO moderation (
-    guild,
+  const insObject = {
+    guild: guildID,
     userID,
-    type,
+    type: modType,
     moderator,
     reason,
     id,
-    timestamp,
-    expiresAt
-  ) VALUES (
-    ${guildID},
-    ${userID},
-    ${modType},
-    ${moderator},
-    ${reason},
-    ${id},
-    ${Date.now()},
-    ${expiresAt ?? null}
-  );`;
+    timestamp: Date.now(),
+    expiresAt: expiresAt ?? null,
+  };
+  sql`INSERT INTO moderation ${sql(insObject)};`;
   return id;
 }
 
