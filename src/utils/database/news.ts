@@ -17,18 +17,6 @@ const def = {
   },
 } satisfies TableDefinition;
 
-await sql`CREATE TABLE IF NOT EXISTS news (
-  "guildID" TEXT,
-  "title" TEXT,
-  "body" TEXT,
-  "author" TEXT,
-  "authorPFP" TEXT,
-  "createdAt" TIMESTAMP,
-  "updatedAt" TIMESTAMP,
-  "messageID" TEXT,
-  "imageURL" TEXT,
-  "id" TEXT
-);`;
 const sendQuery = async (
   guildID: string,
   title: string,

@@ -15,16 +15,6 @@ const def = {
   },
 } satisfies TableDefinition;
 
-await sql`CREATE TABLE IF NOT EXISTS starboard (
-  "guild" TEXT,
-  "message" TEXT,
-  "channel" TEXT,
-  "author" TEXT,
-  "star_message" TEXT,
-  "stars" INTEGER,
-  "content" TEXT,
-  "timestamp" TIMESTAMP
-);`;
 const getQuery = async (guild: string, message: string) =>
   await sql`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`;
 

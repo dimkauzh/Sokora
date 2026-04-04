@@ -19,17 +19,6 @@ export type ModerationCase = typeof def;
 
 export type ModType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
 
-await sql`CREATE TABLE IF NOT EXISTS moderation (
-  "guild" TEXT,
-  "userID" TEXT,
-  "type" TEXT,
-  "moderator" TEXT,
-  "reason" TEXT,
-  "id" TEXT,
-  "timestamp" TIMESTAMP,
-  "expiresAt" TIMESTAMP
-);`;
-
 export async function addModeration(
   guildID: string | number,
   userID: string,

@@ -237,7 +237,7 @@ export const settingsDefinition: SettingsDefinition = {
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-await sql`CREATE TABLE IF NOT EXISTS settings ("guildID" TEXT, "key" TEXT, "value" TEXT);`;
+
 const deleteQuery = async (guildID: string, key: string) =>
   await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = ${key};`;
 

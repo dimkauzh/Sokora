@@ -12,7 +12,6 @@ const def = {
   },
 } satisfies TableDefinition;
 
-await sql`CREATE TABLE IF NOT EXISTS leveling ("guild" TEXT, "userID" TEXT, "xp" INTEGER);`;
 const getQuery = async (guild: string | number, userID: string) =>
   await sql`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`;
 

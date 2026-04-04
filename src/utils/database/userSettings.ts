@@ -27,7 +27,6 @@ export const settingsDefinition: SettingsDefinition = {
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-await sql`CREATE TABLE IF NOT EXISTS user_settings ("userID" TEXT, "key" TEXT, "value" TEXT);`;
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,
