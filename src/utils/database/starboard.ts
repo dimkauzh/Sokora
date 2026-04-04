@@ -11,27 +11,27 @@ const def = {
     star_message: "TEXT",
     stars: "INTEGER",
     content: "TEXT",
-    timestamp: "TEXT",
+    timestamp: "TIMESTAMP",
   },
 } satisfies TableDefinition;
 
 await sql`CREATE TABLE IF NOT EXISTS starboard (
-  guild TEXT,
-  message TEXT,
-  channel TEXT,
-  author TEXT,
-  star_message TEXT,
-  stars INTEGER,
-  content TEXT,
-  timestamp TEXT
+  "guild" TEXT,
+  "message" TEXT,
+  "channel" TEXT,
+  "author" TEXT,
+  "star_message" TEXT,
+  "stars" INTEGER,
+  "content" TEXT,
+  "timestamp" TIMESTAMP
 );`;
 const getQuery = async (guild: string, message: string) =>
-  await sql`SELECT * FROM starboard WHERE guild = ${guild} AND message = ${message};`;
+  await sql`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`;
 
 export async function getStarred(
   guildID: string,
   messageID: string,
-): Promise<[string, string, string, number, string, string] | null> {
+): Promise<[string, string, string, number, string, number] | null> {
   const res = (await getQuery(guildID, messageID)) as TypeOfDefinition<typeof def>[];
   if (!res.length) return null;
   return [
@@ -40,7 +40,7 @@ export async function getStarred(
     res[0].star_message as string,
     res[0].stars as number,
     res[0].content as string,
-    res[0].timestamp as string,
+    res[0].timestamp as number,
   ];
 }
 
@@ -52,10 +52,10 @@ export async function setStarred(
   starMessageID: string,
   stars: number,
   content: string,
-  timestamp: string,
+  timestamp: number,
 ) {
   if ((await getQuery(guildID, messageID)).length)
-    await sql`DELETE FROM starboard WHERE guild = ${guildID} AND message = ${messageID};`;
+    await sql`DELETE FROM starboard WHERE "guild" = ${guildID} AND "message" = ${messageID};`;
 
   const insObject = {
     guild: guildID,

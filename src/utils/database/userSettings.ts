@@ -27,7 +27,7 @@ export const settingsDefinition: SettingsDefinition = {
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-await sql`CREATE TABLE IF NOT EXISTS user_settings (userID TEXT, key TEXT, value TEXT);`;
+await sql`CREATE TABLE IF NOT EXISTS user_settings ("userID" TEXT, "key" TEXT, "value" TEXT);`;
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,
@@ -44,7 +44,7 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  return (await sql`SELECT * FROM user_settings WHERE key = ${`${key}.${setting}`};`) as TypeOfDefinition<
+  return (await sql`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
     typeof def
   >[];
 }
@@ -69,7 +69,7 @@ export async function getUserSetting<
   }
 
   const res =
-    (await sql`SELECT * FROM user_settings WHERE userID = ${userID} AND key = ${`${key}.${setting}`};`) as TypeOfDefinition<
+    (await sql`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
       typeof def
     >[];
 
@@ -99,5 +99,5 @@ export async function setUserSetting<
   const keySetting = `${key}.${setting}`;
 
   if (!doInsert) await sql`DELETE FROM user_settings WHERE userID = ${id} AND key = ${keySetting};`;
-  await sql`INSERT INTO user_settings (userID, key, value) VALUES (${id}, ${keySetting}, ${value});`;
+  await sql`INSERT INTO user_settings ("userID", "key", "value") VALUES (${id}, ${keySetting}, ${value});`;
 }

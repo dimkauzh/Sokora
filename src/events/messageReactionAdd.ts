@@ -127,7 +127,7 @@ export default (async function run(reaction, user) {
         (await starboardChannel.send({ embeds, components: [row] })).id,
         starCount,
         message.content || "",
-        message.createdTimestamp.toString(),
+        message.createdTimestamp,
       );
 
     const [channelId, , starMessageId, , ,] = existingStarred;
@@ -142,7 +142,7 @@ export default (async function run(reaction, user) {
       starMessageId,
       starCount,
       message.content || "",
-      message.createdTimestamp.toString(),
+      message.createdTimestamp,
     );
   } catch (error) {
     await errorEmbed({

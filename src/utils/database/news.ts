@@ -18,16 +18,16 @@ const def = {
 } satisfies TableDefinition;
 
 await sql`CREATE TABLE IF NOT EXISTS news (
-  guildID TEXT,
-  title TEXT,
-  body TEXT,
-  author TEXT,
-  authorPFP TEXT,
-  createdAt TIMESTAMP,
-  updatedAt TIMESTAMP,
-  messageID TEXT,
-  imageURL TEXT,
-  id TEXT
+  "guildID" TEXT,
+  "title" TEXT,
+  "body" TEXT,
+  "author" TEXT,
+  "authorPFP" TEXT,
+  "createdAt" TIMESTAMP,
+  "updatedAt" TIMESTAMP,
+  "messageID" TEXT,
+  "imageURL" TEXT,
+  "id" TEXT
 );`;
 const sendQuery = async (
   guildID: string,
@@ -41,8 +41,6 @@ const sendQuery = async (
   imageURL: string | null,
   id: string,
 ) => {
-  // [TODO] fix issue
-  // column "guildID" of relation "news" does not exist??
   const insObject = {
     guildID,
     title,
@@ -59,10 +57,10 @@ const sendQuery = async (
 };
 
 export const listAllQuery = async (guildID: string) =>
-  await sql`SELECT * FROM news WHERE guildID = ${guildID};`;
+  await sql`SELECT * FROM news WHERE "guildID" = ${guildID};`;
 
 const deleteQuery = async (guildID: string, id: string) =>
-  await sql`DELETE FROM news WHERE guildID = ${guildID} AND id = ${id};`;
+  await sql`DELETE FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`;
 
 export async function addNews(
   guildID: string,
@@ -74,6 +72,7 @@ export async function addNews(
   imageURL: string | null,
   id: string,
 ) {
+  // [TODO] look into why Date.now() idenfities as bigint instead of number
   await sendQuery(guildID, title, body, author, authorPFP, Date.now(), 0, messageID, imageURL, id);
 }
 
@@ -82,7 +81,7 @@ export async function listAllNews(guildID: string) {
 }
 
 export async function getNews(guildID: string, id: string) {
-  return (await sql`SELECT * FROM news WHERE guildID = ${guildID} AND id = ${id};`) as TypeOfDefinition<
+  return (await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`) as TypeOfDefinition<
     typeof def
   > | null;
 }

@@ -13,6 +13,8 @@ const def = {
   },
 } satisfies TableDefinition;
 
+// for the [TODO]s below, remove the SettingsDefinition type and
+// enjoy 26 type errors! :D
 export const settingsDefinition: SettingsDefinition = {
   leveling: {
     description: "Customize the behavior of the leveling system.",
@@ -235,9 +237,9 @@ export const settingsDefinition: SettingsDefinition = {
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-await sql`CREATE TABLE IF NOT EXISTS settings (guildID TEXT, key TEXT, value TEXT);`;
+await sql`CREATE TABLE IF NOT EXISTS settings ("guildID" TEXT, "key" TEXT, "value" TEXT);`;
 const deleteQuery = async (guildID: string, key: string) =>
-  await sql`DELETE FROM settings WHERE guildID = ${guildID} AND key = ${key};`;
+  await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = ${key};`;
 
 // [TODO] autocomplete support for get/setSetting
 // [TODO] proper type validation for get/setSetting
@@ -266,7 +268,7 @@ export async function getSetting<
   }
 
   const res =
-    (await sql`SELECT * FROM settings WHERE guildID = ${guildID} AND key = ${`${key}.${setting}`};`) as TypeOfDefinition<
+    (await sql`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
       typeof def
     >[];
 
@@ -316,7 +318,7 @@ export async function setSetting<
   const set = Array.isArray(value) ? dekominator(value) : value;
   const keySetting = `${key}.${setting}`;
   await deleteQuery(guildID, keySetting);
-  await sql`INSERT INTO settings (guildID, key, value) VALUES (${guildID}, ${keySetting}, ${set});`;
+  await sql`INSERT INTO settings ("guildID", "key", "value") VALUES (${guildID}, ${keySetting}, ${set});`;
 }
 
 export async function resetSetting<
@@ -330,7 +332,7 @@ export async function resetSettingCategory<K extends keyof typeof settingsDefini
   guildID: string,
   key: K,
 ) {
-  await sql`DELETE FROM settings WHERE guildID = ${guildID} AND key LIKE ${`%${key}%`};`;
+  await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" LIKE ${`%${key}%`};`;
 }
 
 export async function listPublicServers(): Promise<
@@ -342,7 +344,7 @@ export async function listPublicServers(): Promise<
 > {
   const publicGuildSet = new Set(
     (
-      (await sql`SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';`) as TypeOfDefinition<
+      (await sql`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`) as TypeOfDefinition<
         typeof def
       >[]
     ).map(entry => entry.guildID),
@@ -350,7 +352,7 @@ export async function listPublicServers(): Promise<
 
   const inviteGuildsSet = new Set(
     (
-      (await sql`SELECT * FROM settings WHERE key = 'serverboard.server_invite' AND value = '1';`) as TypeOfDefinition<
+      (await sql`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`) as TypeOfDefinition<
         typeof def
       >[]
     ).map(entry => entry.guildID),
@@ -370,7 +372,7 @@ export async function listPublicServers(): Promise<
 
 export async function deletePublicServer(guildID: string) {
   try {
-    await sql`DELETE FROM settings WHERE guildID = ${guildID} AND key = 'serverboard.shown' AND value = '1';`;
+    await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = 'serverboard.shown' AND "value" = 'true';`;
   } catch (error) {
     return await errorEmbed({
       client,

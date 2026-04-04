@@ -12,9 +12,9 @@ const def = {
   },
 } satisfies TableDefinition;
 
-await sql`CREATE TABLE IF NOT EXISTS leveling (guild TEXT, userID TEXT, xp INTEGER);`;
+await sql`CREATE TABLE IF NOT EXISTS leveling ("guild" TEXT, "userID" TEXT, "xp" INTEGER);`;
 const getQuery = async (guild: string | number, userID: string) =>
-  await sql`SELECT * FROM leveling WHERE guild = ${guild} AND userID = ${userID};`;
+  await sql`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`;
 
 export async function getUserXp(guildID: string, userID: string): Promise<number> {
   const res = (await getQuery(guildID, userID)) as TypeOfDefinition<typeof def>[];
@@ -24,17 +24,18 @@ export async function getUserXp(guildID: string, userID: string): Promise<number
 
 export async function setUserXp(guildID: string | number, userID: string, xp: number) {
   if ((await getQuery(guildID, userID)).length)
-    await sql`DELETE FROM leveling WHERE guild = ${guildID} AND userID = ${userID};`;
+    await sql`DELETE FROM leveling WHERE "guild" = ${guildID} AND "userID" = ${userID};`;
 
-  await sql`INSERT INTO leveling (guild, userID, xp) VALUES (${guildID}, ${userID}, ${xp});`;
+  await sql`INSERT INTO leveling ("guild", "userID", "xp") VALUES (${guildID}, ${userID}, ${xp});`;
 }
 
 export async function getGuildLeaderboard(
   guildID: string,
 ): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
-  const xpData = (await sql`SELECT * FROM leveling WHERE guild = ${guildID};`) as TypeOfDefinition<
-    typeof def
-  >[];
+  const xpData =
+    (await sql`SELECT * FROM leveling WHERE "guild" = ${guildID};`) as TypeOfDefinition<
+      typeof def
+    >[];
 
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
   return xpData.map(x => {
