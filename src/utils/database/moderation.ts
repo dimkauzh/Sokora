@@ -28,8 +28,8 @@ export async function addModeration(
   reason = "",
   expiresAt?: number | null,
 ) {
-  let id =
-    values(await sql`SELECT CAST(id AS int) AS id FROM moderation WHERE "guild" = ${guildID} ORDER BY "id" DESC LIMIT 1;`, true)[0];
+  let id: any =
+    values(await sql`SELECT CAST(id AS int) AS id FROM moderation WHERE "guild" = ${guildID} ORDER BY "id" DESC LIMIT 1;`);
 
   id = parseInt(id.length ? (id[0] as { id: string }).id : "0") + 1;
   const insObject = {
