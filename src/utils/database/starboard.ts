@@ -1,4 +1,5 @@
 import { sql } from "bun";
+import { values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
 const def = {
@@ -16,7 +17,7 @@ const def = {
 } satisfies TableDefinition;
 
 const getQuery = async (guild: string, message: string) =>
-  await sql`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`;
+  values(await sql`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`);
 
 export async function getStarred(
   guildID: string,

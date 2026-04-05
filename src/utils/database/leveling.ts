@@ -1,4 +1,5 @@
 import { sql } from "bun";
+import { values } from ".";
 import { dekominator } from "../kominator";
 import { getSetting, setSetting } from "./settings";
 import { LevelReward, TableDefinition, TypeOfDefinition } from "./types";
@@ -13,7 +14,7 @@ const def = {
 } satisfies TableDefinition;
 
 const getQuery = async (guild: string | number, userID: string) =>
-  await sql`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`;
+  values(await sql`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`);
 
 export async function getUserXp(guildID: string, userID: string): Promise<number> {
   const res = (await getQuery(guildID, userID)) as TypeOfDefinition<typeof def>[];
@@ -32,7 +33,7 @@ export async function getGuildLeaderboard(
   guildID: string,
 ): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
   const xpData =
-    (await sql`SELECT * FROM leveling WHERE "guild" = ${guildID};`) as TypeOfDefinition<
+    values(await sql`SELECT * FROM leveling WHERE "guild" = ${guildID};`) as TypeOfDefinition<
       typeof def
     >[];
 

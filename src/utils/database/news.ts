@@ -1,5 +1,6 @@
 import { sql } from "bun";
 import { TableDefinition, TypeOfDefinition } from "./types";
+import { values } from ".";
 
 const def = {
   name: "news",
@@ -24,7 +25,7 @@ const sendQuery = async (
   author: string,
   authorPFP: string,
   createdAt: Date,
-  updatedAt: Date | number,
+  updatedAt: Date | null,
   messageID: string,
   imageURL: string | null,
   id: string,
@@ -44,8 +45,8 @@ const sendQuery = async (
   await sql`INSERT INTO news ${sql(insObject)};`;
 };
 
-export const listAllQuery = async (guildID: string) =>
-  await sql`SELECT * FROM news WHERE "guildID" = ${guildID};`;
+export const listAllNews = async (guildID: string): Promise<TypeOfDefinition<typeof def>[]> =>
+  values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID};`);
 
 const deleteQuery = async (guildID: string, id: string) =>
   await sql`DELETE FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`;
@@ -70,19 +71,15 @@ export async function addNews(
     author,
     authorPFP,
     new Date(),
-    0,
+    null,
     messageID,
     imageURL,
     id,
   );
 }
 
-export async function listAllNews(guildID: string) {
-  return (await listAllQuery(guildID)) as TypeOfDefinition<typeof def>[];
-}
-
 export async function getNews(guildID: string, id: string) {
-  return (
+  return values(
     await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`
   )[0] as TypeOfDefinition<typeof def> | null;
 }

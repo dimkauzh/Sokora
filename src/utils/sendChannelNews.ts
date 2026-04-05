@@ -68,5 +68,7 @@ export async function sendChannelNews(
       embeds: [embed],
       content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
     })
+    // Just noticed the call to updateNews, kinda weird but ok ?? This will set the updatedAt field in the DB tho
     .then(async message => await updateNews(guild.id, id, undefined, undefined, message.id));
+    // Maybe just send the message and then create the DB entry if the message was sent successfully ?
 }

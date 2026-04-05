@@ -1,4 +1,5 @@
 import { sql } from "bun";
+import { values } from ".";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
@@ -268,7 +269,7 @@ export async function getSetting<
   }
 
   const res =
-    (await sql`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
+    values(await sql`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
       typeof def
     >[];
 
@@ -344,7 +345,7 @@ export async function listPublicServers(): Promise<
 > {
   const publicGuildSet = new Set(
     (
-      (await sql`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`) as TypeOfDefinition<
+      values(await sql`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`) as TypeOfDefinition<
         typeof def
       >[]
     ).map(entry => entry.guildID),
@@ -352,7 +353,7 @@ export async function listPublicServers(): Promise<
 
   const inviteGuildsSet = new Set(
     (
-      (await sql`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`) as TypeOfDefinition<
+      values(await sql`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`) as TypeOfDefinition<
         typeof def
       >[]
     ).map(entry => entry.guildID),

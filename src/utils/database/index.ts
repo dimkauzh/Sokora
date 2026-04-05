@@ -10,6 +10,19 @@ import fs from "fs";
 const migrationsDir = "./migrations";
 const hash = createHash("sha1");
 
+/**
+ * Retrieves the ACTUAL values from a query result because postgre adds unwanted data at the end
+ * @param queryResult The returned object from a bun SQL query (so without using .values())
+ * @param singles If true when selecting only one column, returns an array of only the column values instead. Else, returns like normal
+ * @returns An array containing the objects (or direct values if singles) of the query result
+ */
+export function values(queryResult: Object, singles?: boolean): Array<any> { // Not a TS expert but maybe someone can change any to the type of the news object definition ?
+  const actualValues = Object.values(queryResult).filter(v => v instanceof Object);
+  return singles && actualValues.length && Object.values(actualValues[0]).length == 1
+    ? actualValues.map(v => Object.values(v)[0])
+    : actualValues;
+}
+
 async function getHash(file: string, hashAlgo?: Hash): Promise<string> {
   if (hashAlgo == undefined) hashAlgo = createHash("sha256");
   return new Promise((resolve, reject) => {
@@ -49,7 +62,8 @@ async function applyMigrations(after?: string) {
 
 export async function updateDatabase() {
   try {
-    const DBversion = (await sql`SELECT value FROM _info WHERE key = 'version';`)[0].value;
+    const DBversion = values(await sql`SELECT value FROM _info WHERE key = 'version';`, true)[0];
+    if (!DBversion) throw new Error(); // Goes into initializing the DB
     if (DBversion == hashList[hashList.length - 1]) return console.log("Database up-to-date");
     console.log("Updating database...");
     await applyMigrations(DBversion);

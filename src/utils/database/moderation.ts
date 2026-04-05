@@ -1,4 +1,5 @@
 import { sql } from "bun";
+import { values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
 const def = {
@@ -28,7 +29,7 @@ export async function addModeration(
   expiresAt?: number | null,
 ) {
   let id =
-    await sql`SELECT CAST(id AS int) AS id FROM moderation WHERE "guild" = ${guildID} ORDER BY "id" DESC LIMIT 1;`;
+    values(await sql`SELECT CAST(id AS int) AS id FROM moderation WHERE "guild" = ${guildID} ORDER BY "id" DESC LIMIT 1;`, true)[0];
 
   id = parseInt(id.length ? (id[0] as { id: string }).id : "0") + 1;
   const insObject = {
@@ -47,11 +48,11 @@ export async function addModeration(
 
 export async function listGuildModeration(guildID: number | string, modType?: ModType) {
   if (modType)
-    return (await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "type" = ${modType};`) as TypeOfDefinition<
+    return values(await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "type" = ${modType};`) as TypeOfDefinition<
       typeof def
     >[];
 
-  return (await sql`SELECT * FROM moderation WHERE "guild" = ${guildID};`) as TypeOfDefinition<
+  return values(await sql`SELECT * FROM moderation WHERE "guild" = ${guildID};`) as TypeOfDefinition<
     typeof def
   >[];
 }
@@ -62,18 +63,18 @@ export async function listUserModeration(
   modType?: ModType,
 ) {
   if (modType)
-    return (await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "userID" = ${userID} AND "type" = ${modType};`) as TypeOfDefinition<
+    return values(await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "userID" = ${userID} AND "type" = ${modType};`) as TypeOfDefinition<
       typeof def
     >[];
 
-  return (await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "userID" = ${userID};`) as TypeOfDefinition<
+  return values(await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "userID" = ${userID};`) as TypeOfDefinition<
     typeof def
   >[];
 }
 
 export async function getModeration(guildID: number | string, userID: number | string, id: string) {
   const modCase =
-    (await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "id" = ${id};`) as TypeOfDefinition<
+    values(await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "id" = ${id};`) as TypeOfDefinition<
       typeof def
     >[];
 
@@ -95,7 +96,7 @@ export async function removeModeration(guildID: string | number, id: string) {
 }
 
 export async function getPendingBans(currentTime: number) {
-  return (await sql`SELECT * FROM moderation WHERE "type" = 'BAN' AND "expiresAt" IS NOT NULL AND "expiresAt" > ${new Date(currentTime)};`) as TypeOfDefinition<
+  return values(await sql`SELECT * FROM moderation WHERE "type" = 'BAN' AND "expiresAt" IS NOT NULL AND "expiresAt" > ${new Date(currentTime)};`) as TypeOfDefinition<
     typeof def
   >[];
 }

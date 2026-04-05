@@ -70,8 +70,7 @@ client.once("clientReady", async () => {
     loadEvents(client),
     loadEasterEggs(),
     registerGuildCommands(client),
-    rescheduleUnbans(client),
-    updateDatabase(),
+    rescheduleUnbans(client)
   ]).then(() =>
     console.log(Math.random() < 0.002 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！"),
   );
@@ -83,4 +82,5 @@ client.once("clientReady", async () => {
   Chart.register(...registerables);
 });
 
+await updateDatabase(); // Needs to be executed before anything else (since some things like rescheduleUnbans needs a DB in the first place)
 await client.login(process.env.TOKEN);

@@ -1,4 +1,5 @@
 import { sql } from "bun";
+import { values } from ".";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
@@ -43,7 +44,7 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  return (await sql`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
+  return values(await sql`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
     typeof def
   >[];
 }
@@ -68,7 +69,7 @@ export async function getUserSetting<
   }
 
   const res =
-    (await sql`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
+    values(await sql`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
       typeof def
     >[];
 
