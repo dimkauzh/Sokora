@@ -1,6 +1,6 @@
 -- If we ever go postgres only
--- CREATE SCHEMA IF NOT EXISTS Discord
--- SET SCHEMA "Discord"
+-- CREATE SCHEMA IF NOT EXISTS Discord;
+-- SET SCHEMA "Discord";
 
 CREATE TABLE IF NOT EXISTS settings (
   "guildID" TEXT,
@@ -52,5 +52,5 @@ CREATE TABLE IF NOT EXISTS starboard (
   "star_message" TEXT,
   "stars" INTEGER,
   "content" TEXT,
-  "timestamp" TEXT
+  "timestamp" TIMESTAMP
 );

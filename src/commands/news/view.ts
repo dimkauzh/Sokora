@@ -30,7 +30,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const news = await listAllNews(interaction.guild.id);
-  const sortedNews = Object.values(news).sort((a, b) => b.createdAt - a.createdAt);
+  console.log(Object.values(news));
+  // [TODO] what.
+  // in.
+  // the.
+  // world.
+  // a.createdAt is undefined while all createdAt instances are defined.
+  const sortedNews = Object.values(news).sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
 
   if (!news || !sortedNews || !sortedNews.length)
     return await errorEmbed({

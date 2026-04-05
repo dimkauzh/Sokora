@@ -30,8 +30,8 @@ export type SqlType<T extends FieldData> = {
   mINTEGER: Maybe<number>;
   TEXT: string;
   mTEXT: Maybe<string>;
-  TIMESTAMP: number;
-  mTIMESTAMP: Maybe<number>;
+  TIMESTAMP: Date;
+  mTIMESTAMP: Maybe<Date>;
   CHANNEL: string;
   mCHANNEL: Maybe<string>;
   USER: string;

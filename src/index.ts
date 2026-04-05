@@ -1,8 +1,6 @@
 import { ShardingManager } from "discord.js";
-import { updateDatabase } from "./database";
 
 const manager = new ShardingManager("./src/bot.ts", { token: process.env.TOKEN });
-
 manager.on("shardCreate", shard => {
   shard.on("error", error => console.error(error));
   console.log(`Launched shard ${shard.id}!`);
@@ -10,5 +8,4 @@ manager.on("shardCreate", shard => {
     console.warn("External media and <meta> tag fetching is enabled; tread lightly!");
 });
 
-await updateDatabase();
 await manager.spawn();

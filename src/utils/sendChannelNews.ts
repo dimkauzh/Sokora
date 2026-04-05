@@ -31,6 +31,7 @@ export async function sendChannelNews(
   imageURL?: string,
 ): Promise<void> {
   const news = (await getNews(guild.id, id))!;
+  console.log(news.createdAt);
   const role = (await getSetting(guild.id, "news", "role")) as string;
   let roleToSend: Role | undefined;
   if (role) roleToSend = await safeRole(guild, role);
@@ -43,7 +44,7 @@ export async function sendChannelNews(
     .setTitle(title ?? news.title)
     .setDescription(body ?? news.body)
     .setImage(imageURL ?? news.imageURL ?? null)
-    .setTimestamp(news.updatedAt || news.createdAt)
+    .setTimestamp(Number(news.updatedAt) || Number(news.createdAt))
     .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
     .setColor(await colorize({ hue: Sokolors.Blue }));
 

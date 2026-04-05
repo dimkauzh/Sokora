@@ -23,8 +23,8 @@ const sendQuery = async (
   body: string,
   author: string,
   authorPFP: string,
-  createdAt: number,
-  updatedAt: number,
+  createdAt: Date,
+  updatedAt: Date | number,
   messageID: string,
   imageURL: string | null,
   id: string,
@@ -60,8 +60,21 @@ export async function addNews(
   imageURL: string | null,
   id: string,
 ) {
-  // [TODO] look into why Date.now() idenfities as bigint instead of number
-  await sendQuery(guildID, title, body, author, authorPFP, Date.now(), 0, messageID, imageURL, id);
+  // side note new Date() shows up as 1970 in a discord embed
+  // and outputs a random date in 2020 to ur database.
+  // I love this
+  return await sendQuery(
+    guildID,
+    title,
+    body,
+    author,
+    authorPFP,
+    new Date(),
+    0,
+    messageID,
+    imageURL,
+    id,
+  );
 }
 
 export async function listAllNews(guildID: string) {
@@ -69,9 +82,9 @@ export async function listAllNews(guildID: string) {
 }
 
 export async function getNews(guildID: string, id: string) {
-  return (await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`) as TypeOfDefinition<
-    typeof def
-  > | null;
+  return (
+    await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`
+  )[0] as TypeOfDefinition<typeof def> | null;
 }
 
 export async function updateNews(
@@ -91,7 +104,7 @@ export async function updateNews(
     lastElem.author,
     lastElem.authorPFP,
     lastElem.createdAt,
-    Date.now(),
+    new Date(),
     messageID ?? lastElem.messageID,
     imageURL ?? lastElem.imageURL,
     id,

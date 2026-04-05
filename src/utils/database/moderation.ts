@@ -38,7 +38,7 @@ export async function addModeration(
     moderator,
     reason,
     id,
-    timestamp: Date.now(),
+    timestamp: new Date(),
     expiresAt: expiresAt ?? null,
   };
   sql`INSERT INTO moderation ${sql(insObject)};`;

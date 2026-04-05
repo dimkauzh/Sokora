@@ -1,5 +1,6 @@
 import { Api } from "@top-gg/sdk";
 import { Chart, registerables } from "chart.js";
+import { updateDatabase } from "database/index";
 import { getUserSettingsTable, setUserSetting } from "database/userSettings";
 import { ActivityType, Client, Partials } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -70,6 +71,7 @@ client.once("clientReady", async () => {
     loadEasterEggs(),
     registerGuildCommands(client),
     rescheduleUnbans(client),
+    updateDatabase(),
   ]).then(() =>
     console.log(Math.random() < 0.002 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！"),
   );
