@@ -1,4 +1,4 @@
-import { addNews, listAllNews } from "database/news";
+import { listAllNews } from "database/news";
 import {
   EmbedBuilder,
   FileUploadBuilder,
@@ -17,7 +17,7 @@ import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("add")
-  .setDescription("Add your news.");
+  .setDescription("Add a news post.");
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
@@ -30,14 +30,14 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const newsModal = new ModalBuilder()
     .setCustomId("addnews")
-    .setTitle("•  Write your news.")
+    .setTitle("•  Post your news.")
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Title")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId("title")
-            .setPlaceholder("Write a title")
+            .setPlaceholder("Think of a title")
             .setMaxLength(30)
             .setStyle(TextInputStyle.Short)
             .setRequired(true),
@@ -67,7 +67,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
-
     const title = await replaceVariables(
       i.fields.getTextInputValue("title"),
       interaction.guild!,
@@ -80,21 +79,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
       interaction.user,
     );
 
-    const image = i.fields.getUploadedFiles("image")?.at(0)?.url;
-    const id = ((await listAllNews(guild.id)).length + 1).toString();
-    await addNews(
-      guild.id,
-      title,
-      body,
-      i.user.displayName,
-      i.user.avatarURL()!,
-      null!,
-      image ?? null,
-      id,
-    );
-
     try {
-      await sendChannelNews(guild, id, interaction);
+      await sendChannelNews(guild, interaction, {
+        title,
+        body,
+        author: i.user.displayName,
+        authorPFP: i.user.avatarURL()!,
+        imageURL: i.fields.getUploadedFiles("image")?.at(0)?.url ?? null,
+        id: ((await listAllNews(guild.id)).length + 1).toString(),
+      });
     } catch (error) {
       await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
     }

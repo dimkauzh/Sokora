@@ -20,7 +20,7 @@ import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("edit")
-  .setDescription("Edits the news of your guild.")
+  .setDescription("Edits a news post.")
   .addStringOption(string =>
     string.setName("id").setDescription("The ID of the news you want to edit.").setRequired(true),
   );
@@ -36,7 +36,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const id = interaction.options.getString("id")!;
   const news = await getNews(guild.id, id);
-  if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
+  if (!news)
+    return await errorEmbed({ interaction, title: "The specified news post doesn't exist." });
 
   const editModal = new ModalBuilder()
     .setCustomId("editnews")
@@ -64,6 +65,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ),
     );
 
+  // [TODO] figure out why the modal dies when you have edit original message disabled
   try {
     await interaction.showModal(editModal);
   } catch (error) {
@@ -72,16 +74,27 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   interaction.client.once("interactionCreate", async i => {
     if (!i.isModalSubmit()) return;
-
     const role = (await getSetting(guild.id, "news", "role")) as string;
     let roleToSend: Role | undefined;
     if (role) roleToSend = await safeRole(guild, role);
+
     const title = i.fields.getTextInputValue("title");
     const body = i.fields.getTextInputValue("body");
     const avatar = news.authorPFP;
 
     if (!(await getSetting(guild.id, "news", "edit_original_message")))
-      await sendChannelNews(guild, id, interaction, title, body);
+      return await sendChannelNews(
+        guild,
+        interaction,
+        {
+          title,
+          body,
+          author: news.author,
+          authorPFP: avatar,
+          id,
+        },
+        true,
+      );
 
     const embed = new EmbedBuilder()
       .setAuthor({

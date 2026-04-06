@@ -1,6 +1,6 @@
 import { sql } from "bun";
-import { TableDefinition, TypeOfDefinition } from "./types";
 import { values } from ".";
+import { TableDefinition, TypeOfDefinition } from "./types";
 
 const def = {
   name: "news",
@@ -27,7 +27,7 @@ const sendQuery = async (
   createdAt: Date,
   updatedAt: Date | null,
   messageID: string,
-  imageURL: string | null,
+  imageURL: string | null | undefined,
   id: string,
 ) => {
   const insObject = {
@@ -58,12 +58,9 @@ export async function addNews(
   author: string,
   authorPFP: string,
   messageID: string,
-  imageURL: string | null,
+  imageURL: string | null | undefined,
   id: string,
 ) {
-  // side note new Date() shows up as 1970 in a discord embed
-  // and outputs a random date in 2020 to ur database.
-  // I love this
   return await sendQuery(
     guildID,
     title,
@@ -80,7 +77,7 @@ export async function addNews(
 
 export async function getNews(guildID: string, id: string) {
   return values(
-    await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`
+    await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`,
   )[0] as TypeOfDefinition<typeof def> | null;
 }
 
@@ -90,7 +87,7 @@ export async function updateNews(
   title?: string,
   body?: string,
   messageID?: string,
-  imageURL?: string,
+  imageURL?: string | null | undefined,
 ) {
   const lastElem = (await getNews(guildID, id))!;
   await deleteQuery(guildID, id);

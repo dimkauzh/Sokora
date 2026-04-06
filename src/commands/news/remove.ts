@@ -1,3 +1,4 @@
+// [TODO] make ts work
 import { deleteNews, getNews } from "database/news";
 import { getSetting } from "database/settings";
 import {
@@ -12,7 +13,7 @@ import { safeChannel, safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("remove")
-  .setDescription("Removes news from your guild.")
+  .setDescription("Removes a news post.")
   .addStringOption(string =>
     string
       .setName("id")

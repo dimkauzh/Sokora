@@ -40,7 +40,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   if (page > sortedNews.length) page = sortedNews.length;
-  if (page <= 1) page = 1;
+  if (page < 1) page = 1;
 
   async function getEmbed() {
     const currentNews = sortedNews[page - 1];
@@ -57,7 +57,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setFooter({
         text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
       })
-      .setColor(await colorize({ hue: Sokolors.Green }));
+      .setColor(await colorize({ hue: Sokolors.Blue }));
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -76,9 +76,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
     components: sortedNews.length > 1 ? [row] : [],
   });
 
-  if (page <= 1) return;
+  if (page < 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
+    // [TODO] fix cv2 error (how)
     if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 60000 });
     switch (i.customId) {

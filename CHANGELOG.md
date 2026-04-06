@@ -104,7 +104,7 @@
 ### Fixed
 
 - News
-  - Fixed not being able to delete the first new you create.
+  - Fixed not being able to delete the first news post you create.
 - Moderation
   - Fixed the bot crashing because of too large messages being deleted.
   - Fixed a `Jump to message` option being shown on deleted messages (you cannot jump to a deleted message).
