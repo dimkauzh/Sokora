@@ -65,7 +65,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
         ),
     );
 
-  // [TODO] figure out why the modal dies when you have edit original message disabled
   try {
     await interaction.showModal(editModal);
   } catch (error) {
@@ -81,9 +80,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const title = i.fields.getTextInputValue("title");
     const body = i.fields.getTextInputValue("body");
     const avatar = news.authorPFP;
+    const editedEmbed = new EmbedBuilder()
+      .setTitle("News edited.")
+      .setColor(await colorize({ hue: Sokolors.Green }));
 
-    if (!(await getSetting(guild.id, "news", "edit_original_message")))
-      return await sendChannelNews(
+    if (!(await getSetting(guild.id, "news", "edit_original_message"))) {
+      await sendChannelNews(
         guild,
         interaction,
         {
@@ -95,6 +97,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
         },
         true,
       );
+      return await i.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
+    }
 
     const embed = new EmbedBuilder()
       .setAuthor({
@@ -118,13 +122,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
     await updateNews(guild.id, id, title, body);
-    await i.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("News edited.")
-          .setColor(await colorize({ hue: Sokolors.Green })),
-      ],
-      flags: "Ephemeral",
-    });
+    await i.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
   });
 }

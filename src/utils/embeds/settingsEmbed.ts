@@ -376,13 +376,19 @@ export async function settingsEmbed(
         ];
 
     // [TODO] figure out what the hell is happening with this...
-    // context: changing any setting that's not a boolean doesn't make the reset button appear
+    // context: changing text/integer setting doesn't make the reset button appear
     const actual = (await getSettingCategory(id, key)).map(setting => setting ?? null);
     const defaults = Object.values(settingsObj).map(setting => setting.val ?? null);
     const nullCheck = itrObjView
       ? !(await getLevelRewards(id))?.every(value => value == null)
-      : !actual.every(value => value == defaults[actual.indexOf(value)]);
+      : !actual.every(value => {
+          // console.log(`a ${value}`);
+          // console.log(`b ${defaults[actual.indexOf(value)]}`);
+          // console.log(value == defaults[actual.indexOf(value)]);
+          return value == defaults[actual.indexOf(value)];
+        });
 
+    // console.log("end of transmission");
     if (nullCheck)
       buttonArray.unshift(
         new ButtonBuilder()
@@ -555,7 +561,6 @@ export async function settingsEmbed(
               flags: ["Ephemeral", "IsComponentsV2"],
             },
           });
-          await end(reset, confirm, objView, itrObjView);
         });
         break;
       }
@@ -564,8 +569,7 @@ export async function settingsEmbed(
           await setSettingPlease(id, key, cID, (i as AnySelectMenuInteraction).values, table);
     }
 
-    if (componentType != "text" && componentType != "integer")
-      await end(reset, confirm, objView, itrObjView);
+    await end(reset, confirm, objView, itrObjView);
   });
 
   collector.on("end", async () => {
