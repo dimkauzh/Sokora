@@ -14,7 +14,7 @@ const def = {
     updatedAt: "mTIMESTAMP",
     messageID: "TEXT",
     imageURL: "mTEXT",
-    id: "TEXT",
+    id: "INTEGER", // Why is id a TEXT ???
   },
 } satisfies TableDefinition;
 
@@ -28,7 +28,7 @@ const sendQuery = async (
   updatedAt: Date | null,
   messageID: string,
   imageURL: string | null | undefined,
-  id: string,
+  id: number,
 ) => {
   const insObject = {
     guildID,
@@ -46,9 +46,12 @@ const sendQuery = async (
 };
 
 export const listAllNews = async (guildID: string): Promise<TypeOfDefinition<typeof def>[]> =>
-  values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID};`);
+  values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC;`);
 
-const deleteQuery = async (guildID: string, id: string) =>
+export const getLatestNews = async (guildID: string): Promise<TypeOfDefinition<typeof def>[]> =>
+  values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC LIMIT 1;`);
+
+const deleteQuery = async (guildID: string, id: number) =>
   await sql`DELETE FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`;
 
 export async function addNews(
@@ -59,7 +62,7 @@ export async function addNews(
   authorPFP: string,
   messageID: string,
   imageURL: string | null | undefined,
-  id: string,
+  id: number,
 ) {
   return await sendQuery(
     guildID,
@@ -75,7 +78,7 @@ export async function addNews(
   );
 }
 
-export async function getNews(guildID: string, id: string) {
+export async function getNews(guildID: string, id: number) {
   return values(
     await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`,
   )[0] as TypeOfDefinition<typeof def> | null;
@@ -83,7 +86,7 @@ export async function getNews(guildID: string, id: string) {
 
 export async function updateNews(
   guildID: string,
-  id: string,
+  id: number,
   title?: string,
   body?: string,
   messageID?: string,
@@ -105,6 +108,6 @@ export async function updateNews(
   );
 }
 
-export async function deleteNews(guildID: string, id: string) {
+export async function deleteNews(guildID: string, id: number) {
   await deleteQuery(guildID, id);
 }

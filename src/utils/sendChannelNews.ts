@@ -36,7 +36,7 @@ export async function sendChannelNews(
     body: string;
     author: string;
     authorPFP: string;
-    id: string;
+    id: number;
     imageURL?: string | null;
   },
   edit?: boolean,
@@ -83,3 +83,4 @@ export async function sendChannelNews(
   if (edit) return await updateNews(guild.id, id, title, body, message.id);
   return await addNews(guild.id, title, body, author, authorPFP, message.id, imageURL, id);
 }
+// We should have some sort of a middleware folder where we place all functions like this (interacts with the db but looks like it comes from a command file)

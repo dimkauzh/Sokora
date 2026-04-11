@@ -76,7 +76,7 @@ async function generateEmbed(params: {
       {
         name: `💨 • ${randomize(nothingMsg)}`,
         value: type
-          ? `*No ${type.toLowerCase()} were made in the entire server!*`
+          ? `*No ${type.toLowerCase()}s were made in the entire server!*`
           : "*No actions were taken in the entire server. How clean!*",
       },
     ];
@@ -97,8 +97,8 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("cases")
   .setDescription("Lists all moderation cases of a user (or in a server).")
   .addUserOption(user => user.setName("user").setDescription("The user that you want to see."))
-  .addStringOption(string =>
-    string.setName("id").setDescription("The ID of a specific moderation case you want to see."),
+  .addNumberOption(number =>
+    number.setName("id").setDescription("The ID of a specific moderation case you want to see."),
   )
   .addStringOption(string =>
     string
@@ -145,8 +145,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guildID = guild.id;
   const user = interaction.options.getUser("user");
   const modType = interaction.options.getString("type") as ModType;
-  let actionID = interaction.options.getString("id");
-  if (actionID && actionID?.startsWith("#")) actionID = actionID.slice(1);
+  let actionID = interaction.options.getNumber("id");
+  // if (actionID && actionID?.startsWith("#")) actionID = actionID.slice(1);
   if (actionID && !user)
     return await errorEmbed({
       interaction,
@@ -182,7 +182,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (await buttonCheck({ i, interaction, reply })) return;
+    if (await buttonCheck({ i, interaction, reply })) return; // Btw, since this isn't a componentV2, it will crash trying to send an errorEmbed like "You are not the person who executer this command"
     collector.resetTimer({ time: 60000 });
 
     if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;

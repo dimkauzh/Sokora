@@ -13,8 +13,8 @@ import { safeChannel, safeMember } from "utils/safeThings";
 export const data = new SlashCommandSubcommandBuilder()
   .setName("remove")
   .setDescription("Removes a news post.")
-  .addStringOption(string =>
-    string
+  .addNumberOption(number =>
+    number
       .setName("id")
       .setDescription("The ID of the news. (found in the footer)")
       .setRequired(true),
@@ -29,7 +29,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Manage Server** permission.",
     });
 
-  const id = interaction.options.getString("id")!;
+  const id = interaction.options.getNumber("id")!;
   const news = await getNews(guild.id, id);
   if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
   const newsChannel = (await safeChannel(

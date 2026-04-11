@@ -1,4 +1,4 @@
-import { listAllNews } from "database/news";
+import { getLatestNews } from "database/news";
 import {
   EmbedBuilder,
   FileUploadBuilder,
@@ -86,10 +86,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
         author: i.user.displayName,
         authorPFP: i.user.avatarURL()!,
         imageURL: i.fields.getUploadedFiles("image")?.at(0)?.url ?? null,
-        id: ((await listAllNews(guild.id)).length + 1).toString(),
+        id: (await getLatestNews(guild.id))[0].id + 1,
       });
     } catch (error) {
-      await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
+      return await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
     }
 
     await i.reply({

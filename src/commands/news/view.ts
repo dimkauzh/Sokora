@@ -30,20 +30,19 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const news = await listAllNews(interaction.guild.id);
-  const sortedNews = Object.values(news).sort((a, b) => Number(b.createdAt) - Number(a.createdAt));
 
-  if (!news || !sortedNews || !sortedNews.length)
+  if (!news || !news.length)
     return await errorEmbed({
       interaction,
       title: "No news found.",
       reason: "Admins can add news with the **/news add** command.",
     });
 
-  if (page > sortedNews.length) page = sortedNews.length;
+  if (page > news.length) page = news.length;
   if (page < 1) page = 1;
 
   async function getEmbed() {
-    const currentNews = sortedNews[page - 1];
+    const currentNews = news[page - 1];
     const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
       .setAuthor({
@@ -55,7 +54,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setImage(currentNews.imageURL || null)
       .setTimestamp(currentNews.updatedAt || currentNews.createdAt)
       .setFooter({
-        text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
+        text: `${news.length > 1 ? `Page ${page} of ${news.length} • ` : ""}ID: ${currentNews.id}`,
       })
       .setColor(await colorize({ hue: Sokolors.Blue }));
   }
@@ -73,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const reply = await interaction.reply({
     embeds: [await getEmbed()],
-    components: sortedNews.length > 1 ? [row] : [],
+    components: news.length > 1 ? [row] : [],
   });
 
   if (page < 1) return;
@@ -85,12 +84,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     switch (i.customId) {
       case "left":
         page--;
-        if (page < 1) page = sortedNews.length;
+        if (page < 1) page = news.length;
         await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
       case "right":
         page++;
-        if (page > sortedNews.length) page = 1;
+        if (page > news.length) page = 1;
         await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
     }

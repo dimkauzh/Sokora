@@ -21,8 +21,8 @@ import { sendChannelNews } from "utils/sendChannelNews";
 export const data = new SlashCommandSubcommandBuilder()
   .setName("edit")
   .setDescription("Edits a news post.")
-  .addStringOption(string =>
-    string.setName("id").setDescription("The ID of the news you want to edit.").setRequired(true),
+  .addNumberOption(number =>
+    number.setName("id").setDescription("The ID of the news you want to edit.").setRequired(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -34,7 +34,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Manage Server** permission.",
     });
 
-  const id = interaction.options.getString("id")!;
+  const id = interaction.options.getNumber("id")!;
   const news = await getNews(guild.id, id);
   if (!news)
     return await errorEmbed({ interaction, title: "The specified news post doesn't exist." });

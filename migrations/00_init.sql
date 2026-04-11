@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS moderation (
   "type" TEXT,
   "moderator" TEXT,
   "reason" TEXT,
-  "id" TEXT,
+  "id" INTEGER,
   "timestamp" TIMESTAMP,
   "expiresAt" TIMESTAMP
 );
@@ -41,7 +41,7 @@ CREATE TABLE IF NOT EXISTS news (
   "updatedAt" TIMESTAMP,
   "messageID" TEXT,
   "imageURL" TEXT,
-  "id" TEXT
+  "id" INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS starboard (

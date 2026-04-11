@@ -1,5 +1,5 @@
 import { sql } from "bun";
-import { createHash, Hash } from "crypto";
+import { createHash } from "crypto";
 import fs from "fs";
 
 // Maybe import this file in bot.ts instead, then make this a class with static variables like for a db instance ? (one instance per shard)
@@ -8,7 +8,7 @@ import fs from "fs";
 // why is it in src and not database/index.ts btw...
 
 const migrationsDir = "./migrations";
-const hash = createHash("sha1");
+const preferredHashType = "sha1";
 
 /**
  * Retrieves the ACTUAL values from a query result because postgre adds unwanted data at the end
@@ -23,13 +23,13 @@ export function values(queryResult: Object, singles?: boolean): Array<any> { // 
     : actualValues;
 }
 
-async function getHash(file: string, hashAlgo?: Hash): Promise<string> {
-  if (hashAlgo == undefined) hashAlgo = createHash("sha256");
+async function getHash(file: string, hashAlgo?: string): Promise<string> {
+  const hash = createHash(hashAlgo || "sha256");
   return new Promise((resolve, reject) => {
     const stream = fs.createReadStream(file);
-    stream.on("data", data => hashAlgo.update(data));
+    stream.on("data", data => hash.update(data));
     stream.on("error", reject);
-    stream.on("end", () => resolve(hashAlgo.digest("hex")));
+    stream.on("end", () => resolve(hash.digest("hex")));
   });
 }
 
@@ -40,7 +40,7 @@ const migrationFiles = fs
   .map(f => `${migrationsDir}/${f}`);
 
 const migrations: { [hash: string]: string } = Object.fromEntries(
-  await Promise.all(migrationFiles.map(async file => [await getHash(file, hash), file])),
+  await Promise.all(migrationFiles.map(async file => [await getHash(file, preferredHashType), file])),
 );
 
 const hashList = Object.keys(migrations);

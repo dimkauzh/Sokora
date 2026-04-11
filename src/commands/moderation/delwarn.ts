@@ -28,7 +28,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const user = interaction.options.getUser("user")!;
   const guild = interaction.guild!;
   const name = user.username;
-  const id = interaction.options.getNumber("id");
+  const id = interaction.options.getNumber("id")!;
   const warns = await listUserModeration(guild.id, user.id, "WARN");
   const newWarns = warns.filter(warn => warn.id != `${id}`);
 
@@ -46,7 +46,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed({ interaction, title: `There is no warning with the id of ${id}.` });
 
   try {
-    await removeModeration(guild.id, `${id}`);
+    await removeModeration(guild.id, id);
   } catch (error) {
     return await errorEmbed({
       interaction,
