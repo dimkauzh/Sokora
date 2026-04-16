@@ -22,7 +22,10 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("edit")
   .setDescription("Edits a news post.")
   .addNumberOption(number =>
-    number.setName("id").setDescription("The ID of the news you want to edit.").setRequired(true),
+    number
+      .setName("id")
+      .setDescription("The ID of the news post that you want to edit.")
+      .setRequired(true),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -41,7 +44,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const editModal = new ModalBuilder()
     .setCustomId("editnews")
-    .setTitle(`•  Edit news: ${news.title}`)
+    .setTitle(`•  Edit news post: ${news.title}`)
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Title")
@@ -81,7 +84,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     const body = i.fields.getTextInputValue("body");
     const avatar = news.authorPFP;
     const editedEmbed = new EmbedBuilder()
-      .setTitle("News edited.")
+      .setTitle("News post edited.")
       .setColor(await colorize({ hue: Sokolors.Green }));
 
     if (!(await getSetting(guild.id, "news", "edit_original_message"))) {
@@ -108,7 +111,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setTitle(title)
       .setDescription(body)
       .setTimestamp(news.updatedAt || news.createdAt)
-      .setFooter({ text: `Edited news from ${guild.name} • ID: ${news.id}` })
+      .setFooter({ text: `Edited news post from ${guild.name} • ID: ${news.id}` })
       .setColor(await colorize({ hue: Sokolors.Blue }));
 
     const channel = (await safeChannel(

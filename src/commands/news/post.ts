@@ -16,8 +16,8 @@ import { safeMember } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
-  .setName("add")
-  .setDescription("Add a news post.");
+  .setName("post")
+  .setDescription("Post your news.");
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
@@ -29,8 +29,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const newsModal = new ModalBuilder()
-    .setCustomId("addnews")
-    .setTitle("•  Post your news.")
+    .setCustomId("postnews")
+    .setTitle("•  Write your news post.")
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Title")
@@ -47,13 +47,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId("body")
-            .setPlaceholder("Insert your content here")
+            .setPlaceholder("Write your news post here")
             .setMaxLength(4000)
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true),
         ),
       new LabelBuilder()
-        .setLabel("Optionally, upload a banner image")
+        .setLabel("Upload a banner image if you want")
         .setFileUploadComponent(
           new FileUploadBuilder().setCustomId("image").setMinValues(0).setRequired(false),
         ),
@@ -62,7 +62,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     await interaction.showModal(newsModal);
   } catch (error) {
-    await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
+    await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
   }
 
   interaction.client.once("interactionCreate", async i => {
@@ -89,13 +89,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         id: ((await getLatestNews(guild.id))[0]?.id ?? 0) + 1,
       });
     } catch (error) {
-      return await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
+      return await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
     }
 
     await i.reply({
       embeds: [
         new EmbedBuilder()
-          .setTitle("News added.")
+          .setTitle("News post created.")
           .setColor(await colorize({ hue: Sokolors.Green })),
       ],
       flags: "Ephemeral",

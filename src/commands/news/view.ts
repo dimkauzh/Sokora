@@ -17,7 +17,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("view")
   .setDescription("View the news of this server.")
   .addNumberOption(number =>
-    number.setName("page").setDescription("The page of the news that you want to see."),
+    number.setName("page").setDescription("The news post that you want to see."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -25,7 +25,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!interaction.guild)
     return await errorEmbed({
       interaction,
-      title: "Error viewing news.",
+      title: "Error viewing a news post.",
       reason: "This command can only be used in a server.",
     });
 
@@ -35,7 +35,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed({
       interaction,
       title: "No news found.",
-      reason: "Admins can add news with the **/news add** command.",
+      reason: "Admins can post news with the **/news post** command.",
     });
 
   if (page > news.length) page = news.length;
