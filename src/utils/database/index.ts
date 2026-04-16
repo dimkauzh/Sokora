@@ -16,7 +16,8 @@ const preferredHashType = "sha1";
  * @param singles If true when selecting only one column, returns an array of only the column values instead. Else, returns like normal
  * @returns An array containing the objects (or direct values if singles) of the query result
  */
-export function values(queryResult: Object, singles?: boolean): Array<any> { // Not a TS expert but maybe someone can change any to the type of the news object definition ?
+export function values(queryResult: object, singles?: boolean): Array<any> {
+  // Not a TS expert but maybe someone can change any to the type of the news object definition ?
   const actualValues = Object.values(queryResult).filter(v => v instanceof Object);
   return singles && actualValues.length && Object.values(actualValues[0]).length == 1
     ? actualValues.map(v => Object.values(v)[0])
@@ -40,7 +41,9 @@ const migrationFiles = fs
   .map(f => `${migrationsDir}/${f}`);
 
 const migrations: { [hash: string]: string } = Object.fromEntries(
-  await Promise.all(migrationFiles.map(async file => [await getHash(file, preferredHashType), file])),
+  await Promise.all(
+    migrationFiles.map(async file => [await getHash(file, preferredHashType), file]),
+  ),
 );
 
 const hashList = Object.keys(migrations);
@@ -48,7 +51,7 @@ const hashList = Object.keys(migrations);
 async function applyMigrations(after?: string) {
   const fileList = hashList.slice(after ? hashList.indexOf(after) + 1 : 0).map(h => migrations[h]);
   console.log(`Applying ${fileList.length} migrations...`);
-  for (let file of fileList)
+  for (const file of fileList)
     try {
       await sql.file(file);
     } catch (e) {

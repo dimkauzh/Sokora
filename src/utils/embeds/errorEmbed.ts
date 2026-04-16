@@ -115,6 +115,7 @@ export async function errorEmbed(options: {
     });
 }
 
+// [TODO] readd cv1 support
 export async function buttonCheck(options: {
   i: ButtonInteraction | AnySelectMenuInteraction;
   interaction: ChatInputCommandInteraction | ButtonInteraction | ModalSubmitInteraction;

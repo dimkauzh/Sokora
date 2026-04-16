@@ -20,7 +20,8 @@ export async function scheduleUnban(
   const timeout = setTimeout(
     async () => {
       try {
-        await removeModeration(guildID, userID);
+        const id = (await getPendingBans(Date.now())).find(ban => ban.userID == userID)?.id;
+        if (id) await removeModeration(guildID, id);
         scheduledUnbans.delete(key);
         const guild = await safeGuild(client, guildID);
         if (!guild) return;

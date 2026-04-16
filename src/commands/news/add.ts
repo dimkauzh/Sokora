@@ -86,7 +86,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         author: i.user.displayName,
         authorPFP: i.user.avatarURL()!,
         imageURL: i.fields.getUploadedFiles("image")?.at(0)?.url ?? null,
-        id: ((await getLatestNews(guild.id))[0]?.id || 0) + 1,
+        id: ((await getLatestNews(guild.id))[0]?.id ?? 0) + 1,
       });
     } catch (error) {
       return await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });

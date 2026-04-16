@@ -70,7 +70,7 @@ client.once("clientReady", async () => {
     loadEvents(client),
     loadEasterEggs(),
     registerGuildCommands(client),
-    rescheduleUnbans(client)
+    rescheduleUnbans(client),
   ]).then(() =>
     console.log(Math.random() < 0.002 ? "こんにちは! (konichi whats upppppppp)" : "ちーっす！"),
   );

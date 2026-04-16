@@ -225,7 +225,7 @@ export async function settingsEmbed(
         : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!;
 
     // [TODO] make this support objView (currently outputs an error)
-    let setting = await getSettingPlease(id, key, name, table);
+    const setting = await getSettingPlease(id, key, name, table);
     const maxValues = settingObject.iterable ? 25 : 1;
     text = `${dotCheck({ string: settingObject.emoji as string, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
     if (reset) return resetObj(text, false);
@@ -551,7 +551,6 @@ export async function settingsEmbed(
             settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
             valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
             hue = 0;
-            return;
           } else await setSettingPlease(id, key, cID, value, table);
 
           await safeReply({

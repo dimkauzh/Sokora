@@ -28,10 +28,12 @@ export async function addModeration(
   reason = "",
   expiresAt?: number | null,
 ) {
-  const id: number = (values(
-    await sql`SELECT id FROM moderation WHERE "guild" = ${guildID} ORDER BY "id" DESC LIMIT 1;`,
-  true)[0] || 0) +1;
-  
+  const id: number =
+    (values(
+      await sql`SELECT id FROM moderation WHERE "guild" = ${guildID} ORDER BY "id" DESC LIMIT 1;`,
+      true,
+    )[0] ?? 0) + 1;
+
   const insObject = {
     guild: guildID,
     userID,

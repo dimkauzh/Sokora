@@ -44,9 +44,9 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  return values(await sql`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
-    typeof def
-  >[];
+  return values(
+    await sql`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`,
+  ) as TypeOfDefinition<typeof def>[];
 }
 
 export async function getUserSetting<
@@ -68,10 +68,9 @@ export async function getUserSetting<
     return null;
   }
 
-  const res =
-    values(await sql`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`) as TypeOfDefinition<
-      typeof def
-    >[];
+  const res = values(
+    await sql`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`,
+  ) as TypeOfDefinition<typeof def>[];
 
   const set = settingsDefinition[key].settings[setting];
   if (!res.length) {

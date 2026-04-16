@@ -14,7 +14,7 @@ const def = {
     updatedAt: "mTIMESTAMP",
     messageID: "TEXT",
     imageURL: "mTEXT",
-    id: "INTEGER", // Why is id a TEXT ???
+    id: "INTEGER",
   },
 } satisfies TableDefinition;
 

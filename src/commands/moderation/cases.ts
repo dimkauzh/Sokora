@@ -145,14 +145,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guildID = guild.id;
   const user = interaction.options.getUser("user");
   const modType = interaction.options.getString("type") as ModType;
-  let actionID = interaction.options.getNumber("id");
+  const actionID = interaction.options.getNumber("id");
   // if (actionID && actionID?.startsWith("#")) actionID = actionID.slice(1);
-  if (actionID && !user)
-    return await errorEmbed({
-      interaction,
-      title: "No user specified!",
-      reason: `Sokora cannot look for "case ${actionID} of *no user*". Please, specify a user.`,
-    });
 
   let cases;
   if (user)
@@ -182,7 +176,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
-    if (await buttonCheck({ i, interaction, reply })) return; // Btw, since this isn't a componentV2, it will crash trying to send an errorEmbed like "You are not the person who executer this command"
+    if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 60000 });
 
     if (i.customId == "left") page = page > 1 ? page - 1 : totalPages;

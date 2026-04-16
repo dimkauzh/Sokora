@@ -32,10 +32,9 @@ export async function setUserXp(guildID: string | number, userID: string, xp: nu
 export async function getGuildLeaderboard(
   guildID: string,
 ): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
-  const xpData =
-    values(await sql`SELECT * FROM leveling WHERE "guild" = ${guildID};`) as TypeOfDefinition<
-      typeof def
-    >[];
+  const xpData = values(
+    await sql`SELECT * FROM leveling WHERE "guild" = ${guildID};`,
+  ) as TypeOfDefinition<typeof def>[];
 
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
   return xpData.map(x => {

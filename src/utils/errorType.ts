@@ -1,7 +1,7 @@
 export function errorType(value: unknown): Error {
   if (value instanceof Error) return value;
 
-  let stringified = "";
+  let stringified;
   try {
     stringified = JSON.stringify(value);
     return new Error(stringified);

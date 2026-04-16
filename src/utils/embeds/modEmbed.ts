@@ -168,7 +168,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
   if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
 
   if (previousID) {
-    const previousCase = await getModeration(guild.id, user!.id, `${previousID}`);
+    const previousCase = await getModeration(guild.id, user!.id, previousID);
     if (
       (!previousCase.length && previousCase[0].userID != user!.id) ||
       previousCase[0].type != dbAction
@@ -180,7 +180,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
       });
 
     try {
-      await editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
+      await editModeration(guild.id, previousID, reason ?? "", expiresAt ?? null);
     } catch (error) {
       return await errorEmbed({
         interaction,
