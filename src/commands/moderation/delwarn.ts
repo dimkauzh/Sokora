@@ -30,7 +30,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const name = user.username;
   const id = interaction.options.getNumber("id")!;
   const warns = await listUserModeration(guild.id, user.id, "WARN");
-  const newWarns = warns.filter(warn => warn.id != `${id}`);
+  const newWarns = warns.filter(warn => warn.id != id);
 
   if (
     await errorCheck("Moderate Members", {
