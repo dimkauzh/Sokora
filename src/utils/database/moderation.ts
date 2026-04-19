@@ -46,7 +46,7 @@ export async function createCase(
     timestamp: new Date(),
     expiresAt,
   };
-  await sql`INSERT INTO moderation ${sql(insObject)};`;
+  await sql`INSERT INTO moderation ${sql(insObject)};`; // Rare conflict possible if two mods add a case at the approx same moment ?
   return id;
 }
 

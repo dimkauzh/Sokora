@@ -1,3 +1,5 @@
+import { Interaction } from "discord.js";
+
 export type FieldData =
   | "TEXT"
   | "mTEXT"
@@ -48,12 +50,17 @@ export type TypeOfDefinition<T extends TableDefinition> = {
   [K in keyof T["definition"]]: SqlType<T["definition"][K]>;
 };
 
+// If it returns a string (error), then the precondition failed
+export type SettingPrecondition = (interaction: Interaction, newVal: any) => Promise<string | undefined>
+
+
 export type SingleSettingDefinition = {
   type: FieldData;
   desc: string;
   val?: any;
+  precondition?: SettingPrecondition,
   iterable?: boolean;
-  selectMenu?: boolean;
+  selectMenu?: boolean; // unused
   emoji?: string;
   settings?: Record<
     string,

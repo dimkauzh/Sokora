@@ -3,7 +3,8 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { Satisfies } from "utils/types";
 import { values } from ".";
-import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { SettingPrecondition, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { safeMember } from "utils/safeThings";
 
 type Def = Satisfies<
   TableDefinition,
@@ -17,6 +18,12 @@ type Def = Satisfies<
   }
 >;
 
+const topggPrecondition: SettingPrecondition = async (i, id) => { // pass the user id through the "newVal"
+  const dmChannel = await (await safeMember(i.guild!, id)).createDM();
+  if (!dmChannel || !dmChannel.isSendable())
+    return `-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
+}
+
 export const settingsDefinition: SettingsDefinition = {
   topgg: {
     description: "Change settings about Top.gg.",
@@ -25,6 +32,7 @@ export const settingsDefinition: SettingsDefinition = {
         type: "BOOL",
         desc: "Whether or not should the bot remind you when you can vote in Top.gg. **This setting will DM you.**",
         val: false,
+        precondition: topggPrecondition,
         emoji: "⏰",
       },
     },
@@ -100,6 +108,8 @@ export async function setUserSetting<
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(userID: string, key: K, setting: S, value: any) {
   const keySetting = `${key}.${setting}`;
-  await sql`DELETE FROM user_settings WHERE "userID" = ${userID} AND "key" = ${keySetting};`;
-  await sql`INSERT INTO user_settings ("userID", "key", "value") VALUES (${userID}, ${keySetting}, ${value});`;
+  await sql.begin(async tx => {
+    await tx`DELETE FROM user_settings WHERE "userID" = ${userID} AND "key" = ${keySetting};`;
+    await tx`INSERT INTO user_settings ("userID", "key", "value") VALUES (${userID}, ${keySetting}, ${value});`;
+  });
 }

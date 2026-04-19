@@ -33,6 +33,7 @@ const sendQuery = async (
   messageID: string,
   imageURL: string | null | undefined,
   id: number,
+  sql_: Bun.SQL = sql,
 ) => {
   const insObject = {
     guildID,
@@ -46,7 +47,7 @@ const sendQuery = async (
     imageURL,
     id,
   };
-  await sql`INSERT INTO news ${sql(insObject)};`;
+  await sql_`INSERT INTO news ${sql(insObject)};`;
 };
 
 export const listAllNews = async (guildID: string): Promise<TypeOfDefinition<Def>[]> =>
@@ -55,8 +56,8 @@ export const listAllNews = async (guildID: string): Promise<TypeOfDefinition<Def
 export const getLatestNews = async (guildID: string): Promise<TypeOfDefinition<Def>[]> =>
   values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC LIMIT 1;`);
 
-const deleteQuery = async (guildID: string, id: number) =>
-  await sql`DELETE FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`;
+const deleteQuery = async (guildID: string, id: number, sql_: Bun.SQL = sql) =>
+  await sql_`DELETE FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`;
 
 export async function postNews(
   guildID: string,
@@ -97,19 +98,22 @@ export async function updateNews(
   imageURL?: string | null | undefined,
 ) {
   const lastElem = (await getNews(guildID, id))!;
-  await deleteQuery(guildID, id);
-  await sendQuery(
-    lastElem.guildID,
-    title ?? lastElem.title,
-    body ?? lastElem.body,
-    lastElem.author,
-    lastElem.authorPFP,
-    lastElem.createdAt,
-    new Date(),
-    messageID ?? lastElem.messageID,
-    imageURL ?? lastElem.imageURL,
-    id,
-  );
+  await sql.begin(async tx => {
+    await deleteQuery(guildID, id, tx);
+    await sendQuery(
+      lastElem.guildID,
+      title ?? lastElem.title,
+      body ?? lastElem.body,
+      lastElem.author,
+      lastElem.authorPFP,
+      lastElem.createdAt,
+      new Date(),
+      messageID ?? lastElem.messageID,
+      imageURL ?? lastElem.imageURL,
+      id,
+      tx,
+    );
+  })
 }
 
 export async function deleteNews(guildID: string, id: number) {

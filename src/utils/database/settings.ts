@@ -4,7 +4,9 @@ import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
 import { Satisfies } from "utils/types";
 import { values } from ".";
-import { FieldData, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { FieldData, SettingPrecondition, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { safeMember } from "utils/safeThings";
+import { PermissionFlagsBits } from "discord.js";
 
 type Def = Satisfies<
   TableDefinition,
@@ -17,6 +19,13 @@ type Def = Satisfies<
     };
   }
 >;
+
+const invitePrecondition: SettingPrecondition = async (i, v) => { // v can either be bool or channel (string) here
+  if (v && !(await safeMember(i.guild!, i.client.user.id))
+    .permissions.has(PermissionFlagsBits.CreateInstantInvite | PermissionFlagsBits.ManageGuild)
+  )
+    return `-# The **Create Invite** and the **Manage Server** permissions are required for this setting to work.`;
+}
 
 // for the [TODO]s below, remove the SettingsDefinition type and
 // enjoy 26 type errors! :D
@@ -162,11 +171,13 @@ export const settingsDefinition: SettingsDefinition = {
         type: "BOOL",
         desc: "Whether to show a server invite link on the serverboard page.",
         val: false,
+        precondition: invitePrecondition,
         emoji: "🔗",
       },
       invite_channel: {
         type: "CHANNEL",
         desc: "Channel for the invite. If not set, uses the first channel in the channel list.",
+        precondition: invitePrecondition,
         emoji: "📨",
       },
     },
@@ -243,8 +254,8 @@ export const settingsDefinition: SettingsDefinition = {
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 
-const deleteQuery = async (guildID: string, key: string) =>
-  await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = ${key};`;
+const deleteQuery = async (guildID: string, key: string, sql_: Bun.SQL = sql) =>
+  await sql_`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = ${key};`;
 
 // [TODO] autocomplete support for get/setSetting
 // [TODO] proper type validation for get/setSetting
@@ -310,7 +321,7 @@ export async function getSettingCategory<K extends keyof typeof settingsDefiniti
 ) {
   const array = [];
   for (const setting of Object.keys(settingsDefinition[key].settings))
-    array.push(await getSetting(guildID, key, setting));
+    array.push(await getSetting(guildID, key, setting)); // We should be doing one query on the category instead and then check results against defaults
 
   return array;
 }
@@ -321,8 +332,11 @@ export async function setSetting<
 >(guildID: string, key: K, setting: S, value: any) {
   const set = Array.isArray(value) ? dekominator(value) : value;
   const keySetting = `${key}.${setting}`;
-  await deleteQuery(guildID, keySetting);
-  await sql`INSERT INTO settings ("guildID", "key", "value") VALUES (${guildID}, ${keySetting}, ${set});`;
+  await sql.begin(async tx => {
+    // Two queries for one thing ? We could shorten it if we ever go with one DB ("on duplicate, update" kind of thing)
+    await deleteQuery(guildID, keySetting, tx);
+    await tx`INSERT INTO settings ("guildID", "key", "value") VALUES (${guildID}, ${keySetting}, ${set});`;
+  }); // Autocommits if nothing goes wrong
 }
 
 export async function resetSetting<
@@ -336,7 +350,7 @@ export async function resetSettingCategory<K extends keyof typeof settingsDefini
   guildID: string,
   key: K,
 ) {
-  await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" LIKE ${`%${key}%`};`;
+  await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" LIKE ${`${key}%`};`;
 }
 
 export async function listPublicServers(): Promise<

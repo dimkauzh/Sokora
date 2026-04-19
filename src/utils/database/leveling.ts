@@ -27,10 +27,10 @@ export async function getUserXp(guildID: string, userID: string): Promise<number
 }
 
 export async function setUserXp(guildID: string | number, userID: string, xp: number) {
-  if ((await getQuery(guildID, userID)).length)
-    await sql`DELETE FROM leveling WHERE "guild" = ${guildID} AND "userID" = ${userID};`;
-
-  await sql`INSERT INTO leveling ("guild", "userID", "xp") VALUES (${guildID}, ${userID}, ${xp});`;
+  await sql.begin(async tx => {
+    await tx`DELETE FROM leveling WHERE "guild" = ${guildID} AND "userID" = ${userID};`;
+    await tx`INSERT INTO leveling ("guild", "userID", "xp") VALUES (${guildID}, ${userID}, ${xp});`;
+  });
 }
 
 export async function getGuildLeaderboard(

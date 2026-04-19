@@ -49,9 +49,6 @@ export async function setStarred(
   content: string,
   timestamp: Date,
 ) {
-  if ((await getQuery(guildID, messageID)).length)
-    await sql`DELETE FROM starboard WHERE "guild" = ${guildID} AND "message" = ${messageID};`;
-
   const insObject = {
     guild: guildID,
     message: messageID,
@@ -62,5 +59,8 @@ export async function setStarred(
     content,
     timestamp,
   };
-  await sql`INSERT INTO starboard ${sql(insObject)};`;
+  await sql.begin(async tx => {
+    await tx`DELETE FROM starboard WHERE "guild" = ${guildID} AND "message" = ${messageID};`;
+    await tx`INSERT INTO starboard ${sql(insObject)};`;
+  });
 }
