@@ -20,13 +20,13 @@ export type ModerationCase = typeof def;
 
 export type ModType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
 
-export async function addModeration(
+export async function createCase(
   guildID: string | number,
   userID: string,
   modType: ModType,
   moderator: string,
   reason = "",
-  expiresAt?: number | null,
+  expiresAt?: Date | null,
 ) {
   const id: number =
     (values(
@@ -42,13 +42,13 @@ export async function addModeration(
     reason,
     id,
     timestamp: new Date(),
-    expiresAt: expiresAt ?? null,
+    expiresAt,
   };
   await sql`INSERT INTO moderation ${sql(insObject)};`;
   return id;
 }
 
-export async function listGuildModeration(guildID: number | string, modType?: ModType) {
+export async function listGuildCases(guildID: number | string, modType?: ModType) {
   const typeFilter = sql`AND "type" = ${modType}`;
   return values(
     await sql`
@@ -59,7 +59,7 @@ export async function listGuildModeration(guildID: number | string, modType?: Mo
   ) as TypeOfDefinition<typeof def>[];
 }
 
-export async function listUserModeration(
+export async function listUserCases(
   guildID: number | string,
   userID: number | string,
   modType?: ModType,
@@ -75,16 +75,16 @@ export async function listUserModeration(
   ) as TypeOfDefinition<typeof def>[];
 }
 
-export async function getModeration(guildID: number | string, userID: number | string, id: number) {
+export async function getCase(guildID: number | string, id?: number) {
   const modCase = values(
     await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "id" = ${id};`,
   ) as TypeOfDefinition<typeof def>[];
 
-  if (modCase.length && modCase[0].userID == userID) return modCase;
+  if (modCase.length) return modCase;
   return [];
 }
 
-export async function editModeration(
+export async function editCase(
   guildID: number | string,
   id: number,
   reason: string,
@@ -93,7 +93,7 @@ export async function editModeration(
   await sql`UPDATE moderation SET reason = ${reason}, expiresAt = ${expiresAt} WHERE "guild" = ${guildID} AND "id" = ${id};`;
 }
 
-export async function removeModeration(guildID: string | number, id: number) {
+export async function removeCase(guildID: string | number, id: number) {
   await sql`DELETE FROM moderation WHERE "guild" = ${guildID} AND id = ${id};`;
 }
 

@@ -1,4 +1,4 @@
-import { listUserModeration, removeModeration } from "database/moderation";
+import { listUserCases, removeCase } from "database/moderation";
 import { getSetting } from "database/settings";
 import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -29,7 +29,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
   const name = user.username;
   const id = interaction.options.getNumber("id")!;
-  const warns = await listUserModeration(guild.id, user.id, "WARN");
+  const warns = await listUserCases(guild.id, user.id, "WARN");
   const newWarns = warns.filter(warn => warn.id != id);
 
   if (
@@ -46,7 +46,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     return await errorEmbed({ interaction, title: `There is no warning with the id of ${id}.` });
 
   try {
-    await removeModeration(guild.id, id);
+    await removeCase(guild.id, id);
   } catch (error) {
     return await errorEmbed({
       interaction,

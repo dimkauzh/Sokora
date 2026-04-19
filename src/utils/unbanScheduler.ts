@@ -1,4 +1,4 @@
-import { getPendingBans, removeModeration } from "database/moderation";
+import { getPendingBans, removeCase } from "database/moderation";
 import { Client, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "./colorize";
@@ -21,7 +21,7 @@ export async function scheduleUnban(
     async () => {
       try {
         const id = (await getPendingBans(Date.now())).find(ban => ban.userID == userID)?.id;
-        if (id) await removeModeration(guildID, id);
+        if (id) await removeCase(guildID, id);
         scheduledUnbans.delete(key);
         const guild = await safeGuild(client, guildID);
         if (!guild) return;
@@ -100,6 +100,6 @@ export async function rescheduleUnbans(client: Client) {
 
     const delay = ban.expiresAt - now;
     if (delay > 0) await scheduleUnban(client, ban.guild, ban.userID, ban.moderator, delay);
-    else await removeModeration(ban.guild, ban.id);
+    else await removeCase(ban.guild, ban.id);
   }
 }

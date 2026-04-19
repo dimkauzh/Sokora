@@ -54,7 +54,7 @@ export const getLatestNews = async (guildID: string): Promise<TypeOfDefinition<t
 const deleteQuery = async (guildID: string, id: number) =>
   await sql`DELETE FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`;
 
-export async function addNews(
+export async function postNews(
   guildID: string,
   title: string,
   body: string,
