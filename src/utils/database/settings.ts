@@ -160,7 +160,7 @@ export const settingsDefinition: SettingsDefinition = {
       },
       server_invite: {
         type: "BOOL",
-        desc: "Whether to show server invite on the serverboard.",
+        desc: "Whether to show a server invite link on the serverboard page.",
         val: false,
         emoji: "🔗",
       },
@@ -315,6 +315,8 @@ export async function getSettingCategory<K extends keyof typeof settingsDefiniti
   return array;
 }
 
+// [TODO] this errors for some time
+// duplicate key value violates unique constraint "settings_pk"
 export async function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],

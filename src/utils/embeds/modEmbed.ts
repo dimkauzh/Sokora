@@ -21,7 +21,7 @@ type Options = {
   duration?: number | null;
   dm?: boolean;
   dbAction?: ModType;
-  expiresAt?: number;
+  expiresAt?: Date;
   previousID?: number;
   customText?: {
     logTitle: string;

@@ -90,7 +90,7 @@ export async function editCase(
   guildID: number | string,
   id: number,
   reason: string,
-  expiresAt?: number | null,
+  expiresAt?: Date | null,
 ) {
   await sql`UPDATE moderation SET reason = ${reason}, expiresAt = ${expiresAt} WHERE "guild" = ${guildID} AND "id" = ${id};`;
 }

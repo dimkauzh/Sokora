@@ -103,7 +103,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         duration: duration ? ms(duration) : undefined,
         dm: userOrMember,
         dbAction: "BAN",
-        expiresAt: duration ? ms(duration) : undefined,
+        expiresAt: duration ? new Date(ms(duration)) : undefined,
         silent,
       },
       reason,

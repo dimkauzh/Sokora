@@ -19,7 +19,7 @@ export async function colorize(options: {
 
   function genColor(): (ColorResolvable | null) & (RGBTuple | undefined) {
     return Bun.color(
-      `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
+      `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 5 * Math.random()})`,
       "[rgb]",
     ) as RGBTuple;
   }

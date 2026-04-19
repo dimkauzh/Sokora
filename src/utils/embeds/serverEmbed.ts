@@ -106,13 +106,13 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
     [`## ${guild.name}`, generalValues, safetyValues.join(" • ")].join("\n"),
   );
 
-  icon
-    ? container.addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(start)
-          .setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)),
-      )
-    : container.addTextDisplayComponents(start);
+  if (icon)
+    container.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(start)
+        .setThumbnailAccessory(new ThumbnailBuilder().setURL(icon)),
+    );
+  else container.addTextDisplayComponents(start);
 
   container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
 
@@ -134,7 +134,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
         .setFields({
           name: "⁉️ • What happened",
           value: [
-            "Sokora does not have the **Create Invite** and/or **Manage Server** permissions to create an invitation, but `serverboard.server_invite` is enabled.",
+            "Sokora does not have the **Create Invite** and **Manage Server** permissions to create an invitation, but `serverboard.server_invite` is enabled.",
             `Please give Sokora the permission${channel ? ` for ${channel.name}` : ""} and enable the settings again in **/settings serverboard**.`,
           ].join("\n"),
         })

@@ -80,12 +80,12 @@ export default (async function run(reaction, user) {
     .setDescription(message.content)
     .setTimestamp(message.createdAt)
     .setFooter({ text: `Message ID: ${message.id}` })
-    .setColor(await colorize({ hue: Sokolors.Green }));
+    .setColor(await colorize({ hue: Sokolors.Yellow }));
 
   const ref = message.reference ? await message.fetchReference() : null;
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
-      .setLabel(`•  Jump to ${ref ? "starred " : ""}message`)
+      .setLabel(`•  Jump to ${ref ? "starred " : ""}`)
       .setURL(message.url)
       .setEmoji("🔗")
       .setStyle(ButtonStyle.Link),
@@ -95,7 +95,7 @@ export default (async function run(reaction, user) {
   if (ref) {
     row.addComponents(
       new ButtonBuilder()
-        .setLabel("•  Jump to replied message")
+        .setLabel("•  Jump to replied")
         .setURL(ref.url)
         .setEmoji("🔗")
         .setStyle(ButtonStyle.Link),
@@ -110,7 +110,7 @@ export default (async function run(reaction, user) {
         .setDescription(ref.content)
         .setTimestamp(ref.createdAt)
         .setFooter({ text: `Message ID: ${ref.id}` })
-        .setColor(await colorize({ hue: Sokolors.Green })),
+        .setColor(await colorize({ hue: Sokolors.Blue })),
     );
   }
 
