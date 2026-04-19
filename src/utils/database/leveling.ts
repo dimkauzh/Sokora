@@ -1,23 +1,27 @@
 import { sql } from "bun";
+import { Satisfies } from "utils/types";
 import { values } from ".";
 import { dekominator } from "../kominator";
 import { getSetting, setSetting } from "./settings";
 import { LevelReward, TableDefinition, TypeOfDefinition } from "./types";
 
-const def = {
-  name: "leveling",
-  definition: {
-    guild: "TEXT",
-    userID: "TEXT",
-    xp: "INTEGER",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "leveling";
+    definition: {
+      guild: "TEXT";
+      userID: "TEXT";
+      xp: "INTEGER";
+    };
+  }
+>;
 
 const getQuery = async (guild: string | number, userID: string) =>
   values(await sql`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`);
 
 export async function getUserXp(guildID: string, userID: string): Promise<number> {
-  const res = (await getQuery(guildID, userID)) as TypeOfDefinition<typeof def>[];
+  const res = (await getQuery(guildID, userID)) as TypeOfDefinition<Def>[];
   if (!res.length) return 0;
   return res[0].xp;
 }
@@ -34,7 +38,7 @@ export async function getGuildLeaderboard(
 ): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
   const xpData = values(
     await sql`SELECT * FROM leveling WHERE "guild" = ${guildID};`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Def>[];
 
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
   return xpData.map(x => {

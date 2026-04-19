@@ -2,7 +2,7 @@ import {
   getCase,
   listGuildCases,
   listUserCases,
-  type ModerationCase,
+  type Case,
   type ModType,
 } from "database/moderation";
 import { TypeOfDefinition } from "database/types";
@@ -29,7 +29,7 @@ import { replace } from "utils/replace";
 import { safeGuild, safeMember } from "utils/safeThings";
 
 async function generateEmbed(options: {
-  cases: TypeOfDefinition<ModerationCase>[];
+  cases: TypeOfDefinition<Case>[];
   page: number;
   type: ModType | null;
   guildID: string;

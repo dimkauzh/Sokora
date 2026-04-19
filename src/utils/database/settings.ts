@@ -2,17 +2,21 @@ import { sql } from "bun";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
+import { Satisfies } from "utils/types";
 import { values } from ".";
 import { FieldData, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
-const def = {
-  name: "settings",
-  definition: {
-    guildID: "TEXT",
-    key: "TEXT",
-    value: "TEXT",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "settings";
+    definition: {
+      guildID: "TEXT";
+      key: "TEXT";
+      value: "TEXT";
+    };
+  }
+>;
 
 // for the [TODO]s below, remove the SettingsDefinition type and
 // enjoy 26 type errors! :D
@@ -270,7 +274,7 @@ export async function getSetting<
 
   const res = values(
     await sql`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Def>[];
 
   const set = settingsDefinition[key].settings[setting];
   if (!res.length) {
@@ -346,7 +350,7 @@ export async function listPublicServers(): Promise<
     (
       values(
         await sql`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`,
-      ) as TypeOfDefinition<typeof def>[]
+      ) as TypeOfDefinition<Def>[]
     ).map(entry => entry.guildID),
   );
 
@@ -354,7 +358,7 @@ export async function listPublicServers(): Promise<
     (
       values(
         await sql`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`,
-      ) as TypeOfDefinition<typeof def>[]
+      ) as TypeOfDefinition<Def>[]
     ).map(entry => entry.guildID),
   );
 

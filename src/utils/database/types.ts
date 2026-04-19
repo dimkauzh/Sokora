@@ -57,7 +57,9 @@ export type SingleSettingDefinition = {
   emoji?: string;
   settings?: Record<
     string,
-    SingleSettingDefinition & { settings?: Record<string, SingleSettingDefinition> }
+    SingleSettingDefinition & {
+      settings?: Record<string, Omit<SingleSettingDefinition, "settings">>;
+    }
   >;
 };
 

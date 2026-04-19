@@ -1,17 +1,21 @@
 import { sql } from "bun";
-import { values } from ".";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
+import { Satisfies } from "utils/types";
+import { values } from ".";
 import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
 
-const def = {
-  name: "user_settings",
-  definition: {
-    userID: "TEXT",
-    key: "TEXT",
-    value: "TEXT",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "user_settings";
+    definition: {
+      userID: "TEXT";
+      key: "TEXT";
+      value: "TEXT";
+    };
+  }
+>;
 
 export const settingsDefinition: SettingsDefinition = {
   topgg: {
@@ -26,13 +30,15 @@ export const settingsDefinition: SettingsDefinition = {
     },
   },
 };
+// } as const satisfies SettingsDefinition;
+// could be an entry point to fixing the 27 type errors related to autocomplete
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
->(key: K, setting: S): Promise<TypeOfDefinition<typeof def>[] | null> {
+>(key: K, setting: S): Promise<TypeOfDefinition<Def>[] | null> {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
@@ -46,7 +52,7 @@ export async function getUserSettingsTable<
 
   return values(
     await sql`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Def>[];
 }
 
 export async function getUserSetting<
@@ -70,7 +76,7 @@ export async function getUserSetting<
 
   const res = values(
     await sql`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Def>[];
 
   const set = settingsDefinition[key].settings[setting];
   if (!res.length) {

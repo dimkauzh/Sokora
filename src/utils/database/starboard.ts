@@ -1,20 +1,24 @@
 import { sql } from "bun";
+import { Satisfies } from "utils/types";
 import { values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
-const def = {
-  name: "starboard",
-  definition: {
-    guild: "TEXT",
-    message: "TEXT",
-    channel: "TEXT",
-    author: "TEXT",
-    star_message: "TEXT",
-    stars: "INTEGER",
-    content: "TEXT",
-    timestamp: "TIMESTAMP",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "starboard";
+    definition: {
+      guild: "TEXT";
+      message: "TEXT";
+      channel: "TEXT";
+      author: "TEXT";
+      star_message: "TEXT";
+      stars: "INTEGER";
+      content: "TEXT";
+      timestamp: "TIMESTAMP";
+    };
+  }
+>;
 
 const getQuery = async (guild: string, message: string) =>
   values(await sql`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`);
@@ -23,7 +27,7 @@ export async function getStarred(
   guildID: string,
   messageID: string,
 ): Promise<[string, string, string, number, string, Date] | null> {
-  const res = (await getQuery(guildID, messageID)) as TypeOfDefinition<typeof def>[];
+  const res = (await getQuery(guildID, messageID)) as TypeOfDefinition<Def>[];
   if (!res.length) return null;
   return [
     res[0].channel as string,

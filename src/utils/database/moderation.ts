@@ -1,22 +1,24 @@
 import { sql } from "bun";
+import { Satisfies } from "utils/types";
 import { values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
-const def = {
-  name: "moderation",
-  definition: {
-    guild: "TEXT",
-    userID: "TEXT",
-    type: "TEXT",
-    moderator: "TEXT",
-    reason: "TEXT",
-    id: "INTEGER",
-    timestamp: "TIMESTAMP",
-    expiresAt: "TIMESTAMP",
-  },
-} satisfies TableDefinition;
-
-export type ModerationCase = typeof def;
+export type Case = Satisfies<
+  TableDefinition,
+  {
+    name: "moderation";
+    definition: {
+      guild: "TEXT";
+      userID: "TEXT";
+      type: "TEXT";
+      moderator: "TEXT";
+      reason: "TEXT";
+      id: "INTEGER";
+      timestamp: "TIMESTAMP";
+      expiresAt: "TIMESTAMP";
+    };
+  }
+>;
 
 export type ModType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
 
@@ -56,7 +58,7 @@ export async function listGuildCases(guildID: number | string, modType?: ModType
       WHERE "guild" = ${guildID}
       ${modType ? typeFilter : sql``}
       ORDER BY "id" DESC;`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Case>[];
 }
 
 export async function listUserCases(
@@ -72,13 +74,13 @@ export async function listUserCases(
       AND "userID" = ${userID}
       ${modType ? typeFilter : sql``}
       ORDER BY "id" DESC;`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Case>[];
 }
 
 export async function getCase(guildID: number | string, id?: number) {
   const modCase = values(
     await sql`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "id" = ${id};`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Case>[];
 
   if (modCase.length) return modCase;
   return [];
@@ -100,5 +102,5 @@ export async function removeCase(guildID: string | number, id: number) {
 export async function getPendingBans(currentTime: number) {
   return values(
     await sql`SELECT * FROM moderation WHERE "type" = 'BAN' AND "expiresAt" IS NOT NULL AND "expiresAt" > ${new Date(currentTime)};`,
-  ) as TypeOfDefinition<typeof def>[];
+  ) as TypeOfDefinition<Case>[];
 }

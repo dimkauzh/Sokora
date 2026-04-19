@@ -13,3 +13,5 @@ export type ReplaceableStrings =
   | "(currentdate, detailed)";
 
 export type Replacements = { text: ReplaceableStrings; replacement: string | number }[];
+
+export type Satisfies<K, T extends K> = T;

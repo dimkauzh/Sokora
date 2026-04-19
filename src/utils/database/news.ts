@@ -1,22 +1,26 @@
 import { sql } from "bun";
+import { Satisfies } from "utils/types";
 import { values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
-const def = {
-  name: "news",
-  definition: {
-    guildID: "TEXT",
-    title: "TEXT",
-    body: "TEXT",
-    author: "TEXT",
-    authorPFP: "TEXT",
-    createdAt: "TIMESTAMP",
-    updatedAt: "mTIMESTAMP",
-    messageID: "TEXT",
-    imageURL: "mTEXT",
-    id: "INTEGER",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "news";
+    definition: {
+      guildID: "TEXT";
+      title: "TEXT";
+      body: "TEXT";
+      author: "TEXT";
+      authorPFP: "TEXT";
+      createdAt: "TIMESTAMP";
+      updatedAt: "mTIMESTAMP";
+      messageID: "TEXT";
+      imageURL: "mTEXT";
+      id: "INTEGER";
+    };
+  }
+>;
 
 const sendQuery = async (
   guildID: string,
@@ -45,10 +49,10 @@ const sendQuery = async (
   await sql`INSERT INTO news ${sql(insObject)};`;
 };
 
-export const listAllNews = async (guildID: string): Promise<TypeOfDefinition<typeof def>[]> =>
+export const listAllNews = async (guildID: string): Promise<TypeOfDefinition<Def>[]> =>
   values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC;`);
 
-export const getLatestNews = async (guildID: string): Promise<TypeOfDefinition<typeof def>[]> =>
+export const getLatestNews = async (guildID: string): Promise<TypeOfDefinition<Def>[]> =>
   values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC LIMIT 1;`);
 
 const deleteQuery = async (guildID: string, id: number) =>
@@ -81,7 +85,7 @@ export async function postNews(
 export async function getNews(guildID: string, id: number) {
   return values(
     await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`,
-  )[0] as TypeOfDefinition<typeof def> | null;
+  )[0] as TypeOfDefinition<Def> | null;
 }
 
 export async function updateNews(
