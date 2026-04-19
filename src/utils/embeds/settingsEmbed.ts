@@ -521,7 +521,7 @@ export async function settingsEmbed(
           );
 
         await i.showModal(modal);
-        i.client.on("interactionCreate", async modalInteraction => {
+        i.client.once("interactionCreate", async modalInteraction => {
           if (!modalInteraction.isModalSubmit()) return;
           async function constructModalContainer(
             settingText: string,
@@ -547,16 +547,14 @@ export async function settingsEmbed(
             hue = 0;
           } else await setSettingPlease(id, key, cID, value, table);
 
-          await Promise.all([
-            end(reset, confirm, objView, itrObjView),
-            safeReply({
-              interaction: modalInteraction,
-              replyOptions: {
-                components: [await constructModalContainer(settingText, valueText, hue)],
-                flags: ["Ephemeral", "IsComponentsV2"],
-              },
-            }),
-          ]);
+          await end(reset, confirm, objView, itrObjView);
+          await safeReply({
+            interaction: modalInteraction,
+            replyOptions: {
+              components: [await constructModalContainer(settingText, valueText, hue)],
+              flags: ["Ephemeral", "IsComponentsV2"],
+            },
+          });
         });
         break;
       }

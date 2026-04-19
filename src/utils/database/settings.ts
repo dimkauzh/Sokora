@@ -315,8 +315,6 @@ export async function getSettingCategory<K extends keyof typeof settingsDefiniti
   return array;
 }
 
-// [TODO] this errors for some time
-// duplicate key value violates unique constraint "settings_pk"
 export async function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
