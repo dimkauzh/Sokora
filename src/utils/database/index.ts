@@ -59,13 +59,13 @@ async function applyMigrations(after?: string) {
       process.exit(1);
     }
 
-  await sql`UPDATE _info SET value = ${hashList[hashList.length - 1]} WHERE key = 'version';`;
+  await sql`UPDATE _info SET value = ${hashList[hashList.length - 1]} WHERE "key" = 'version';`;
   console.log("Database updated successfully");
 }
 
 export async function updateDatabase() {
   try {
-    const DBversion = values(await sql`SELECT value FROM _info WHERE key = 'version';`, true)[0];
+    const DBversion = values(await sql`SELECT value FROM _info WHERE "key" = 'version';`, true)[0];
     if (!DBversion) throw new Error(); // Goes into initializing the DB
     if (DBversion == hashList[hashList.length - 1]) return console.log("Database up-to-date");
     console.log("Updating database...");

@@ -375,20 +375,14 @@ export async function settingsEmbed(
             .setDisabled(true),
         ];
 
-    // [TODO] figure out what the hell is happening with this...
-    // context: changing text/integer setting doesn't make the reset button appear
     const actual = (await getSettingCategory(id, key)).map(setting => setting ?? null);
     const defaults = Object.values(settingsObj).map(setting => setting.val ?? null);
     const nullCheck = itrObjView
       ? !(await getLevelRewards(id))?.every(value => value == null)
       : !actual.every(value => {
-          // console.log(`a ${value}`);
-          // console.log(`b ${defaults[actual.indexOf(value)]}`);
-          // console.log(value == defaults[actual.indexOf(value)]);
           return value == defaults[actual.indexOf(value)];
         });
 
-    // console.log("end of transmission");
     if (nullCheck)
       buttonArray.unshift(
         new ButtonBuilder()
@@ -527,7 +521,7 @@ export async function settingsEmbed(
           );
 
         await i.showModal(modal);
-        i.client.once("interactionCreate", async modalInteraction => {
+        i.client.on("interactionCreate", async modalInteraction => {
           if (!modalInteraction.isModalSubmit()) return;
           async function constructModalContainer(
             settingText: string,
@@ -553,13 +547,16 @@ export async function settingsEmbed(
             hue = 0;
           } else await setSettingPlease(id, key, cID, value, table);
 
-          await safeReply({
-            interaction: modalInteraction,
-            replyOptions: {
-              components: [await constructModalContainer(settingText, valueText, hue)],
-              flags: ["Ephemeral", "IsComponentsV2"],
-            },
-          });
+          await Promise.all([
+            end(reset, confirm, objView, itrObjView),
+            safeReply({
+              interaction: modalInteraction,
+              replyOptions: {
+                components: [await constructModalContainer(settingText, valueText, hue)],
+                flags: ["Ephemeral", "IsComponentsV2"],
+              },
+            }),
+          ]);
         });
         break;
       }
@@ -568,7 +565,8 @@ export async function settingsEmbed(
           await setSettingPlease(id, key, cID, (i as AnySelectMenuInteraction).values, table);
     }
 
-    await end(reset, confirm, objView, itrObjView);
+    if (componentType != "text" && componentType != "integer")
+      await end(reset, confirm, objView, itrObjView);
   });
 
   collector.on("end", async () => {

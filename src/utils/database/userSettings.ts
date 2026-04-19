@@ -87,7 +87,7 @@ export async function getUserSetting<
   const value = res[0].value;
   switch (set.type) {
     case "BOOL":
-      return (value == "1" ? true : false) as SqlType<typeof set.type>;
+      return (value == "true") as SqlType<typeof set.type>;
     case "INTEGER":
       return parseInt(value) as SqlType<typeof set.type>;
     default:
@@ -99,10 +99,7 @@ export async function setUserSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(userID: string, key: K, setting: S, value: any) {
-  const doInsert = (await getUserSetting(userID, key, setting)) == null;
-  const id = JSON.stringify(userID);
   const keySetting = `${key}.${setting}`;
-
-  if (!doInsert) await sql`DELETE FROM user_settings WHERE userID = ${id} AND key = ${keySetting};`;
-  await sql`INSERT INTO user_settings ("userID", "key", "value") VALUES (${id}, ${keySetting}, ${value});`;
+  await sql`DELETE FROM user_settings WHERE "userID" = ${userID} AND "key" = ${keySetting};`;
+  await sql`INSERT INTO user_settings ("userID", "key", "value") VALUES (${userID}, ${keySetting}, ${value});`;
 }
