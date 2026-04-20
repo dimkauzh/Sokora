@@ -14,6 +14,7 @@ import {
   TableDefinition,
   TypeOfDefinition,
 } from "./types";
+import { easterEggNames, eventNames } from "handlers/events";
 
 type Def = Satisfies<
   TableDefinition,
@@ -28,15 +29,15 @@ type Def = Satisfies<
 >;
 
 const invitePrecondition: SettingPrecondition = async (i, v) => {
-  // v can either be bool or channel (string) here
+  // v could either be bool or channel (string) here
   if (
     v &&
     !(await safeMember(i.guild!, i.client.user.id)).permissions.has(
       PermissionFlagsBits.CreateInstantInvite | PermissionFlagsBits.ManageGuild,
     )
   )
-    return `-# The **Create Invite** and the **Manage Server** permissions are required for this setting to work.`;
-};
+    return `The **Create Invite** and the **Manage Server** permissions are required for this setting to work.`;
+}
 
 // for the [TODO]s below, remove the SettingsDefinition type and
 // enjoy 26 type errors! :D
@@ -103,9 +104,10 @@ export const settingsDefinition: SettingsDefinition = {
     description: "Change Sokora's settings related to moderation.",
     settings: {
       events: {
-        type: "LOG",
+        type: "SELECT",
         desc: "Select what events you want to see in your log channel.",
         iterable: true,
+        choices: eventNames,
         emoji: "📅",
       },
       channel: {
@@ -190,7 +192,7 @@ export const settingsDefinition: SettingsDefinition = {
       invite_channel: {
         type: "CHANNEL",
         desc: "Channel for the invite. If not set, uses the first channel in the channel list.",
-        precondition: invitePrecondition,
+        // precondition: invitePrecondition,
         emoji: "📨",
       },
     },
@@ -250,9 +252,10 @@ export const settingsDefinition: SettingsDefinition = {
         emoji: "✅",
       },
       enabled_eggs: {
-        type: "EGG",
+        type: "SELECT",
         desc: "Specific easter eggs to enable. If none are selected, all easter eggs are enabled.",
         iterable: true,
+        choices: easterEggNames,
         emoji: "🐣",
       },
       allowed_channels: {

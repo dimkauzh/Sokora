@@ -24,12 +24,12 @@ type Def = Satisfies<
   }
 >;
 
-const topggPrecondition: SettingPrecondition = async (i, id) => {
-  // pass the user id through the "newVal"
-  const dmChannel = await (await safeMember(i.guild!, id)).createDM();
-  if (!dmChannel || !dmChannel.isSendable())
-    return `-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
-};
+const topggPrecondition: SettingPrecondition = async (i, v) => {
+  // v is bool
+  const dmChannel = await (await safeMember(i.guild!, i.user.id)).createDM();
+  if (v && (!dmChannel || !dmChannel.isSendable()))
+    return `Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
+}
 
 export const settingsDefinition: SettingsDefinition = {
   topgg: {
@@ -49,6 +49,9 @@ export const settingsDefinition: SettingsDefinition = {
 // could be an entry point to fixing the 27 type errors related to autocomplete
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
+
+const deleteQuery = async (userID: string, key: string, sql_: Bun.SQL = sql) =>
+  await sql_`DELETE FROM user_settings WHERE "userID" = ${userID} AND "key" = ${key};`;
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,
@@ -116,7 +119,14 @@ export async function setUserSetting<
 >(userID: string, key: K, setting: S, value: any) {
   const keySetting = `${key}.${setting}`;
   await sql.begin(async tx => {
-    await tx`DELETE FROM user_settings WHERE "userID" = ${userID} AND "key" = ${keySetting};`;
+    await deleteQuery(userID, keySetting, tx);
     await tx`INSERT INTO user_settings ("userID", "key", "value") VALUES (${userID}, ${keySetting}, ${value});`;
   });
+}
+
+export async function resetUserSetting<
+  K extends keyof typeof settingsDefinition,
+  S extends keyof (typeof settingsDefinition)[K]["settings"],
+>(userID: string, key: K, setting: S) {
+  await deleteQuery(userID, `${key}.${setting}`);
 }

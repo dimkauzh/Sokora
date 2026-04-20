@@ -14,8 +14,8 @@ export type FieldData =
   | "mUSER"
   | "ROLE"
   | "mROLE"
-  | "LOG"
-  | "EGG"
+  // | "EGG"
+  | "SELECT"
   | "OBJECT"
   | "REWARD";
 
@@ -40,8 +40,8 @@ export type SqlType<T extends FieldData> = {
   mUSER: Maybe<string>;
   ROLE: string;
   mROLE: Maybe<string>;
-  LOG: string;
-  EGG: string;
+  // EGG: string;
+  SELECT: string;
   OBJECT: string;
   REWARD: string;
 }[T];
@@ -63,6 +63,7 @@ export type SingleSettingDefinition = {
   precondition?: SettingPrecondition;
   iterable?: boolean;
   selectMenu?: boolean; // unused
+  choices?: string[]; // If type SELECT
   emoji?: string;
   settings?: Record<
     string,

@@ -10,6 +10,7 @@ import {
 import { FieldData, SingleSettingDefinition } from "database/types";
 import {
   getUserSetting,
+  resetUserSetting,
   setUserSetting,
   settingsDefinition as userSettingsDefinition,
 } from "database/userSettings";
@@ -38,7 +39,6 @@ import {
   type AnySelectMenuInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { easterEggNames } from "handlers/events";
 import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
@@ -117,6 +117,17 @@ function isValueValid(value: string | undefined, type: FieldData): boolean {
   if (type == "INTEGER" || type == "TEXT") if (isNaN(Number(value))) return false;
   return true;
 }
+async function constructModalContainer(
+  settingText: string,
+  valueText: string,
+  hue: number,
+) {
+  return new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
+    .setAccentColor(await colorize({ hue }));
+}
 
 // Build and send the setting embed
 export async function settingsEmbed(
@@ -138,7 +149,6 @@ export async function settingsEmbed(
     "return",
     "add",
   ];
-  const eventNames = ["messageUpdate", "messageDelete", "settings"];
   const color = await colorize({ hue: Sokolors.Blue });
   let settingsObj = settingsDef.settings;
   let settingName = "";
@@ -224,6 +234,7 @@ export async function settingsEmbed(
     objView?: boolean;
     itrObjView?: boolean;
   }) => {
+    // Why does this gets called twice for a single user setting change ?
     const { settingsObj, name, reset, itrObjView } = options;
     if (exemptButtons.includes(name) || exemptButtons.map(name => `obj${name}`).includes(name))
       return;
@@ -241,7 +252,7 @@ export async function settingsEmbed(
         .setStyle(ButtonStyle.Danger);
 
       if (!itrObject)
-        if (settingObject.val == setting || settingObject.type == "OBJECT")
+        if (settingObject.val == setting || settingObject.type == "OBJECT") // Why the f is settingObject here BEFORE being defined ?
           component.setDisabled(true); // Temporary (will be able to reset an object type when it works later)
 
       return { text, data, component };
@@ -282,7 +293,7 @@ export async function settingsEmbed(
       .setCustomId(data.id)
       .setLabel("Edit")
       .setStyle(ButtonStyle.Secondary);
-
+    
     switch (settingObject.type) {
       case "BOOL":
         component = component
@@ -319,65 +330,57 @@ export async function settingsEmbed(
 
         if (setting) component.setDefaultRoles(kominator(setting as string));
         break;
-      case "LOG":
+      case "SELECT":
+        const options = (settingObject as SingleSettingDefinition).choices!;
         component = new StringSelectMenuBuilder()
           .setCustomId(data.id)
-          .setMaxValues(eventNames.length)
+          .setMaxValues(options.length)
           .setOptions(
-            eventNames.map(option =>
+            options.map(option =>
               new StringSelectMenuOptionBuilder()
                 .setLabel(option)
                 .setValue(option)
                 .setDefault(kominator((setting as string | undefined) || "").includes(option)),
             ),
           );
-        break;
-      case "EGG":
-        // Should we maybe make it more general ? Like "SELECT" for example
-        // that would mean having a data field in the settingsDefinition with easterEggNames (array) in it
-        component = new StringSelectMenuBuilder()
-          .setCustomId(data.id)
-          .setMaxValues(easterEggNames.length)
-          .setOptions(
-            easterEggNames.map(option =>
-              new StringSelectMenuOptionBuilder()
-                .setLabel(option)
-                .setValue(option)
-                .setDefault(kominator((setting as string | undefined) || "").includes(option)),
-            ),
-          );
-        break;
+          break;
       case "OBJECT":
         component = component.setLabel("suffer").setStyle(ButtonStyle.Danger);
         break;
       case "REWARD":
         component = new RoleSelectMenuBuilder().setCustomId(data.id);
       // MentionableSelectMenuBuilder is user|role, it doesn't include channels
-      // We'll have to make a custom class from BaseSelectMenuBuilder for that
+      // And we can't make a custom SelectMenuBuilder class since it's based on the API
+      // So we'll have to find another solution (with 25 limited choices, ouch)
     }
 
-    if (
-      // Maybe add "precondition" to SingleSettingDefinition which is a function that can be called to check (does check, returns string if problem)
-      // Started adding it, though I'm not sure if it should live inside of settings and userSettings or in a separate file
-      (name == "server_invite" || name == "invite_channel") &&
-      (!(await safeMember(guild, interaction.client.user.id))?.permissions.has(
-        "CreateInstantInvite",
-      ) ||
-        !(await safeMember(guild, interaction.client.user.id))?.permissions.has("ManageGuild"))
-    ) {
-      await resetSetting(id, "serverboard", "server_invite");
-      await resetSetting(id, "serverboard", "invite_channel");
-      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# The **Create Invite** and the **Manage Server** permissions are required for this setting to work.`;
-      component.setDisabled(true);
-    }
-
-    if (table == "user") {
-      // Same thing
-      const dmChannel = await (await safeMember(guild, id)).createDM();
-      if (name == "remind" && (!dmChannel || !dmChannel.isSendable())) {
-        await setUserSetting(id, "topgg", "remind", false);
-        text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
+    if (settingsDef.settings[name]) {
+      // Doesn't happen when adding/editing a value in an OBJECT type btw
+      const precondError = settingsDef.settings[name].precondition
+        ? await settingsDef.settings[name].precondition(interaction, setting)
+        : null;
+      if (precondError) {
+        if (table == "server") await resetSetting(id, key, name);
+        else if (table == "user") await resetUserSetting(id, name, name);
+        text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${precondError}`;
         component.setDisabled(true);
+  
+        // This should be in setSettingPlease instead maybe
+        // Otherwise errors can happen when loading a setting embed (slash command) with an already failed precondition
+        // Since it will send the error first, and then the settings embed (which it can't modify later on, so errors upon edit)
+        // I still think this should be included, because just changing the attribute description and emoji isn't very visible imo
+        /*
+        await safeReply({
+          interaction: interaction,
+          replyOptions: {
+            components: [await constructModalContainer(
+              `**${dotCheck({ string: settingsDef.settings[name].emoji, twoSides: true, includeString: true })}${humanizeSettings(name)}** couldn't be changed!`,
+              precondError,
+              Sokolors.Red
+            )], flags: ["Ephemeral", "IsComponentsV2"],
+          },
+        });
+        */
       }
     }
 
@@ -474,9 +477,12 @@ export async function settingsEmbed(
       new TextDisplayBuilder().setContent(settingsDef.description),
     );
 
-  const reply = await interaction.reply({
-    components: [container],
-    flags: ["Ephemeral", "IsComponentsV2"],
+  const reply = await safeReply({
+    interaction: interaction,
+    replyOptions: {
+      components: [container],
+      flags: ["Ephemeral", "IsComponentsV2"],
+    }
   });
 
   const collector = reply.createMessageComponentCollector({ time: 60000 });
@@ -583,17 +589,6 @@ export async function settingsEmbed(
         // After modal interaction
         collector.resetTimer({ time: 60000 });
         if (!modalInteraction) return;
-        async function constructModalContainer(
-          settingText: string,
-          valueText: string,
-          hue: number,
-        ) {
-          return new ContainerBuilder()
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
-            .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-            .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
-            .setAccentColor(await colorize({ hue }));
-        }
 
         const value = modalInteraction.fields.getTextInputValue("setting");
         const length = value!.length;
