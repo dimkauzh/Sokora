@@ -97,7 +97,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const createdText = [
     `<:discord:${replace("(discord)")}> ${mention(user.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}`,
-    (await safeMember(guild, user.id))
+    (await safeMembers(guild)).has(user.id)
       ? `• ${mention((await safeMember(guild, user.id)).joinedAt!.valueOf(), "DEFAULT_TIMESTAMP")}`
       : "",
   ].join(" ");

@@ -34,6 +34,7 @@ export async function colorize(options: {
     return Bun.color(`hsl(${h}, ${s}%, ${l}%)`, "[rgb]") as RGBTuple;
   }
 
+  // [TODO] make colors more reliable (should output black when the pfp is black, white when pfp is white, etc)
   const buffer = Buffer.from(await (await fetch(avatar!)).arrayBuffer());
   if (!buffer) return genColor();
 
