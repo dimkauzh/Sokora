@@ -39,7 +39,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
   )) as TextChannel;
 
-  if (newsChannel) if (news.messageID) await newsChannel.messages.delete(news.messageID);
+  if (newsChannel && news.messageID) await newsChannel.messages.delete(news.messageID);
   await deleteNews(guild.id, id);
   await interaction.reply({
     embeds: [

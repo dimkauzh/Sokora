@@ -105,13 +105,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     [`## ${name}`, `@${user.username}`, "**Member since**", createdText].join("\n"),
   );
 
-  avatar
-    ? container.addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(start)
-          .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar)),
-      )
-    : container.addTextDisplayComponents(start);
+  if (avatar)
+    container.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(start)
+        .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar)),
+    );
+  else container.addTextDisplayComponents(start);
 
   if (serverInfo)
     container

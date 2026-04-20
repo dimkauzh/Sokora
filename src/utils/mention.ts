@@ -2,13 +2,7 @@
  * Handles role mentions, channel mentions, timestamps, and more.
  *
  * @param {string | number} who Who to mention? If it's a timestamp, pass `Date.now()`.
- * @param {
- *     | "USER"
- *     | "ROLE"
- *     | "CHANNEL"
- *     | "DEFAULT_TIMESTAMP"
- *     | "SIMPLE_TIMESTAMP"
- *     | "DETAILED_TIMESTAMP"} type What to mention?
+ * @param {string} type What to mention?
  * @returns {string} A `<MENTION>` string.
  */
 export function mention(
@@ -19,6 +13,7 @@ export function mention(
     | "CHANNEL"
     | "DEFAULT_TIMESTAMP"
     | "SIMPLE_TIMESTAMP"
+    | "COMPAT_TIMESTAMP"
     | "DETAILED_TIMESTAMP",
 ): string {
   switch (type) {
@@ -29,6 +24,7 @@ export function mention(
     case "ROLE":
       return `<@&${who}>`;
     case "DEFAULT_TIMESTAMP":
+    case "COMPAT_TIMESTAMP":
     case "DETAILED_TIMESTAMP":
     case "SIMPLE_TIMESTAMP": {
       const num = Number(who);
@@ -39,6 +35,10 @@ export function mention(
           return `<t:${Math.floor(num / 1000)}:D>`;
         case "SIMPLE_TIMESTAMP":
           return `<t:${Math.floor(num / 1000)}:d>`;
+        case "COMPAT_TIMESTAMP":
+          // this one's called COMPAT_TIMESTAMP because it reflects embed.setTimestamp the best.
+          // best used with CV2 containers.
+          return `<t:${Math.floor(num / 1000)}:f>`;
         case "DETAILED_TIMESTAMP":
           return `<t:${Math.floor(num / 1000)}>`;
       }

@@ -51,14 +51,16 @@ export type TypeOfDefinition<T extends TableDefinition> = {
 };
 
 // If it returns a string (error), then the precondition failed
-export type SettingPrecondition = (interaction: Interaction, newVal: any) => Promise<string | undefined>
-
+export type SettingPrecondition = (
+  interaction: Interaction,
+  newVal: any,
+) => Promise<string | undefined>;
 
 export type SingleSettingDefinition = {
   type: FieldData;
   desc: string;
   val?: any;
-  precondition?: SettingPrecondition,
+  precondition?: SettingPrecondition;
   iterable?: boolean;
   selectMenu?: boolean; // unused
   emoji?: string;

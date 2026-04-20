@@ -33,7 +33,7 @@ const sendQuery = async (
   messageID: string,
   imageURL: string | null | undefined,
   id: number,
-  sql_: Bun.SQL = sql,
+  sql_: Bun.SQL = sql, // what's this supposed to do?
 ) => {
   const insObject = {
     guildID,
@@ -113,7 +113,7 @@ export async function updateNews(
       id,
       tx,
     );
-  })
+  });
 }
 
 export async function deleteNews(guildID: string, id: number) {

@@ -17,14 +17,7 @@ import { safeChannel, safeRole } from "./safeThings";
  * Sends news to a channel.
  * @param {Guild} guild Guild where the channel is in.
  * @param {ChatInputCommandInteraction} interaction Command interaction.
- * @param {{
-   title: string;
-   body: string;
-   author: string;
-   authorPFP: string;
-   id: string;
-   imageURL?: string | null;
- }} newsOptions Options to send the news post.
+ * @param {object} newsOptions Options to send the news post.
  * @param {?boolean} edit Whether or not should the function make a new message with some reused elements.
  * @returns News message in a channel.
  */

@@ -82,6 +82,7 @@ async function collapse(
 }
 
 export async function run(interaction: ChatInputCommandInteraction) {
+  // [TODO] fix whatever issue is killing this command.
   const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
   if (!interaction.guild) return;

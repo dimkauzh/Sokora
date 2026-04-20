@@ -1,10 +1,16 @@
 import { sql } from "bun";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
+import { safeMember } from "utils/safeThings";
 import { Satisfies } from "utils/types";
 import { values } from ".";
-import { SettingPrecondition, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
-import { safeMember } from "utils/safeThings";
+import {
+  SettingPrecondition,
+  SettingsDefinition,
+  SqlType,
+  TableDefinition,
+  TypeOfDefinition,
+} from "./types";
 
 type Def = Satisfies<
   TableDefinition,
@@ -18,11 +24,12 @@ type Def = Satisfies<
   }
 >;
 
-const topggPrecondition: SettingPrecondition = async (i, id) => { // pass the user id through the "newVal"
+const topggPrecondition: SettingPrecondition = async (i, id) => {
+  // pass the user id through the "newVal"
   const dmChannel = await (await safeMember(i.guild!, id)).createDM();
   if (!dmChannel || !dmChannel.isSendable())
     return `-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
-}
+};
 
 export const settingsDefinition: SettingsDefinition = {
   topgg: {

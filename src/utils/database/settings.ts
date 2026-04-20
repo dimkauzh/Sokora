@@ -1,12 +1,19 @@
 import { sql } from "bun";
+import { PermissionFlagsBits } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
+import { safeMember } from "utils/safeThings";
 import { Satisfies } from "utils/types";
 import { values } from ".";
-import { FieldData, SettingPrecondition, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
-import { safeMember } from "utils/safeThings";
-import { PermissionFlagsBits } from "discord.js";
+import {
+  FieldData,
+  SettingPrecondition,
+  SettingsDefinition,
+  SqlType,
+  TableDefinition,
+  TypeOfDefinition,
+} from "./types";
 
 type Def = Satisfies<
   TableDefinition,
@@ -20,15 +27,21 @@ type Def = Satisfies<
   }
 >;
 
-const invitePrecondition: SettingPrecondition = async (i, v) => { // v can either be bool or channel (string) here
-  if (v && !(await safeMember(i.guild!, i.client.user.id))
-    .permissions.has(PermissionFlagsBits.CreateInstantInvite | PermissionFlagsBits.ManageGuild)
+const invitePrecondition: SettingPrecondition = async (i, v) => {
+  // v can either be bool or channel (string) here
+  if (
+    v &&
+    !(await safeMember(i.guild!, i.client.user.id)).permissions.has(
+      PermissionFlagsBits.CreateInstantInvite | PermissionFlagsBits.ManageGuild,
+    )
   )
     return `-# The **Create Invite** and the **Manage Server** permissions are required for this setting to work.`;
-}
+};
 
 // for the [TODO]s below, remove the SettingsDefinition type and
 // enjoy 26 type errors! :D
+//
+// idea: we could possibly remove "settings" and put all settings on the same level as description, just remove the description if you want to get only the settings
 export const settingsDefinition: SettingsDefinition = {
   leveling: {
     description: "Customize the behavior of the leveling system.",
