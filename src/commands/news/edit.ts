@@ -30,7 +30,8 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!(await safeMember(guild, interaction.user.id)).permissions.has("ManageGuild"))
+  const userID = interaction.user.id;
+  if (!(await safeMember(guild, userID)).permissions.has("ManageGuild"))
     return await errorEmbed({
       interaction,
       title: "You can't execute this command.",
@@ -74,57 +75,65 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await errorEmbed({ interaction, error, forward: true, fileName: "edit.ts" });
   }
 
-  interaction.client.once("interactionCreate", async i => {
-    if (!i.isModalSubmit()) return;
-    const role = (await getSetting(guild.id, "news", "role")) as string;
-    let roleToSend: Role | undefined;
-    if (role) roleToSend = await safeRole(guild, role);
-
-    const title = i.fields.getTextInputValue("title");
-    const body = i.fields.getTextInputValue("body");
-    const avatar = news.authorPFP;
-    const editedEmbed = new EmbedBuilder()
-      .setTitle("News post edited.")
-      .setColor(await colorize({ hue: Sokolors.Green }));
-
-    if (!(await getSetting(guild.id, "news", "edit_original_message"))) {
-      await sendChannelNews(
-        guild,
-        interaction,
-        {
-          title,
-          body,
-          author: news.author,
-          authorPFP: avatar,
-          id,
-        },
-        true,
-      );
-      return await i.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
-    }
-
-    const embed = new EmbedBuilder()
-      .setAuthor({
-        name: `${dotCheck({ string: avatar, doubleSpace: true })}${news.author}`,
-        iconURL: avatar,
-      })
-      .setTitle(title)
-      .setDescription(body)
-      .setTimestamp(news.updatedAt || news.createdAt)
-      .setFooter({ text: `Edited news post from ${guild.name} • ID: ${news.id}` })
-      .setColor(await colorize({ hue: Sokolors.Blue }));
-
-    const channel = (await safeChannel(
-      guild,
-      ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
-    )) as TextChannel;
-
-    await channel.messages.edit(news.messageID, {
-      embeds: [embed],
-      content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
+  let i;
+  try {
+    i = await interaction.awaitModalSubmit({
+      time: 60000,
+      filter: m => m.user.id === userID,
     });
+  } catch {
+    /* In case of timeout */
+  }
+  if (!i) return;
 
-    await updateNews(guild.id, id, title, body);
-    await i.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
+  const role = (await getSetting(guild.id, "news", "role")) as string;
+  let roleToSend: Role | undefined;
+  if (role) roleToSend = await safeRole(guild, role);
+
+  const title = i.fields.getTextInputValue("title");
+  const body = i.fields.getTextInputValue("body");
+  const avatar = news.authorPFP;
+  const editedEmbed = new EmbedBuilder()
+    .setTitle("News post edited.")
+    .setColor(await colorize({ hue: Sokolors.Green }));
+
+  if (!(await getSetting(guild.id, "news", "edit_original_message"))) {
+    await sendChannelNews(
+      guild,
+      interaction,
+      {
+        title,
+        body,
+        author: news.author,
+        authorPFP: avatar,
+        id,
+      },
+      true,
+    );
+    return await i.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
+  }
+
+  const embed = new EmbedBuilder()
+    .setAuthor({
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${news.author}`,
+      iconURL: avatar,
+    })
+    .setTitle(title)
+    .setDescription(body)
+    .setTimestamp(news.updatedAt || news.createdAt)
+    .setFooter({ text: `Edited news post from ${guild.name} • ID: ${news.id}` })
+    .setColor(await colorize({ hue: Sokolors.Blue }));
+
+  const channel = (await safeChannel(
+    guild,
+    ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
+  )) as TextChannel;
+
+  await channel.messages.edit(news.messageID, {
+    embeds: [embed],
+    content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
   });
+
+  await updateNews(guild.id, id, title, body);
+  await i.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
 }

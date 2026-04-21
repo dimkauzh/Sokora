@@ -21,7 +21,8 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!(await safeMember(guild, interaction.user.id)).permissions.has("ManageGuild"))
+  const userID = interaction.user.id;
+  if (!(await safeMember(guild, userID)).permissions.has("ManageGuild"))
     return await errorEmbed({
       interaction,
       title: "You can't execute this command.",
@@ -65,40 +66,48 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
   }
 
-  interaction.client.once("interactionCreate", async i => {
-    if (!i.isModalSubmit()) return;
-    const title = await replaceVariables(
-      i.fields.getTextInputValue("title"),
-      interaction.guild!,
-      interaction.user,
-    );
-
-    const body = await replaceVariables(
-      i.fields.getTextInputValue("body"),
-      interaction.guild!,
-      interaction.user,
-    );
-
-    try {
-      await sendChannelNews(guild, interaction, {
-        title,
-        body,
-        author: i.user.displayName,
-        authorPFP: i.user.avatarURL()!,
-        imageURL: i.fields.getUploadedFiles("image")?.at(0)?.url ?? null,
-        id: ((await getLatestNews(guild.id))[0]?.id ?? 0) + 1,
-      });
-    } catch (error) {
-      return await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
-    }
-
-    await i.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("News post created.")
-          .setColor(await colorize({ hue: Sokolors.Green })),
-      ],
-      flags: "Ephemeral",
+  let i;
+  try {
+    i = await interaction.awaitModalSubmit({
+      time: 60000,
+      filter: m => m.user.id === userID,
     });
+  } catch {
+    /* In case of timeout */
+  }
+  if (!i) return;
+
+  const title = await replaceVariables(
+    i.fields.getTextInputValue("title"),
+    interaction.guild!,
+    interaction.user,
+  );
+
+  const body = await replaceVariables(
+    i.fields.getTextInputValue("body"),
+    interaction.guild!,
+    interaction.user,
+  );
+
+  try {
+    await sendChannelNews(guild, interaction, {
+      title,
+      body,
+      author: i.user.displayName,
+      authorPFP: i.user.avatarURL()!,
+      imageURL: i.fields.getUploadedFiles("image")?.at(0)?.url ?? null,
+      id: ((await getLatestNews(guild.id))[0]?.id ?? 0) + 1,
+    });
+  } catch (error) {
+    return await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
+  }
+
+  await i.reply({
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("News post created.")
+        .setColor(await colorize({ hue: Sokolors.Green })),
+    ],
+    flags: "Ephemeral",
   });
 }

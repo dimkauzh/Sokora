@@ -14,7 +14,6 @@ export type FieldData =
   | "mUSER"
   | "ROLE"
   | "mROLE"
-  // | "EGG"
   | "SELECT"
   | "OBJECT"
   | "REWARD";
@@ -40,7 +39,6 @@ export type SqlType<T extends FieldData> = {
   mUSER: Maybe<string>;
   ROLE: string;
   mROLE: Maybe<string>;
-  // EGG: string;
   SELECT: string;
   OBJECT: string;
   REWARD: string;

@@ -37,7 +37,7 @@ const invitePrecondition: SettingPrecondition = async (i, v) => {
     )
   )
     return `The **Create Invite** and the **Manage Server** permissions are required for this setting to work.`;
-}
+};
 
 // for the [TODO]s below, remove the SettingsDefinition type and
 // enjoy 26 type errors! :D

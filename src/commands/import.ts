@@ -13,7 +13,6 @@ import {
   ModalBuilder,
   PermissionsBitField,
   SectionBuilder,
-  SeparatorBuilder,
   SlashCommandBuilder,
   TextDisplayBuilder,
   TextInputBuilder,
@@ -82,7 +81,7 @@ async function collapse(
 }
 
 export async function run(interaction: ChatInputCommandInteraction) {
-  // [TODO] fix whatever issue is killing this command.
+  // [TODO] add return to not keep running the command lmao
   const user = interaction.client.user;
   const avatar = user.displayAvatarURL();
   if (!interaction.guild) return;
@@ -98,8 +97,6 @@ export async function run(interaction: ChatInputCommandInteraction) {
   ): Promise<ContainerBuilder> {
     const { content, buttons, error, json } = options;
     if (content) container.addTextDisplayComponents(new TextDisplayBuilder().setContent(content));
-    container.addSeparatorComponents(new SeparatorBuilder().setDivider(true));
-
     if (buttons)
       container.addActionRowComponents(
         new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -149,7 +146,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
   const container = new ContainerBuilder().addSectionComponents(containerComponents);
   const reply = await safeReply({
     interaction,
-    replyOptions: { components: [await containerHelper(container, {})] },
+    replyOptions: {
+      components: [await containerHelper(container, {})],
+      flags: ["Ephemeral", "IsComponentsV2"],
+    },
   });
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
@@ -315,14 +315,24 @@ export async function run(interaction: ChatInputCommandInteraction) {
           );
 
         await i.showModal(modal);
-        i.client.once("interactionCreate", async modalInteraction => {
-          if (!modalInteraction.isModalSubmit()) return;
-          try {
-            await construct(modalInteraction.fields.getTextInputValue("setting"), modalInteraction);
-          } catch (error) {
-            return await collapse(error, cID, interaction, containerHelper);
-          }
-        });
+        let modalInteraction;
+        try {
+          modalInteraction = await i.awaitModalSubmit({
+            time: 60000,
+            filter: m => m.user.id === i.user.id,
+          });
+        } catch {
+          /* In case of timeout */
+        }
+
+        collector.resetTimer({ time: 60000 });
+        if (!modalInteraction) return;
+
+        try {
+          await construct(modalInteraction.fields.getTextInputValue("setting"), modalInteraction);
+        } catch (error) {
+          return await collapse(error, cID, interaction, containerHelper);
+        }
       } else await construct();
     } catch (error) {
       return await collapse(error, cID, interaction, containerHelper);

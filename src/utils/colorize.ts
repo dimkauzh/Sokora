@@ -51,7 +51,6 @@ export async function colorize(options: {
       );
     } else return genColor();
 
-  // [TODO] randomize
   const [r, g, b] = color.array();
   if (r == g && g == b) return [r, g, b] as RGBTuple;
 

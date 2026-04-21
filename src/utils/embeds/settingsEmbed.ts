@@ -117,11 +117,8 @@ function isValueValid(value: string | undefined, type: FieldData): boolean {
   if (type == "INTEGER" || type == "TEXT") if (isNaN(Number(value))) return false;
   return true;
 }
-async function constructModalContainer(
-  settingText: string,
-  valueText: string,
-  hue: number,
-) {
+
+async function constructModalContainer(settingText: string, valueText: string, hue: number) {
   return new ContainerBuilder()
     .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
     .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
@@ -158,6 +155,7 @@ export async function settingsEmbed(
   let disableCategory = false;
   let itrObjView = false;
   let objView = false;
+  let precondReply: (() => any) | null;
 
   // Create a container
   async function construct(
@@ -210,6 +208,7 @@ export async function settingsEmbed(
           );
     }
 
+    // [TODO] rework this to not spam 130loc settingComponent all the time
     if (!itrObjView)
       for (const name of Object.keys(settingsObj))
         await constructLoop(await settingComponent({ settingsObj, name, reset }));
@@ -234,7 +233,6 @@ export async function settingsEmbed(
     objView?: boolean;
     itrObjView?: boolean;
   }) => {
-    // Why does this gets called twice for a single user setting change ?
     const { settingsObj, name, reset, itrObjView } = options;
     if (exemptButtons.includes(name) || exemptButtons.map(name => `obj${name}`).includes(name))
       return;
@@ -252,7 +250,7 @@ export async function settingsEmbed(
         .setStyle(ButtonStyle.Danger);
 
       if (!itrObject)
-        if (settingObject.val == setting || settingObject.type == "OBJECT") // Why the f is settingObject here BEFORE being defined ?
+        if (settingObject.val == setting || settingObject.type == "OBJECT")
           component.setDisabled(true); // Temporary (will be able to reset an object type when it works later)
 
       return { text, data, component };
@@ -293,7 +291,7 @@ export async function settingsEmbed(
       .setCustomId(data.id)
       .setLabel("Edit")
       .setStyle(ButtonStyle.Secondary);
-    
+
     switch (settingObject.type) {
       case "BOOL":
         component = component
@@ -330,7 +328,7 @@ export async function settingsEmbed(
 
         if (setting) component.setDefaultRoles(kominator(setting as string));
         break;
-      case "SELECT":
+      case "SELECT": {
         const options = (settingObject as SingleSettingDefinition).choices!;
         component = new StringSelectMenuBuilder()
           .setCustomId(data.id)
@@ -343,15 +341,15 @@ export async function settingsEmbed(
                 .setDefault(kominator((setting as string | undefined) || "").includes(option)),
             ),
           );
-          break;
+        break;
+      }
       case "OBJECT":
         component = component.setLabel("suffer").setStyle(ButtonStyle.Danger);
         break;
       case "REWARD":
         component = new RoleSelectMenuBuilder().setCustomId(data.id);
-      // MentionableSelectMenuBuilder is user|role, it doesn't include channels
-      // And we can't make a custom SelectMenuBuilder class since it's based on the API
-      // So we'll have to find another solution (with 25 limited choices, ouch)
+      // [TODO] either implement two select menus, or
+      // make a custom string select menu with channels and roles
     }
 
     if (settingsDef.settings[name]) {
@@ -359,28 +357,26 @@ export async function settingsEmbed(
       const precondError = settingsDef.settings[name].precondition
         ? await settingsDef.settings[name].precondition(interaction, setting)
         : null;
+
       if (precondError) {
         if (table == "server") await resetSetting(id, key, name);
         else if (table == "user") await resetUserSetting(id, name, name);
         text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${precondError}`;
         component.setDisabled(true);
-  
-        // This should be in setSettingPlease instead maybe
-        // Otherwise errors can happen when loading a setting embed (slash command) with an already failed precondition
-        // Since it will send the error first, and then the settings embed (which it can't modify later on, so errors upon edit)
-        // I still think this should be included, because just changing the attribute description and emoji isn't very visible imo
-        /*
-        await safeReply({
-          interaction: interaction,
-          replyOptions: {
-            components: [await constructModalContainer(
-              `**${dotCheck({ string: settingsDef.settings[name].emoji, twoSides: true, includeString: true })}${humanizeSettings(name)}** couldn't be changed!`,
-              precondError,
-              Sokolors.Red
-            )], flags: ["Ephemeral", "IsComponentsV2"],
-          },
-        });
-        */
+        precondReply = async () =>
+          await safeReply({
+            interaction: interaction,
+            replyOptions: {
+              components: [
+                await constructModalContainer(
+                  `**${dotCheck({ string: settingsDef.settings[name].emoji, twoSides: true, includeString: true })}${humanizeSettings(name)}** couldn't be changed!`,
+                  precondError,
+                  Sokolors.Red,
+                ),
+              ],
+              flags: ["Ephemeral", "IsComponentsV2"],
+            },
+          });
       }
     }
 
@@ -482,9 +478,10 @@ export async function settingsEmbed(
     replyOptions: {
       components: [container],
       flags: ["Ephemeral", "IsComponentsV2"],
-    }
+    },
   });
 
+  if (precondReply! != null) await precondReply();
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
     if (await buttonCheck({ i, interaction, reply })) return;

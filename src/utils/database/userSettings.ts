@@ -29,7 +29,7 @@ const topggPrecondition: SettingPrecondition = async (i, v) => {
   const dmChannel = await (await safeMember(i.guild!, i.user.id)).createDM();
   if (v && (!dmChannel || !dmChannel.isSendable()))
     return `Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
-}
+};
 
 export const settingsDefinition: SettingsDefinition = {
   topgg: {
