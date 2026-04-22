@@ -165,6 +165,7 @@ export async function settingsEmbed(
       | null,
     container: ContainerBuilder,
     reset: boolean,
+    buttons: ActionRowBuilder<MessageActionRowComponentBuilder>[],
     objView?: boolean,
     itrObjView?: boolean,
     cID?: string,
@@ -220,7 +221,14 @@ export async function settingsEmbed(
         );
 
     // empty separator.
-    return container.addSeparatorComponents(new SeparatorBuilder().setDivider(false));
+    container.addSeparatorComponents(new SeparatorBuilder().setDivider(false));
+
+    // Bottom description button (disabled) + reset
+    if (table == "server") container.addActionRowComponents(buttons);
+    else
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(settingsDef.description),
+      );
   }
 
   // Build a single setting row
@@ -442,9 +450,7 @@ export async function settingsEmbed(
     const defaults = Object.values(settingsObj).map(setting => setting.val ?? null);
     const nullCheck = itrObjView
       ? !(await getLevelRewards(id))?.every(value => value == null)
-      : !actual.every(value => {
-          return value == defaults[actual.indexOf(value)];
-        });
+      : JSON.stringify(actual) !== JSON.stringify(defaults);
 
     if (nullCheck)
       buttonArray.unshift(
@@ -464,15 +470,7 @@ export async function settingsEmbed(
   };
 
   const container = new ContainerBuilder().setAccentColor(color);
-  await construct(settingsObj, container, false, false);
-
-  // Bottom "current location" button (disabled)/text
-  if (table == "server") container.addActionRowComponents(await buttons(false, false));
-  else
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(settingsDef.description),
-    );
-
+  await construct(settingsObj, container, false, await buttons(false, false));
   const reply = await safeReply({
     interaction: interaction,
     replyOptions: {
@@ -591,12 +589,12 @@ export async function settingsEmbed(
         const length = value!.length;
         let settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`;
         let valueText = `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`;
-        let hue = 100;
+        let hue = Sokolors.Blue;
 
         if (!isValueValid(value, settingsObj[cID].type)) {
           settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
           valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
-          hue = 0;
+          hue = Sokolors.Red;
         } else await setSettingPlease(id, key, cID, value, table, interaction);
 
         await safeReply({
@@ -631,21 +629,12 @@ export async function settingsEmbed(
           : null
         : settingsObj,
       newContainer,
-      reset || confirm,
+      reset ?? confirm,
+      await buttons(reset, confirm, cID, disableCategory, itrObjView),
       objView ?? false,
       itrObjView ?? false,
       cID,
     );
-
-    if (table == "server")
-      // Why is this thing duplicated ?? Shouldn't we call a "render" function from inside
-      newContainer.addActionRowComponents(
-        await buttons(reset, confirm, cID, disableCategory, itrObjView),
-      );
-    else
-      newContainer.addTextDisplayComponents(
-        new TextDisplayBuilder().setContent(settingsDef.description),
-      );
 
     return await safeReply({ interaction: i, editOptions: { components: [newContainer] } });
   });
