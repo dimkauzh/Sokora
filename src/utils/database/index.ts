@@ -2,11 +2,6 @@ import { sql } from "bun";
 import { createHash } from "crypto";
 import fs from "fs";
 
-// Maybe import this file in bot.ts instead, then make this a class with static variables like for a db instance ? (one instance per shard)
-// class? no
-// import in bot.ts? yes
-// why is it in src and not database/index.ts btw...
-
 const migrationsDir = "./migrations";
 const preferredHashType = "sha1";
 
@@ -16,7 +11,7 @@ const preferredHashType = "sha1";
  * @param singles If true when selecting only one column, returns an array of only the column values instead. Else, returns like normal
  * @returns An array containing the objects (or direct values if singles) of the query result
  */
-export function values(queryResult: object, singles?: boolean): Array<any> {
+export function values<T>(queryResult: object, singles?: boolean): T[] {
   // Not a TS expert but maybe someone can change any to the type of the news object definition ?
   const actualValues = Object.values(queryResult).filter(v => v instanceof Object);
   return singles && actualValues.length && Object.values(actualValues[0]).length == 1

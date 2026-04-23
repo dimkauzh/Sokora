@@ -45,6 +45,7 @@ import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
 import { logChannel } from "utils/logChannel";
 import { mention } from "utils/mention";
+import { modalSubmit } from "utils/modalSubmit";
 import { safeMember, safeReply } from "utils/safeThings";
 import { buttonCheck } from "./errorEmbed";
 
@@ -279,12 +280,8 @@ export async function settingsEmbed(
       return { text, data, component };
     }
 
-    // [TODO] this MIGHT need to be reworked.
-    // it should check for if the setting's type is OBJECT, not if the object is an object...
-    const settingObject =
-      typeof settingsObj === "object"
-        ? (settingsObj as Record<string, SingleSettingDefinition>)[name]
-        : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!; // Never happens for now ?
+    const typedSetting = (settingsObj as Record<string, SingleSettingDefinition>)[name];
+    const settingObject = typedSetting.type === "OBJECT" ? typedSetting.settings! : typedSetting;
 
     // [TODO] make this support objView (currently outputs an error)
     const setting = await getSettingPlease(id, key, name, table);
@@ -571,15 +568,7 @@ export async function settingsEmbed(
           );
 
         await i.showModal(modal);
-        let modalInteraction;
-        try {
-          modalInteraction = await i.awaitModalSubmit({
-            time: 60000,
-            filter: m => m.user.id === i.user.id,
-          });
-        } catch {
-          /* In case of timeout */
-        }
+        const modalInteraction = await modalSubmit(i);
 
         // After modal interaction
         collector.resetTimer({ time: 60000 });

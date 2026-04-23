@@ -15,6 +15,7 @@ import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { mention } from "utils/mention";
+import { modalSubmit } from "utils/modalSubmit";
 import { safeChannel, safeMember, safeRole } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
 
@@ -75,15 +76,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await errorEmbed({ interaction, error, forward: true, fileName: "edit.ts" });
   }
 
-  let i;
-  try {
-    i = await interaction.awaitModalSubmit({
-      time: 60000,
-      filter: m => m.user.id === userID,
-    });
-  } catch {
-    /* In case of timeout */
-  }
+  const i = await modalSubmit(interaction);
   if (!i) return;
 
   const role = (await getSetting(guild.id, "news", "role")) as string;

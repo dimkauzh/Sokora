@@ -11,6 +11,7 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
+import { modalSubmit } from "utils/modalSubmit";
 import { replaceVariables } from "utils/replace";
 import { safeMember } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
@@ -66,15 +67,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
   }
 
-  let i;
-  try {
-    i = await interaction.awaitModalSubmit({
-      time: 60000,
-      filter: m => m.user.id === userID,
-    });
-  } catch {
-    /* In case of timeout */
-  }
+  const i = await modalSubmit(interaction);
   if (!i) return;
 
   const title = await replaceVariables(

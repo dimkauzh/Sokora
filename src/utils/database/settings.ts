@@ -1,6 +1,7 @@
 import { sql } from "bun";
 import { PermissionFlagsBits } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
+import { easterEggNames, eventNames } from "handlers/events";
 import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
 import { safeMember } from "utils/safeThings";
@@ -14,7 +15,6 @@ import {
   TableDefinition,
   TypeOfDefinition,
 } from "./types";
-import { easterEggNames, eventNames } from "handlers/events";
 
 type Def = Satisfies<
   TableDefinition,
@@ -28,8 +28,7 @@ type Def = Satisfies<
   }
 >;
 
-const invitePrecondition: SettingPrecondition = async (i, v) => {
-  // v could either be bool or channel (string) here
+const invitePrecondition: SettingPrecondition = async (i, v: boolean | string) => {
   if (
     v &&
     !(await safeMember(i.guild!, i.client.user.id)).permissions.has(

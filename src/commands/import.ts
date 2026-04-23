@@ -23,6 +23,7 @@ import {
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
+import { modalSubmit } from "utils/modalSubmit";
 import { safeReply } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
@@ -315,16 +316,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           );
 
         await i.showModal(modal);
-        let modalInteraction;
-        try {
-          modalInteraction = await i.awaitModalSubmit({
-            time: 60000,
-            filter: m => m.user.id === i.user.id,
-          });
-        } catch {
-          /* In case of timeout */
-        }
-
+        const modalInteraction = await modalSubmit(i);
         collector.resetTimer({ time: 60000 });
         if (!modalInteraction) return;
 
