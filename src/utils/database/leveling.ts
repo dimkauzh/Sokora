@@ -1,6 +1,5 @@
-import { sql } from "bun";
 import { Satisfies } from "utils/types";
-import { values } from ".";
+import { db, values } from ".";
 import { dekominator } from "../kominator";
 import { getSetting, setSetting } from "./settings";
 import { LevelReward, TableDefinition, TypeOfDefinition } from "./types";
@@ -18,7 +17,7 @@ type Def = Satisfies<
 >;
 
 const getQuery = async (guild: string | number, userID: string) =>
-  values(await sql`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`);
+  values(await db`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`);
 
 export async function getUserXp(guildID: string, userID: string): Promise<number> {
   const res = (await getQuery(guildID, userID)) as TypeOfDefinition<Def>[];
@@ -27,7 +26,7 @@ export async function getUserXp(guildID: string, userID: string): Promise<number
 }
 
 export async function setUserXp(guildID: string | number, userID: string, xp: number) {
-  await sql.begin(async tx => {
+  await db.begin(async tx => {
     await tx`DELETE FROM leveling WHERE "guild" = ${guildID} AND "userID" = ${userID};`;
     await tx`INSERT INTO leveling ("guild", "userID", "xp") VALUES (${guildID}, ${userID}, ${xp});`;
   });
@@ -37,7 +36,7 @@ export async function getGuildLeaderboard(
   guildID: string,
 ): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
   const xpData = values(
-    await sql`SELECT * FROM leveling WHERE "guild" = ${guildID};`,
+    await db`SELECT * FROM leveling WHERE "guild" = ${guildID};`,
   ) as TypeOfDefinition<Def>[];
 
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;

@@ -1,6 +1,5 @@
-import { sql } from "bun";
 import { Satisfies } from "utils/types";
-import { values } from ".";
+import { db, values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
 type Def = Satisfies<
@@ -21,7 +20,7 @@ type Def = Satisfies<
 >;
 
 const getQuery = async (guild: string, message: string) =>
-  values(await sql`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`);
+  values(await db`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`);
 
 export async function getStarred(
   guildID: string,
@@ -52,8 +51,8 @@ export async function setStarred(
     content,
     timestamp,
   };
-  await sql.begin(async tx => {
+  await db.begin(async tx => {
     await tx`DELETE FROM starboard WHERE "guild" = ${guildID} AND "message" = ${messageID};`;
-    await tx`INSERT INTO starboard ${sql(insObject)};`;
+    await tx`INSERT INTO starboard ${db(insObject)};`;
   });
 }

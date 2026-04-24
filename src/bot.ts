@@ -82,5 +82,5 @@ client.once("clientReady", async () => {
   Chart.register(...registerables);
 });
 
-await updateDatabase(); // Needs to be executed before anything else (since some things like rescheduleUnbans needs a DB in the first place)
+// await updateDatabase(); // Needs to be executed before anything else (since some things like rescheduleUnbans needs a DB in the first place)
 await client.login(process.env.TOKEN);

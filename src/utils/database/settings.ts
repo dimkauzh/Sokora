@@ -1,4 +1,3 @@
-import { sql } from "bun";
 import { PermissionFlagsBits } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggNames, eventNames } from "handlers/events";
@@ -6,7 +5,7 @@ import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
 import { safeMember } from "utils/safeThings";
 import { Satisfies } from "utils/types";
-import { values } from ".";
+import { db, values } from ".";
 import {
   FieldData,
   SettingPrecondition,
@@ -269,7 +268,7 @@ export const settingsDefinition: SettingsDefinition = {
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 
-const deleteQuery = async (guildID: string, key: string, sql_: Bun.SQL = sql) =>
+const deleteQuery = async (guildID: string, key: string, sql_: Bun.SQL = db) =>
   await sql_`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = ${key};`;
 
 // [TODO] autocomplete support for get/setSetting
@@ -299,7 +298,7 @@ export async function getSetting<
   }
 
   const res = values(
-    await sql`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`,
+    await db`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`,
   ) as TypeOfDefinition<Def>[];
 
   const set = settingsDefinition[key].settings[setting];
@@ -310,11 +309,14 @@ export async function getSetting<
 
   const value: string | string[] = res[0].value;
   if (value == "null" || !value) return set.val;
+  const adapter = db.options.adapter;
 
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
       case "BOOL":
-        return (value == "true") as SqlType<typeof set.type>;
+        return adapter == "postgres"
+          ? value == "true"
+          : ((value == "1" ? true : false) as SqlType<typeof set.type>);
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
       default:
@@ -347,7 +349,7 @@ export async function setSetting<
 >(guildID: string, key: K, setting: S, value: any) {
   const set = Array.isArray(value) ? dekominator(value) : value;
   const keySetting = `${key}.${setting}`;
-  await sql.begin(async tx => {
+  await db.begin(async tx => {
     // Two queries for one thing ? We could shorten it if we ever go with one DB ("on duplicate, update" kind of thing)
     await deleteQuery(guildID, keySetting, tx);
     await tx`INSERT INTO settings ("guildID", "key", "value") VALUES (${guildID}, ${keySetting}, ${set});`;
@@ -365,7 +367,7 @@ export async function resetSettingCategory<K extends keyof typeof settingsDefini
   guildID: string,
   key: K,
 ) {
-  await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" LIKE ${`${key}%`};`;
+  await db`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" LIKE ${`${key}%`};`;
 }
 
 export async function listPublicServers(): Promise<
@@ -378,7 +380,7 @@ export async function listPublicServers(): Promise<
   const publicGuildSet = new Set(
     (
       values(
-        await sql`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`,
+        await db`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`,
       ) as TypeOfDefinition<Def>[]
     ).map(entry => entry.guildID),
   );
@@ -386,7 +388,7 @@ export async function listPublicServers(): Promise<
   const inviteGuildsSet = new Set(
     (
       values(
-        await sql`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`,
+        await db`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`,
       ) as TypeOfDefinition<Def>[]
     ).map(entry => entry.guildID),
   );
@@ -405,7 +407,7 @@ export async function listPublicServers(): Promise<
 
 export async function deletePublicServer(guildID: string) {
   try {
-    await sql`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = 'serverboard.shown' AND "value" = 'true';`;
+    await db`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = 'serverboard.shown' AND "value" = 'true';`;
   } catch (error) {
     return await errorEmbed({
       client,

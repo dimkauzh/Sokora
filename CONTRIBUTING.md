@@ -18,6 +18,18 @@
 - Invite your bot to your server.
 - Reset and then copy your bot's token.
 
+### Choosing the database
+
+Sokora has two database options: PostgreSQL and SQLite. SQLite is the easiest to set up, but Postgre will ultimately be used in production.
+
+#### SQLite
+
+- stuff to set up sqlite here
+
+#### PostgreSQL
+
+- stuff to set up postgre here
+
 ### Setting up .env
 
 - Run `bun run setup` and our CLI tool will install dependencies and write .env for you. It'll ask you to paste in your bot's token.
@@ -50,6 +62,24 @@ A few guides onto how code contributed to Sokora should look like.
 - Non-nullish assertions are valid when needed.
 - Use the functions `safeChannel` and `safeMember` from `safeThings` instead of using the cache or fetching.
 - Prefer `Promise.all` over having several `await` statements.
+
+### Subete commit system (WIP)
+
+We've created an alternative to [Conventional Commits](https://www.conventionalcommits.org/en/v1.0.0/), aimed at improving its functionality. It'll be required to be used to contribute to this project when it gets proper documentation via a website.
+
+Full layout: `![<type>@[scope] [part]] <description>`, where:
+
+- `!` signifies a breaking change.
+- `type` is the type of the commit, e.g `fix`, `feat`, `refactor`, etc.
+- `scope` is where the changes happened.
+- `part` shows the part of the commit.
+- And finally, `description` is where the changes are described.
+
+#### Examples
+
+`[fix@settingsEmbed pt3] fixed OBJECT type`
+`[chore] Update enhanced-ms to 4.3.0`
+`![fix@settings] types have been fixed`
 
 ---
 

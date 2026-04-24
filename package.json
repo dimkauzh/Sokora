@@ -10,6 +10,8 @@
   "type": "module",
   "scripts": {
     "setup": "bun i && bun run cli/setup.ts",
+    "buildProj": "bun tsgo -p tsconfig.json",
+    "altdev": "bun --watch ./dist/src/bot.js",
     "dev": "bun --watch ./src/bot.ts",
     "start": "bun ./src/index.ts",
     "prettier": "prettier --w .",

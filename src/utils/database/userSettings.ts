@@ -1,9 +1,8 @@
-import { sql } from "bun";
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
 import { safeMember } from "utils/safeThings";
 import { Satisfies } from "utils/types";
-import { values } from ".";
+import { db, values } from ".";
 import {
   SettingPrecondition,
   SettingsDefinition,
@@ -49,7 +48,7 @@ export const settingsDefinition: SettingsDefinition = {
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
 
-const deleteQuery = async (userID: string, key: string, sql_: Bun.SQL = sql) =>
+const deleteQuery = async (userID: string, key: string, sql_: Bun.SQL = db) =>
   await sql_`DELETE FROM user_settings WHERE "userID" = ${userID} AND "key" = ${key};`;
 
 export async function getUserSettingsTable<
@@ -68,7 +67,7 @@ export async function getUserSettingsTable<
   }
 
   return values(
-    await sql`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`,
+    await db`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`,
   ) as TypeOfDefinition<Def>[];
 }
 
@@ -92,7 +91,7 @@ export async function getUserSetting<
   }
 
   const res = values(
-    await sql`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`,
+    await db`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`,
   ) as TypeOfDefinition<Def>[];
 
   const set = settingsDefinition[key].settings[setting];
@@ -117,7 +116,7 @@ export async function setUserSetting<
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(userID: string, key: K, setting: S, value: any) {
   const keySetting = `${key}.${setting}`;
-  await sql.begin(async tx => {
+  await db.begin(async tx => {
     await deleteQuery(userID, keySetting, tx);
     await tx`INSERT INTO user_settings ("userID", "key", "value") VALUES (${userID}, ${keySetting}, ${value});`;
   });

@@ -13,6 +13,7 @@
 - Pinging users and roles, linking channels and adding custom timestamps to news. Discord doesn't allow this from the modal editor, so it uses a Dynamic Variables-ish syntax (Dynamic Mentions). See `/help variables` for info.
 - Removing a user's messages when banning them. Use `/moderation ban user:@USER del:true` for this.
 - Functional `/changelog` command (view all version logs directly from the bot).
+- Settings changes logging.
 
 ### Changed
 
@@ -24,6 +25,12 @@
 - Fixed `/moderation ban` not working on members not in the guild.
 - Fixed some minor issues with timestamps.
 - The "made with ❤️ by the Sokora team" footer in many embeds was supposed to randomize the emoji but it never did; fixed that too.
+- `/moderation cases` now requires only the case ID or only the user ID to output a result.
+- Reset button in `/settings` now appears when you change a text/integer setting.
+- `/news`:
+  - "News" are now "News posts".
+  - Instead of "adding" news, you "post" news.
+- Colors from the profile picture not working reliably (especially when the picture's dominant color is grayscale.)
 
 ## 0.3.2 - 26/08/2025
 

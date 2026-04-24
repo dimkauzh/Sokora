@@ -1,7 +1,8 @@
-import { sql } from "bun";
+import { SQL } from "bun";
 import { createHash } from "crypto";
 import fs from "fs";
 
+export const db = new SQL(process.env.DATABASE_URL!);
 const migrationsDir = "./migrations";
 const preferredHashType = "sha1";
 
@@ -48,26 +49,26 @@ async function applyMigrations(after?: string) {
   console.log(`Applying ${fileList.length} migrations...`);
   for (const file of fileList)
     try {
-      await sql.file(file);
+      await db.file(file);
     } catch (e) {
       console.error(`Failed to apply '${file}':\n${e}`);
       process.exit(1);
     }
 
-  await sql`UPDATE _info SET value = ${hashList[hashList.length - 1]} WHERE "key" = 'version';`;
+  await db`UPDATE _info SET value = ${hashList[hashList.length - 1]} WHERE "key" = 'version';`;
   console.log("Database updated successfully");
 }
 
 export async function updateDatabase() {
   try {
-    const DBversion = values(await sql`SELECT value FROM _info WHERE "key" = 'version';`, true)[0];
+    const DBversion = values(await db`SELECT value FROM _info WHERE "key" = 'version';`, true)[0];
     if (!DBversion) throw new Error(); // Goes into initializing the DB
     if (DBversion == hashList[hashList.length - 1]) return console.log("Database up-to-date");
     console.log("Updating database...");
     await applyMigrations(DBversion);
   } catch {
     console.log("Initializing database...");
-    await sql`
+    await db`
       CREATE TABLE IF NOT EXISTS _info ("key" TEXT, "value" TEXT);
       INSERT INTO _info VALUES ('version', '');
     `.simple();

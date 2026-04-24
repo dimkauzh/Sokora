@@ -1,13 +1,13 @@
 {
+  "include": ["src/**/*", "package.json"],
   "compilerOptions": {
     "target": "esnext",
     "lib": ["ESNext"],
     "module": "Preserve",
     "moduleResolution": "bundler",
     "moduleDetection": "force",
-    "allowImportingTsExtensions": true,
+    "outDir": "./dist",
     "resolveJsonModule": true,
-    "noEmit": true,
     "composite": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

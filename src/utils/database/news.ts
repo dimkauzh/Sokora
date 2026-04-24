@@ -1,6 +1,5 @@
-import { sql } from "bun";
 import { Satisfies } from "utils/types";
-import { values } from ".";
+import { db, values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
 type Def = Satisfies<
@@ -33,7 +32,7 @@ const sendQuery = async (
   messageID: string,
   imageURL: string | null | undefined,
   id: number,
-  sql_: Bun.SQL = sql, // what's this supposed to do?
+  sql_: Bun.SQL = db, // what's this supposed to do?
 ) => {
   const insObject = {
     guildID,
@@ -47,16 +46,16 @@ const sendQuery = async (
     imageURL,
     id,
   };
-  await sql_`INSERT INTO news ${sql(insObject)};`;
+  await sql_`INSERT INTO news ${db(insObject)};`;
 };
 
 export const listAllNews = async (guildID: string): Promise<TypeOfDefinition<Def>[]> =>
-  values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC;`);
+  values(await db`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC;`);
 
 export const getLatestNews = async (guildID: string): Promise<TypeOfDefinition<Def>[]> =>
-  values(await sql`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC LIMIT 1;`);
+  values(await db`SELECT * FROM news WHERE "guildID" = ${guildID} ORDER BY "id" DESC LIMIT 1;`);
 
-const deleteQuery = async (guildID: string, id: number, sql_: Bun.SQL = sql) =>
+const deleteQuery = async (guildID: string, id: number, sql_: Bun.SQL = db) =>
   await sql_`DELETE FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`;
 
 export async function postNews(
@@ -85,7 +84,7 @@ export async function postNews(
 
 export async function getNews(guildID: string, id: number) {
   return values(
-    await sql`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`,
+    await db`SELECT * FROM news WHERE "guildID" = ${guildID} AND "id" = ${id};`,
   )[0] as TypeOfDefinition<Def> | null;
 }
 
@@ -98,7 +97,7 @@ export async function updateNews(
   imageURL?: string | null | undefined,
 ) {
   const lastElem = (await getNews(guildID, id))!;
-  await sql.begin(async tx => {
+  await db.begin(async tx => {
     await deleteQuery(guildID, id, tx);
     await sendQuery(
       lastElem.guildID,
