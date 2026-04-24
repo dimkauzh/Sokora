@@ -259,7 +259,7 @@ export async function settingsEmbed(
         .setStyle(ButtonStyle.Danger);
 
       if (!itrObject)
-        if (settingObject.val == setting || settingObject.type == "OBJECT")
+        if (settingObject?.val == setting || settingObject?.type == "OBJECT")
           component.setDisabled(true); // Temporary (will be able to reset an object type when it works later)
 
       return { text, data, component };
@@ -280,9 +280,9 @@ export async function settingsEmbed(
       return { text, data, component };
     }
 
-    const settingObject = (settingsObj as Record<string, SingleSettingDefinition>)[name];
+    const typedSetting = (settingsObj as Record<string, SingleSettingDefinition>)[name];
+    let settingObject: SingleSettingDefinition | SingleSettingDefinition["settings"] = typedSetting;
 
-    /*
     if (typedSetting.type === "OBJECT")
       switch (name) {
         case "rewards":
@@ -290,13 +290,14 @@ export async function settingsEmbed(
             ? ((await getLevelRewards(id))!.sort(
                 (reward1, reward2) => reward1.level - reward2.level,
               ) as any)
-            : typedSetting;
+            : null;
           break;
         default:
           settingObject = typedSetting.settings!;
           break;
       }
-    */
+
+    if (settingObject == null) settingObject = typedSetting;
 
     // [TODO] make this support objView (currently outputs an error)
     const setting = await getSettingPlease(id, key, name, table);
