@@ -1,6 +1,6 @@
 import { Api } from "@top-gg/sdk";
 import { Chart, registerables } from "chart.js";
-import { updateDatabase } from "database/index";
+import { db, updateDatabase } from "database/index";
 import { getUserSettingsTable, setUserSetting } from "database/userSettings";
 import { ActivityType, Client, Partials } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -82,5 +82,5 @@ client.once("clientReady", async () => {
   Chart.register(...registerables);
 });
 
-// await updateDatabase(); // Needs to be executed before anything else (since some things like rescheduleUnbans needs a DB in the first place)
+if (db.options.adapter == "postgres") await updateDatabase(); // Needs to be executed before anything else (since some things like rescheduleUnbans needs a DB in the first place)
 await client.login(process.env.TOKEN);
