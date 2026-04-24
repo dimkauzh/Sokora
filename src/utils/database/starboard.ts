@@ -27,16 +27,9 @@ export async function getStarred(
   guildID: string,
   messageID: string,
 ): Promise<[string, string, string, number, string, Date] | null> {
-  const res = (await getQuery(guildID, messageID)) as TypeOfDefinition<Def>[];
+  const res = values((await getQuery(guildID, messageID)) as TypeOfDefinition<Def>[]);
   if (!res.length) return null;
-  return [
-    res[0].channel as string,
-    res[0].author as string,
-    res[0].star_message as string,
-    res[0].stars as number,
-    res[0].content as string,
-    res[0].timestamp as Date,
-  ];
+  return res[0] as [string, string, string, number, string, Date];
 }
 
 export async function setStarred(

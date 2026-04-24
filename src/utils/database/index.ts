@@ -7,13 +7,13 @@ const preferredHashType = "sha1";
 
 /**
  * Retrieves the ACTUAL values from a query result because postgre adds unwanted data at the end
- * @param queryResult The returned object from a bun SQL query (so without using .values())
+ * @param queryResult The returned object from a bun SQL query without using .values()
  * @param singles If true when selecting only one column, returns an array of only the column values instead. Else, returns like normal
  * @returns An array containing the objects (or direct values if singles) of the query result
  */
-export function values<T>(queryResult: object, singles?: boolean): T[] {
-  // Not a TS expert but maybe someone can change any to the type of the news object definition ?
-  const actualValues = Object.values(queryResult).filter(v => v instanceof Object);
+export function values(queryResult: object, singles?: boolean) {
+  // [TODO] figure out how to get the type of a raw query result.
+  const actualValues: object[] = Object.values(queryResult).filter(v => v instanceof Object);
   return singles && actualValues.length && Object.values(actualValues[0]).length == 1
     ? actualValues.map(v => Object.values(v)[0])
     : actualValues;

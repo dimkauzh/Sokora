@@ -280,8 +280,23 @@ export async function settingsEmbed(
       return { text, data, component };
     }
 
-    const typedSetting = (settingsObj as Record<string, SingleSettingDefinition>)[name];
-    const settingObject = typedSetting.type === "OBJECT" ? typedSetting.settings! : typedSetting;
+    const settingObject = (settingsObj as Record<string, SingleSettingDefinition>)[name];
+
+    /*
+    if (typedSetting.type === "OBJECT")
+      switch (name) {
+        case "rewards":
+          settingObject = (await getLevelRewards(id))
+            ? ((await getLevelRewards(id))!.sort(
+                (reward1, reward2) => reward1.level - reward2.level,
+              ) as any)
+            : typedSetting;
+          break;
+        default:
+          settingObject = typedSetting.settings!;
+          break;
+      }
+    */
 
     // [TODO] make this support objView (currently outputs an error)
     const setting = await getSettingPlease(id, key, name, table);

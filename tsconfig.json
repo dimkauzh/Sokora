@@ -21,7 +21,7 @@
       "handlers/*": ["./src/handlers/*"],
       "utils/*": ["./src/utils/*"],
       "src/*": ["./src/*"],
-      "package": ["./package.json"]
-    }
-  }
+      "package": ["./package.json"],
+    },
+  },
 }

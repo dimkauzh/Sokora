@@ -60,7 +60,6 @@ export type SingleSettingDefinition = {
   val?: any;
   precondition?: SettingPrecondition;
   iterable?: boolean;
-  selectMenu?: boolean; // unused
   choices?: string[]; // If type SELECT
   emoji?: string;
   settings?: Record<

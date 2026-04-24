@@ -64,7 +64,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
           }`,
           "`(currentdate)` - current date in the 'July 10, 2025' format",
           "`(currentdate, simple)` - current date in the '7/10/25' format",
-          "`(currentdate, detailed)` - current date in the 'July 10, 2025, at 1:11 PM' format",
+          "`(currentdate, detailed)` - current date in the 'July 10, 2025 at 1:11 PM' format",
           "`(<id>, user | role | channel)` - given an ID, allows you to mention/link it (Discord modals don't let you do this natively)",
           "`(<timestamp>, default_timestamp | simple_timestamp | detailed_timestamp)` - given a timestamp, formats it as a date",
         ].join("\n"),
