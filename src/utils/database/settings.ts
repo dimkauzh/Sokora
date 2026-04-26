@@ -309,14 +309,11 @@ export async function getSetting<
 
   const value: string | string[] = res[0].value;
   if (value == "null" || !value) return set.val;
-  const adapter = db.options.adapter;
 
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
       case "BOOL":
-        return adapter == "postgres"
-          ? value == "true"
-          : ((value == "1" ? true : false) as SqlType<typeof set.type>);
+        return (value == "true") as SqlType<typeof set.type>;
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
       default:
