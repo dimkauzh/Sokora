@@ -6,3 +6,13 @@ services:
     volumes:
       - ./data.db:/app/data.db
       - ./.env:/app/.env
+    env_file:
+      - .env
+  db:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: sokora
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: sokora-db
+    ports:
+      - "5432:5432"
