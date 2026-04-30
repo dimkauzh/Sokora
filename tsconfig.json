@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*", "package.json"],
+  "include": ["**/*"],
   "compilerOptions": {
     "target": "esnext",
     "lib": ["ESNext"],
@@ -21,7 +21,7 @@
       "handlers/*": ["./src/handlers/*"],
       "utils/*": ["./src/utils/*"],
       "src/*": ["./src/*"],
-      "package": ["./package.json"],
-    },
-  },
+      "package": ["./package.json"]
+    }
+  }
 }
