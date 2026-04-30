@@ -10,6 +10,7 @@ import {
 import { FieldData, SingleSettingDefinition } from "database/types";
 import {
   getUserSetting,
+  resetUserSetting,
   setUserSetting,
   settingsDefinition as userSettingsDefinition,
 } from "database/userSettings";
@@ -21,6 +22,7 @@ import {
   ChannelType,
   codeBlock,
   ContainerBuilder,
+  EmbedBuilder,
   LabelBuilder,
   MentionableSelectMenuBuilder,
   MessageActionRowComponentBuilder,
@@ -37,87 +39,15 @@ import {
   type AnySelectMenuInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
-import { easterEggNames } from "handlers/events";
 import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
 import { humanizeSettings, humanizeType } from "utils/humanizeSettings";
 import { kominator } from "utils/kominator";
+import { logChannel } from "utils/logChannel";
 import { mention } from "utils/mention";
+import { modalSubmit } from "utils/modalSubmit";
 import { safeMember, safeReply } from "utils/safeThings";
 import { buttonCheck } from "./errorEmbed";
-
-async function construct(
-  settingsObj: Record<string, SingleSettingDefinition> | Record<string, SingleSettingDefinition>[],
-  settingComponent: SettingComponent,
-  container: ContainerBuilder,
-  reset: boolean,
-  objView?: boolean,
-  itrObjView?: boolean,
-  cID?: string,
-) {
-  if (objView || itrObjView)
-    container
-      .addActionRowComponents(
-        new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
-          new ButtonBuilder()
-            .setCustomId(objView ? "cancel" : "return")
-            .setLabel(objView ? "Cancel" : "Return")
-            .setStyle(ButtonStyle.Secondary),
-        ),
-      )
-      .addSeparatorComponents(new SeparatorBuilder().setDivider(true));
-
-  async function constructLoop(object: SettingSection) {
-    if (!object) return;
-    const component = object.component;
-
-    if (object.data.id == cID && object.data.type == "reset") component.setDisabled(true);
-    if (component instanceof ButtonBuilder)
-      container.addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-          .setButtonAccessory(component as ButtonBuilder),
-      );
-    else
-      container
-        .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-        .addActionRowComponents(
-          new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
-        );
-  }
-
-  if (!itrObjView)
-    for (const name of Object.keys(settingsObj))
-      await constructLoop(await settingComponent({ settingsObj, name, reset }));
-  else
-    for (const obj of settingsObj as Record<string, any>[])
-      await constructLoop(
-        await settingComponent({ settingsObj, name: `lvl${obj.level}`, reset, itrObjView }),
-      );
-
-  return container.addSeparatorComponents(new SeparatorBuilder().setDivider(false));
-}
-
-async function getSettingPlease(
-  id: string,
-  key: string,
-  setting: string,
-  table: "server" | "user",
-) {
-  if (table == "server") return await getSetting(id, key, setting);
-  else return await getUserSetting(id, key, setting);
-}
-
-async function setSettingPlease(
-  id: string,
-  key: string,
-  setting: string,
-  value: any,
-  table: "server" | "user",
-) {
-  if (table == "server") return setSetting(id, key, setting, value);
-  else return await setUserSetting(id, key, setting, value);
-}
 
 type Component =
   | ButtonBuilder
@@ -135,15 +65,52 @@ type SettingSection =
     }
   | undefined;
 
-type ComponentOptions = {
-  settingsObj: Record<string, SingleSettingDefinition> | Record<string, SingleSettingDefinition>[];
-  name: string;
-  reset: boolean;
-  objView?: boolean;
-  itrObjView?: boolean;
-};
+async function getSettingPlease(
+  id: string,
+  key: string,
+  setting: string,
+  table: "server" | "user",
+) {
+  if (table == "server") return await getSetting(id, key, setting);
+  else return await getUserSetting(id, key, setting);
+}
 
-type SettingComponent = (options: ComponentOptions) => Promise<SettingSection>;
+async function setSettingPlease(
+  id: string,
+  key: string,
+  setting: string,
+  value: any,
+  table: "server" | "user",
+  interaction: ChatInputCommandInteraction,
+) {
+  if (table == "server") {
+    if ((await getSetting(id, "moderation", "events"))?.toString().includes("settings")) {
+      const member = await safeMember(interaction.guild!, interaction.user.id);
+      const avatar = member.displayAvatarURL();
+      const embed = new EmbedBuilder()
+        .setAuthor({
+          name: `${dotCheck({ string: avatar, doubleSpace: true })}${member.user.username} changed ${key}.${setting}`,
+          iconURL: avatar,
+        })
+        .addFields(
+          {
+            name: "📻 • **Old value**",
+            value: `${await getSetting(id, key, setting)}`,
+          },
+          {
+            name: "📱 • **New value**",
+            value: `${value}`,
+          },
+        )
+        .setFooter({ text: `User ID: ${member.id}` })
+        .setTimestamp(Date.now())
+        .setColor(await colorize({ hue: Sokolors.Blue }));
+
+      await logChannel(interaction.guild!, { embeds: [embed] });
+    }
+    return await setSetting(id, key, setting, value);
+  } else return await setUserSetting(id, key, setting, value);
+}
 
 // basic, but gets the job done
 function isValueValid(value: string | undefined, type: FieldData): boolean {
@@ -152,6 +119,15 @@ function isValueValid(value: string | undefined, type: FieldData): boolean {
   return true;
 }
 
+async function constructModalContainer(settingText: string, valueText: string, hue: number) {
+  return new ContainerBuilder()
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
+    .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
+    .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
+    .setAccentColor(await colorize({ hue }));
+}
+
+// Build and send the setting embed
 export async function settingsEmbed(
   interaction: ChatInputCommandInteraction,
   table: "server" | "user",
@@ -162,8 +138,15 @@ export async function settingsEmbed(
   const id = table == "server" ? guild.id : user.id;
   const key = interaction.options.getSubcommand();
   const settingsDef = table == "server" ? settingsDefinition[key] : userSettingsDefinition[key];
-  const exemptButtons = ["reset_start", "reset_category", "cancel", "yes", "no", "return", "add"];
-  const eventNames = ["messageUpdate", "messageDelete"];
+  const exemptButtons = [
+    "reset_start",
+    "reset_category",
+    "cancel",
+    "reset_yes",
+    "reset_no",
+    "return",
+    "add",
+  ];
   const color = await colorize({ hue: Sokolors.Blue });
   let settingsObj = settingsDef.settings;
   let settingName = "";
@@ -173,8 +156,92 @@ export async function settingsEmbed(
   let disableCategory = false;
   let itrObjView = false;
   let objView = false;
+  let precondReply: (() => any) | null;
 
-  const settingComponent: SettingComponent = async (options: ComponentOptions) => {
+  // Create a container
+  async function construct(
+    settingsObj:
+      | Record<string, SingleSettingDefinition>
+      | Record<string, SingleSettingDefinition>[]
+      | null,
+    container: ContainerBuilder,
+    reset: boolean,
+    buttons: ActionRowBuilder<MessageActionRowComponentBuilder>[],
+    objView?: boolean,
+    itrObjView?: boolean,
+    cID?: string,
+  ) {
+    if (objView || itrObjView)
+      container
+        .addActionRowComponents(
+          new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+            new ButtonBuilder()
+              .setCustomId(objView ? "cancel" : "return")
+              .setLabel(objView ? "Cancel" : "Return")
+              .setStyle(ButtonStyle.Secondary),
+          ),
+        )
+        .addSeparatorComponents(new SeparatorBuilder().setDivider(true));
+
+    if (itrObjView)
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent("# idfk what to say here yet"),
+      );
+
+    if (!settingsObj) return;
+
+    // Construct a single setting row (title + action)
+    async function constructLoop(object: SettingSection) {
+      if (!object) return;
+      const component = object.component;
+
+      if (object.data.id == cID && object.data.type == "reset") component.setDisabled(true);
+      if (component instanceof ButtonBuilder)
+        container.addSectionComponents(
+          new SectionBuilder()
+            .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+            .setButtonAccessory(component as ButtonBuilder),
+        );
+      else
+        container
+          .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
+          .addActionRowComponents(
+            new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
+          );
+    }
+
+    // [TODO] rework this to not spam 130loc settingComponent all the time
+    if (!itrObjView)
+      for (const name of Object.keys(settingsObj))
+        await constructLoop(await settingComponent({ settingsObj, name, reset }));
+    else
+      // Temporary (only fixed to level rewards for now)
+      for (const obj of settingsObj as Record<string, any>[])
+        await constructLoop(
+          await settingComponent({ settingsObj, name: `lvl${obj.level}`, reset, itrObjView }),
+        );
+
+    // empty separator.
+    container.addSeparatorComponents(new SeparatorBuilder().setDivider(false));
+
+    // Bottom description button (disabled) + reset
+    if (table == "server") container.addActionRowComponents(buttons);
+    else
+      container.addTextDisplayComponents(
+        new TextDisplayBuilder().setContent(settingsDef.description),
+      );
+  }
+
+  // Build a single setting row
+  const settingComponent = async (options: {
+    settingsObj:
+      | Record<string, SingleSettingDefinition>
+      | Record<string, SingleSettingDefinition>[];
+    name: string;
+    reset: boolean;
+    objView?: boolean;
+    itrObjView?: boolean;
+  }) => {
     const { settingsObj, name, reset, itrObjView } = options;
     if (exemptButtons.includes(name) || exemptButtons.map(name => `obj${name}`).includes(name))
       return;
@@ -182,6 +249,8 @@ export async function settingsEmbed(
     let data: { type: string; id: string };
     let component: Component;
     let text: string;
+
+    // Setting reset/delete builder
     const resetObj = (text: string, itrObject?: boolean) => {
       data = { type: "reset", id: name };
       component = new ButtonBuilder()
@@ -190,13 +259,14 @@ export async function settingsEmbed(
         .setStyle(ButtonStyle.Danger);
 
       if (!itrObject)
-        if (settingObject.val == setting || settingObject.type == "OBJECT")
-          component.setDisabled(true);
+        if (settingObject?.val == setting || settingObject?.type == "OBJECT")
+          component.setDisabled(true); // Temporary (will be able to reset an object type when it works later)
 
       return { text, data, component };
     };
 
     if (itrObjView) {
+      // Only for leveling for now
       const reward = (await getLevelRewards(id))?.find(r => name.includes(r.level.toString()));
       if (!reward) return;
       text = `Level **${reward?.level}**\n-# Rewards • ${mention(reward?.id, reward?.channel ? "CHANNEL" : "ROLE")}`;
@@ -210,15 +280,31 @@ export async function settingsEmbed(
       return { text, data, component };
     }
 
-    const settingObject =
-      typeof settingsObj === "object"
-        ? (settingsObj as Record<string, SingleSettingDefinition>)[name]
-        : (settingsObj as Record<string, SingleSettingDefinition>)[name].settings!;
+    const typedSetting = (settingsObj as Record<string, SingleSettingDefinition>)[name];
+    let settingObject: SingleSettingDefinition | SingleSettingDefinition["settings"] = typedSetting;
 
-    // todo: make this support objView (currently outputs an error)
-    let setting = await getSettingPlease(id, key, name, table);
+    if (typedSetting.type === "OBJECT")
+      switch (name) {
+        case "rewards":
+          settingObject = (await getLevelRewards(id))
+            ? ((await getLevelRewards(id))!.sort(
+                (reward1, reward2) => reward1.level - reward2.level,
+              ) as any)
+            : null;
+          break;
+        default:
+          settingObject = typedSetting.settings!;
+          break;
+      }
+
+    if (settingObject == null) settingObject = typedSetting;
+
+    // [TODO] make this support objView (currently outputs an error)
+    const setting = await getSettingPlease(id, key, name, table);
+    // 25 is the maximum amount of things a single select menu can store.
     const maxValues = settingObject.iterable ? 25 : 1;
     text = `${dotCheck({ string: settingObject.emoji as string, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
+
     if (reset) return resetObj(text, false);
 
     data = { type: settingObject.type as string, id: name };
@@ -263,12 +349,13 @@ export async function settingsEmbed(
 
         if (setting) component.setDefaultRoles(kominator(setting as string));
         break;
-      case "LOG":
+      case "SELECT": {
+        const options = (settingObject as SingleSettingDefinition).choices!;
         component = new StringSelectMenuBuilder()
           .setCustomId(data.id)
-          .setMaxValues(eventNames.length)
+          .setMaxValues(options.length)
           .setOptions(
-            eventNames.map(option =>
+            options.map(option =>
               new StringSelectMenuOptionBuilder()
                 .setLabel(option)
                 .setValue(option)
@@ -276,54 +363,52 @@ export async function settingsEmbed(
             ),
           );
         break;
-      case "EGG":
-        component = new StringSelectMenuBuilder()
-          .setCustomId(data.id)
-          .setMaxValues(easterEggNames.length)
-          .setOptions(
-            easterEggNames.map(option =>
-              new StringSelectMenuOptionBuilder()
-                .setLabel(option)
-                .setValue(option)
-                .setDefault(kominator((setting as string | undefined) || "").includes(option)),
-            ),
-          );
-        break;
+      }
       case "OBJECT":
         component = component.setLabel("suffer").setStyle(ButtonStyle.Danger);
         break;
       case "REWARD":
-        component = new MentionableSelectMenuBuilder().setCustomId(data.id);
+        component = new RoleSelectMenuBuilder().setCustomId(data.id);
+      // [TODO] either implement two select menus, or
+      // make a custom string select menu with channels and roles
     }
 
-    if (
-      (name == "server_invite" || name == "invite_channel") &&
-      (!(await safeMember(guild, interaction.client.user.id))?.permissions.has(
-        "CreateInstantInvite",
-      ) ||
-        !(await safeMember(guild, interaction.client.user.id))?.permissions.has("ManageGuild"))
-    ) {
-      resetSetting(id, "serverboard", "server_invite");
-      resetSetting(id, "serverboard", "invite_channel");
-      text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# The **Create Invite** and/or the **Manage Server** permissions are required for this setting to work.`;
-      component.setDisabled(true);
-    }
+    if (settingsDef.settings[name]) {
+      // Doesn't happen when adding/editing a value in an OBJECT type btw
+      const precondError = settingsDef.settings[name].precondition
+        ? await settingsDef.settings[name].precondition(interaction, setting)
+        : null;
 
-    if (table == "user") {
-      const dmChannel = await (await safeMember(guild, id)).createDM();
-      if (name == "remind" && (!dmChannel || !dmChannel.isSendable())) {
-        await setUserSetting(id, "topgg", "remind", false);
-        text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
+      if (precondError) {
+        if (table == "server") await resetSetting(id, key, name);
+        else if (table == "user") await resetUserSetting(id, name, name);
+        text = `${dotCheck({ string: ":warning:", doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${precondError}`;
         component.setDisabled(true);
+        precondReply = async () =>
+          await safeReply({
+            interaction: interaction,
+            replyOptions: {
+              components: [
+                await constructModalContainer(
+                  `**${dotCheck({ string: settingsDef.settings[name].emoji, twoSides: true, includeString: true })}${humanizeSettings(name)}** couldn't be changed!`,
+                  precondError,
+                  Sokolors.Red,
+                ),
+              ],
+              flags: ["Ephemeral", "IsComponentsV2"],
+            },
+          });
       }
     }
 
     return { text, data, component };
   };
 
+  // Bottom button row builder
   const buttons = async (
     reset: boolean,
     confirm: boolean,
+    cID?: string,
     disableCategory?: boolean,
     itrObjView?: boolean,
   ) => {
@@ -333,12 +418,30 @@ export async function settingsEmbed(
       .setLabel("Reset category")
       .setStyle(ButtonStyle.Danger);
 
+    if (confirm) {
+      if (!itrObjView) category.setDisabled(disableCategory);
+      return [
+        actionRow.addComponents(
+          new ButtonBuilder()
+            .setCustomId("reset_confirm")
+            .setLabel(`Reset ${cID == "reset_category" ? "the category" : cID}?`)
+            .setStyle(ButtonStyle.Danger)
+            .setDisabled(true),
+          new ButtonBuilder()
+            .setCustomId("reset_yes")
+            .setLabel("Yes")
+            .setStyle(ButtonStyle.Secondary),
+          new ButtonBuilder().setCustomId("reset_no").setLabel("No").setStyle(ButtonStyle.Primary),
+        ),
+      ];
+    }
+
     if (reset) {
       if (!itrObjView) actionRow.addComponents(category);
       return [
         actionRow.addComponents(
           new ButtonBuilder()
-            .setCustomId("objcancel")
+            .setCustomId("cancel")
             .setLabel("Cancel")
             .setStyle(ButtonStyle.Secondary)
             .setDisabled(false),
@@ -346,29 +449,21 @@ export async function settingsEmbed(
       ];
     }
 
-    if (confirm) {
-      if (!itrObjView) actionRow.addComponents(category.setDisabled(disableCategory));
-      return [
-        actionRow.addComponents(
-          new ButtonBuilder().setCustomId("objyes").setLabel("Yes").setStyle(ButtonStyle.Secondary),
-          new ButtonBuilder().setCustomId("objcancel").setLabel("No").setStyle(ButtonStyle.Primary),
-        ),
-      ];
-    }
-
-    const buttonArray = [
-      new ButtonBuilder()
-        .setCustomId("desc")
-        .setLabel(itrObjView ? settingsObj["rewards"].desc : settingsDef.description)
-        .setStyle(ButtonStyle.Secondary)
-        .setDisabled(true),
-    ];
+    const buttonArray = itrObjView
+      ? []
+      : [
+          new ButtonBuilder()
+            .setCustomId("desc")
+            .setLabel(itrObjView ? settingsObj["rewards"].desc : settingsDef.description)
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(true),
+        ];
 
     const actual = (await getSettingCategory(id, key)).map(setting => setting ?? null);
     const defaults = Object.values(settingsObj).map(setting => setting.val ?? null);
     const nullCheck = itrObjView
       ? !(await getLevelRewards(id))?.every(value => value == null)
-      : !actual.every(value => value == defaults[actual.indexOf(value)]);
+      : JSON.stringify(actual) !== JSON.stringify(defaults);
 
     if (nullCheck)
       buttonArray.unshift(
@@ -378,6 +473,7 @@ export async function settingsEmbed(
           .setStyle(ButtonStyle.Danger),
       );
 
+    // [TODO] make buttons for when you're adding a new object
     if (itrObjView)
       buttonArray.unshift(
         new ButtonBuilder().setCustomId("objadd").setLabel("Add").setStyle(ButtonStyle.Success),
@@ -387,67 +483,42 @@ export async function settingsEmbed(
   };
 
   const container = new ContainerBuilder().setAccentColor(color);
-  await construct(settingsObj, settingComponent, container, false, false);
-  if (table == "server") container.addActionRowComponents(await buttons(false, false));
-  else
-    container.addTextDisplayComponents(
-      new TextDisplayBuilder().setContent(settingsDef.description),
-    );
-
-  const reply = await interaction.reply({
-    components: [container],
-    flags: ["Ephemeral", "IsComponentsV2"],
+  await construct(settingsObj, container, false, await buttons(false, false));
+  const reply = await safeReply({
+    interaction: interaction,
+    replyOptions: {
+      components: [container],
+      flags: ["Ephemeral", "IsComponentsV2"],
+    },
   });
+
+  if (precondReply! != null) await precondReply();
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async i => {
     if (await buttonCheck({ i, interaction, reply })) return;
     collector.resetTimer({ time: 60000 });
     const cID = i.customId;
 
-    async function end(reset: boolean, confirm: boolean, objView: boolean, itrObjView: boolean) {
-      if (objView) settingsObj = settingsObj["rewards"].settings!;
-      const newContainer = new ContainerBuilder().setAccentColor(color);
-      await construct(
-        itrObjView
-          ? ((await getLevelRewards(id))!.sort(
-              (reward1, reward2) => reward1.level - reward2.level,
-            ) as any)
-          : settingsObj,
-        settingComponent,
-        newContainer,
-        reset || confirm,
-        objView ?? false,
-        itrObjView ?? false,
-        cID,
-      );
-
-      if (table == "server")
-        newContainer.addActionRowComponents(
-          await buttons(reset, confirm, disableCategory, itrObjView),
-        );
-      else
-        newContainer.addTextDisplayComponents(
-          new TextDisplayBuilder().setContent(settingsDef.description),
-        );
-
-      return await safeReply({ interaction: i, editOptions: { components: [newContainer] } });
-    }
-
+    // Special buttons (navigation)
     switch (cID.replace("obj", "")) {
       case "reset_start":
         reset = true;
         confirm = false;
         break;
       case "reset_category":
-        reset = false;
+        reset = true;
         confirm = true;
         disableCategory = true;
         resetCategory = true;
         break;
-      case "yes":
-        if (resetCategory) resetSettingCategory(id, key);
-        else await setSettingPlease(id, key, settingName, null, table);
+      case "reset_yes":
+        if (resetCategory) await resetSettingCategory(id, key);
+        else await setSettingPlease(id, key, settingName, null, table, interaction);
         reset = false;
+        confirm = false;
+        break;
+      case "reset_no":
+        reset = true;
         confirm = false;
         break;
       case "cancel":
@@ -468,17 +539,25 @@ export async function settingsEmbed(
         break;
     }
 
+    // Settings buttons
     const componentType = (
-      await settingComponent({ settingsObj, name: cID, reset: reset || confirm })
+      await settingComponent({ settingsObj, name: cID, reset: reset })
     )?.data.type.toLowerCase();
     switch (componentType) {
       case "reset":
-        reset = false;
+        reset = true;
         confirm = true;
         settingName = cID;
         break;
       case "bool":
-        await setSettingPlease(id, key, cID, !(await getSettingPlease(id, key, cID, table)), table);
+        await setSettingPlease(
+          id,
+          key,
+          cID,
+          !(await getSettingPlease(id, key, cID, table)),
+          table,
+          interaction,
+        );
         break;
       case "object":
         itrObjView = true;
@@ -505,49 +584,64 @@ export async function settingsEmbed(
           );
 
         await i.showModal(modal);
-        i.client.once("interactionCreate", async modalInteraction => {
-          if (!modalInteraction.isModalSubmit()) return;
-          async function constructModalContainer(
-            settingText: string,
-            valueText: string,
-            hue: number,
-          ) {
-            return new ContainerBuilder()
-              .addTextDisplayComponents(new TextDisplayBuilder().setContent(settingText))
-              .addSeparatorComponents(new SeparatorBuilder().setDivider(true))
-              .addTextDisplayComponents(new TextDisplayBuilder().setContent(valueText))
-              .setAccentColor(await colorize({ hue }));
-          }
+        const modalInteraction = await modalSubmit(i);
 
-          const value = modalInteraction.fields.getTextInputValue("setting");
-          const length = value!.length;
-          let settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`;
-          let valueText = `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`;
-          let hue = 100;
+        // After modal interaction
+        collector.resetTimer({ time: 60000 });
+        if (!modalInteraction) return;
 
-          if (!isValueValid(value, settingsObj[cID].type)) {
-            settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
-            valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
-            hue = 0;
-            return;
-          } else await setSettingPlease(id, key, cID, value, table);
+        const value = modalInteraction.fields.getTextInputValue("setting");
+        const length = value!.length;
+        let settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** got changed`;
+        let valueText = `The ${value!.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : length >= 50 ? `to ${value}` : `to **${value}**`}`;
+        let hue = Sokolors.Blue;
 
-          await safeReply({
-            interaction: modalInteraction,
-            replyOptions: {
-              components: [await constructModalContainer(settingText, valueText, hue)],
-            },
-          });
-          await end(reset, confirm, objView, itrObjView);
+        if (!isValueValid(value, settingsObj[cID].type)) {
+          settingText = `**${dotCheck({ string: settingsObj[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
+          valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObj[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value!)}`}`;
+          hue = Sokolors.Red;
+        } else await setSettingPlease(id, key, cID, value, table, interaction);
+
+        await safeReply({
+          interaction: modalInteraction,
+          replyOptions: {
+            components: [await constructModalContainer(settingText, valueText, hue)],
+            flags: ["Ephemeral", "IsComponentsV2"],
+          },
         });
         break;
       }
       default:
-        await setSettingPlease(id, key, cID, (i as AnySelectMenuInteraction).values, table);
+        if (!(exemptButtons.includes(cID) || exemptButtons.map(id => `obj${id}`).includes(cID)))
+          await setSettingPlease(
+            id,
+            key,
+            cID,
+            (i as AnySelectMenuInteraction).values,
+            table,
+            interaction,
+          );
     }
 
-    if (componentType != "text" && componentType != "integer")
-      await end(reset, confirm, objView, itrObjView);
+    if (objView) settingsObj = settingsObj["rewards"].settings!;
+    const newContainer = new ContainerBuilder().setAccentColor(color);
+    await construct(
+      itrObjView
+        ? (await getLevelRewards(id))
+          ? ((await getLevelRewards(id))!.sort(
+              (reward1, reward2) => reward1.level - reward2.level,
+            ) as any)
+          : null
+        : settingsObj,
+      newContainer,
+      reset ?? confirm,
+      await buttons(reset, confirm, cID, disableCategory, itrObjView),
+      objView ?? false,
+      itrObjView ?? false,
+      cID,
+    );
+
+    return await safeReply({ interaction: i, editOptions: { components: [newContainer] } });
   });
 
   collector.on("end", async () => {

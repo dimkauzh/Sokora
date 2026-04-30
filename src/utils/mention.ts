@@ -2,13 +2,7 @@
  * Handles role mentions, channel mentions, timestamps, and more.
  *
  * @param {string | number} who Who to mention? If it's a timestamp, pass `Date.now()`.
- * @param {
- *     | "USER"
- *     | "ROLE"
- *     | "CHANNEL"
- *     | "DEFAULT_TIMESTAMP"
- *     | "SIMPLE_TIMESTAMP"
- *     | "DETAILED_TIMESTAMP"} type What to mention?
+ * @param {string} type What to mention?
  * @returns {string} A `<MENTION>` string.
  */
 export function mention(

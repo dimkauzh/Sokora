@@ -1,48 +1,37 @@
-import { getDatabase } from ".";
+import { Satisfies } from "utils/types";
+import { db, values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
-const tableDefinition = {
-  name: "starboard",
-  definition: {
-    guild: "TEXT",
-    message: "TEXT",
-    channel: "TEXT",
-    author: "TEXT",
-    star_message: "TEXT",
-    stars: "INTEGER",
-    content: "TEXT",
-    timestamp: "TEXT",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "starboard";
+    definition: {
+      guild: "TEXT";
+      message: "TEXT";
+      channel: "TEXT";
+      author: "TEXT";
+      star_message: "TEXT";
+      stars: "INTEGER";
+      content: "TEXT";
+      timestamp: "TIMESTAMP";
+    };
+  }
+>;
 
-const database = getDatabase(tableDefinition);
+const getQuery = async (guild: string, message: string) =>
+  values(await db`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`);
 
-const getQuery = database.query("SELECT * FROM starboard WHERE guild = $1 AND message = $2;");
-const deleteQuery = database.query("DELETE FROM starboard WHERE guild = $1 AND message = $2;");
-const insertQuery = database.query(
-  "INSERT INTO starboard (guild, message, channel, author, star_message, stars, content, timestamp) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
-);
-const getTopQuery = database.query(
-  "SELECT * FROM starboard WHERE guild = $1 ORDER BY stars DESC LIMIT ?2;",
-);
-
-export function getStarred(
+export async function getStarred(
   guildID: string,
   messageID: string,
-): [string, string, string, number, string, string] | null {
-  const res = getQuery.all(guildID, messageID) as TypeOfDefinition<typeof tableDefinition>[];
+): Promise<[string, string, string, number, string, Date] | null> {
+  const res = values((await getQuery(guildID, messageID)) as TypeOfDefinition<Def>[]);
   if (!res.length) return null;
-  return [
-    res[0].channel as string,
-    res[0].author as string,
-    res[0].star_message as string,
-    res[0].stars as number,
-    res[0].content as string,
-    res[0].timestamp as string,
-  ];
+  return res[0] as [string, string, string, number, string, Date];
 }
 
-export function setStarred(
+export async function setStarred(
   guildID: string,
   messageID: string,
   channelID: string,
@@ -50,24 +39,21 @@ export function setStarred(
   starMessageID: string,
   stars: number,
   content: string,
-  timestamp: string,
+  timestamp: Date,
 ) {
-  if (getQuery.all(guildID, messageID).length) deleteQuery.run(guildID, messageID);
-  insertQuery.run(
-    guildID,
-    messageID,
-    channelID,
-    authorID,
-    starMessageID,
+  const insObject = {
+    guild: guildID,
+    message: messageID,
+    channel: channelID,
+    author: authorID,
+    star_message: starMessageID,
     stars,
     content,
     timestamp,
-  );
-}
-
-export function getGuildStarboard(
-  guildID: string,
-  limit: number = 10,
-): TypeOfDefinition<typeof tableDefinition>[] {
-  return getTopQuery.all(guildID, limit) as TypeOfDefinition<typeof tableDefinition>[];
+  };
+  // [TODO] TypeError: Binding expected string, TypedArray, boolean, number, bigint or null
+  await db.begin(async tx => {
+    await tx`DELETE FROM starboard WHERE "guild" = ${guildID} AND "message" = ${messageID};`;
+    await tx`INSERT INTO starboard ${db(insObject)};`;
+  });
 }

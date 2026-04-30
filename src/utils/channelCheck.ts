@@ -39,7 +39,7 @@ export async function channelCheck(options: {
 
   async function reset() {
     await dm?.send({ embeds: [embed] });
-    resetSetting(guild.id, setting.category, setting.setting);
+    await resetSetting(guild.id, setting.category, setting.setting);
     return false;
   }
 

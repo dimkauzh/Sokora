@@ -17,7 +17,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("view")
   .setDescription("View the news of this server.")
   .addNumberOption(number =>
-    number.setName("page").setDescription("The page of the news that you want to see."),
+    number.setName("page").setDescription("The news post that you want to see."),
   );
 
 export async function run(interaction: ChatInputCommandInteraction) {
@@ -25,25 +25,24 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (!interaction.guild)
     return await errorEmbed({
       interaction,
-      title: "Error viewing news.",
+      title: "Error viewing a news post.",
       reason: "This command can only be used in a server.",
     });
 
-  const news = listAllNews(interaction.guild.id);
-  const sortedNews = Object.values(news).sort((a, b) => b.createdAt - a.createdAt);
+  const news = await listAllNews(interaction.guild.id);
 
-  if (!news || !sortedNews || !sortedNews.length)
+  if (!news || !news.length)
     return await errorEmbed({
       interaction,
       title: "No news found.",
-      reason: "Admins can add news with the **/news add** command.",
+      reason: "Admins can post news with the **/news post** command.",
     });
 
-  if (page > sortedNews.length) page = sortedNews.length;
-  if (page <= 1) page = 1;
+  if (page > news.length) page = news.length;
+  if (page < 1) page = 1;
 
   async function getEmbed() {
-    const currentNews = sortedNews[page - 1];
+    const currentNews = news[page - 1];
     const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
       .setAuthor({
@@ -55,9 +54,9 @@ export async function run(interaction: ChatInputCommandInteraction) {
       .setImage(currentNews.imageURL || null)
       .setTimestamp(currentNews.updatedAt || currentNews.createdAt)
       .setFooter({
-        text: `${sortedNews.length > 1 ? `Page ${page} of ${sortedNews.length} • ` : ""}ID: ${currentNews.id}`,
+        text: `${news.length > 1 ? `Page ${page} of ${news.length} • ` : ""}ID: ${currentNews.id}`,
       })
-      .setColor(await colorize({ hue: Sokolors.Green }));
+      .setColor(await colorize({ hue: Sokolors.Blue }));
   }
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
@@ -73,10 +72,10 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const reply = await interaction.reply({
     embeds: [await getEmbed()],
-    components: sortedNews.length > 1 ? [row] : [],
+    components: news.length > 1 ? [row] : [],
   });
 
-  if (page <= 1) return;
+  if (page < 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60000 });
   collector.on("collect", async (i: ButtonInteraction) => {
     if (await buttonCheck({ i, interaction, reply })) return;
@@ -84,12 +83,12 @@ export async function run(interaction: ChatInputCommandInteraction) {
     switch (i.customId) {
       case "left":
         page--;
-        if (page < 1) page = sortedNews.length;
+        if (page < 1) page = news.length;
         await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
       case "right":
         page++;
-        if (page > sortedNews.length) page = 1;
+        if (page > news.length) page = 1;
         await i.update({ embeds: [await getEmbed()], components: [row] });
         break;
     }

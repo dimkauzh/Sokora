@@ -1,112 +1,105 @@
-import { getDatabase } from ".";
+import { Satisfies } from "utils/types";
+import { db, values } from ".";
 import { TableDefinition, TypeOfDefinition } from "./types";
 
-const definition = {
-  name: "moderation",
-  definition: {
-    guild: "TEXT",
-    user: "TEXT",
-    type: "TEXT",
-    moderator: "TEXT",
-    reason: "TEXT",
-    id: "TEXT",
-    timestamp: "TIMESTAMP",
-    expiresAt: "TIMESTAMP",
-  },
-} satisfies TableDefinition;
-
-export type ModerationCase = typeof definition;
+export type Case = Satisfies<
+  TableDefinition,
+  {
+    name: "moderation";
+    definition: {
+      guild: "TEXT";
+      userID: "TEXT";
+      type: "TEXT";
+      moderator: "TEXT";
+      reason: "TEXT";
+      id: "INTEGER";
+      timestamp: "TIMESTAMP";
+      expiresAt: "TIMESTAMP";
+    };
+  }
+>;
 
 export type ModType = "MUTE" | "UNMUTE" | "WARN" | "KICK" | "BAN" | "UNBAN";
 
-const database = getDatabase(definition);
-const addQuery = database.query(
-  "INSERT INTO moderation (guild, user, type, moderator, reason, id, timestamp, expiresAt) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8);",
-);
-const listGuildQuery = database.query("SELECT * FROM moderation WHERE guild = $1;");
-const listGuildTypeQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND type = $2;",
-);
-const listUserQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND user = $2;");
-const listUserTypeQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND user = $2 AND type = $3;",
-);
-const listModQuery = database.query(
-  "SELECT * FROM moderation WHERE guild = $1 AND moderator = $2;",
-);
-const getIdQuery = database.query("SELECT * FROM moderation WHERE guild = $1 AND id = $2;");
-const getLastIdQuery = database.query(
-  "SELECT CAST(id AS int) AS id FROM moderation WHERE guild = ? ORDER BY id DESC LIMIT 1;",
-);
-const editQuery = database.query(
-  "UPDATE moderation SET reason = ?3, expiresAt = ?4 WHERE guild = ?1 AND id = ?2;",
-);
-const removeQuery = database.query("DELETE FROM moderation WHERE guild = $1 AND id = $2");
-const getExpiredBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt <= $1;",
-);
-const getPendingBansQuery = database.query(
-  "SELECT * FROM moderation WHERE type = 'BAN' AND expiresAt IS NOT NULL AND expiresAt > $1;",
-);
-
-export function addModeration(
+export async function createCase(
   guildID: string | number,
   userID: string,
-  type: ModType,
+  modType: ModType,
   moderator: string,
   reason = "",
-  expiresAt?: number | null,
+  expiresAt?: Date | null,
 ) {
-  let id: unknown[] | number = getLastIdQuery.all(guildID);
-  id = parseInt(id.length ? (id[0] as { id: string }).id : "0") + 1;
-  addQuery.run(guildID, userID, type, moderator, reason, id, Date.now(), expiresAt ?? null);
+  const id: number =
+    (values(
+      await db`SELECT id FROM moderation WHERE "guild" = ${guildID} ORDER BY "id" DESC LIMIT 1;`,
+      true,
+    )[0] ?? 0) + 1;
+
+  const insObject = {
+    guild: guildID,
+    userID,
+    type: modType,
+    moderator,
+    reason,
+    id,
+    timestamp: new Date(),
+    expiresAt,
+  };
+  await db`INSERT INTO moderation ${db(insObject)};`; // Rare conflict possible if two mods add a case at the approx same moment ?
   return id;
 }
 
-export function listGuildModeration(guildID: number | string, type?: ModType) {
-  if (type) return listGuildTypeQuery.all(guildID, type) as TypeOfDefinition<typeof definition>[];
-
-  return listGuildQuery.all(guildID) as TypeOfDefinition<typeof definition>[];
+export async function listGuildCases(guildID: number | string, modType?: ModType) {
+  const typeFilter = db`AND "type" = ${modType}`;
+  return values(
+    await db`
+      SELECT * FROM moderation
+      WHERE "guild" = ${guildID}
+      ${modType ? typeFilter : db``}
+      ORDER BY "id" DESC;`,
+  ) as TypeOfDefinition<Case>[];
 }
 
-export function listUserModeration(
+export async function listUserCases(
   guildID: number | string,
   userID: number | string,
-  type?: ModType,
+  modType?: ModType,
 ) {
-  if (type)
-    return listUserTypeQuery.all(guildID, userID, type) as TypeOfDefinition<typeof definition>[];
-
-  return listUserQuery.all(guildID, userID) as TypeOfDefinition<typeof definition>[];
+  const typeFilter = db`AND "type" = ${modType}`;
+  return values(
+    await db`
+      SELECT * FROM moderation
+      WHERE "guild" = ${guildID}
+      AND "userID" = ${userID}
+      ${modType ? typeFilter : db``}
+      ORDER BY "id" DESC;`,
+  ) as TypeOfDefinition<Case>[];
 }
 
-export function getModeration(guildID: number | string, userID: number | string, id: string) {
-  const modCase = getIdQuery.all(guildID, id) as TypeOfDefinition<typeof definition>[];
-  if (modCase.length && modCase[0].user == userID) return modCase;
+export async function getCase(guildID: number | string, id?: number) {
+  const modCase = values(
+    await db`SELECT * FROM moderation WHERE "guild" = ${guildID} AND "id" = ${id};`,
+  ) as TypeOfDefinition<Case>[];
+
+  if (modCase.length) return modCase;
   return [];
 }
 
-export function listModeratorLog(guildID: number | string, moderator: number | string) {
-  return listModQuery.all(guildID, moderator) as TypeOfDefinition<typeof definition>[];
-}
-
-export function editModeration(
+export async function editCase(
   guildID: number | string,
-  id: string,
+  id: number,
   reason: string,
-  expiresAt?: number | null,
+  expiresAt?: Date | null,
 ) {
-  editQuery.run(guildID, id, reason, expiresAt ?? null);
+  await db`UPDATE moderation SET reason = ${reason}, expiresAt = ${expiresAt} WHERE "guild" = ${guildID} AND "id" = ${id};`;
 }
 
-export function removeModeration(guildID: string | number, id: string) {
-  removeQuery.run(guildID, id);
+export async function removeCase(guildID: string | number, id: number) {
+  await db`DELETE FROM moderation WHERE "guild" = ${guildID} AND id = ${id};`;
 }
 
-export function getExpiredBans(currentTime: number) {
-  return getExpiredBansQuery.all(currentTime) as TypeOfDefinition<typeof definition>[];
-}
-
-export function getPendingBans(currentTime: number) {
-  return getPendingBansQuery.all(currentTime) as TypeOfDefinition<typeof definition>[];
+export async function getPendingBans(currentTime: number) {
+  return values(
+    await db`SELECT * FROM moderation WHERE "type" = 'BAN' AND "expiresAt" IS NOT NULL AND "expiresAt" > ${new Date(currentTime)};`,
+  ) as TypeOfDefinition<Case>[];
 }

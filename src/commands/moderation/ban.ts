@@ -63,7 +63,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         reason: "The duration is invalid.",
       });
 
-    scheduleUnban(interaction.client, guild.id, user.id, interaction.member!.user.id, durationMs);
+    await scheduleUnban(
+      interaction.client,
+      guild.id,
+      user.id,
+      interaction.member!.user.id,
+      durationMs,
+    );
   }
 
   const silent =
@@ -97,7 +103,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         duration: duration ? ms(duration) : undefined,
         dm: userOrMember,
         dbAction: "BAN",
-        expiresAt: duration ? ms(duration) : undefined,
+        expiresAt: duration ? new Date(ms(duration)) : undefined,
         silent,
       },
       reason,

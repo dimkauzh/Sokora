@@ -1,4 +1,4 @@
-import { addNews, listAllQuery } from "database/news";
+import { getLatestNews } from "database/news";
 import {
   EmbedBuilder,
   FileUploadBuilder,
@@ -11,17 +11,19 @@ import {
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
+import { modalSubmit } from "utils/modalSubmit";
 import { replaceVariables } from "utils/replace";
 import { safeMember } from "utils/safeThings";
 import { sendChannelNews } from "utils/sendChannelNews";
 
 export const data = new SlashCommandSubcommandBuilder()
-  .setName("add")
-  .setDescription("Add your news.");
+  .setName("post")
+  .setDescription("Post your news.");
 
 export async function run(interaction: ChatInputCommandInteraction) {
   const guild = interaction.guild!;
-  if (!(await safeMember(guild, interaction.user.id)).permissions.has("ManageGuild"))
+  const userID = interaction.user.id;
+  if (!(await safeMember(guild, userID)).permissions.has("ManageGuild"))
     return await errorEmbed({
       interaction,
       title: "You can't execute this command.",
@@ -29,15 +31,15 @@ export async function run(interaction: ChatInputCommandInteraction) {
     });
 
   const newsModal = new ModalBuilder()
-    .setCustomId("addnews")
-    .setTitle("•  Write your news.")
+    .setCustomId("postnews")
+    .setTitle("•  Write your news post.")
     .addLabelComponents(
       new LabelBuilder()
         .setLabel("Title")
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId("title")
-            .setPlaceholder("Write a title")
+            .setPlaceholder("Think of a title")
             .setMaxLength(30)
             .setStyle(TextInputStyle.Short)
             .setRequired(true),
@@ -47,13 +49,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
         .setTextInputComponent(
           new TextInputBuilder()
             .setCustomId("body")
-            .setPlaceholder("Insert your content here")
+            .setPlaceholder("Write your news post here")
             .setMaxLength(4000)
             .setStyle(TextInputStyle.Paragraph)
             .setRequired(true),
         ),
       new LabelBuilder()
-        .setLabel("Optionally, upload a banner image")
+        .setLabel("Upload a banner image if you want")
         .setFileUploadComponent(
           new FileUploadBuilder().setCustomId("image").setMinValues(0).setRequired(false),
         ),
@@ -62,51 +64,43 @@ export async function run(interaction: ChatInputCommandInteraction) {
   try {
     await interaction.showModal(newsModal);
   } catch (error) {
-    await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
+    await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
   }
 
-  interaction.client.once("interactionCreate", async i => {
-    if (!i.isModalSubmit()) return;
+  const i = await modalSubmit(interaction);
+  if (!i) return;
 
-    const title = await replaceVariables(
-      i.fields.getTextInputValue("title"),
-      interaction.guild!,
-      interaction.user,
-    );
+  const title = await replaceVariables(
+    i.fields.getTextInputValue("title"),
+    interaction.guild!,
+    interaction.user,
+  );
 
-    const body = await replaceVariables(
-      i.fields.getTextInputValue("body"),
-      interaction.guild!,
-      interaction.user,
-    );
+  const body = await replaceVariables(
+    i.fields.getTextInputValue("body"),
+    interaction.guild!,
+    interaction.user,
+  );
 
-    const image = i.fields.getUploadedFiles("image")?.at(0)?.url;
-
-    const id = (listAllQuery.all(guild.id).length + 1).toString();
-    addNews(
-      guild.id,
+  try {
+    await sendChannelNews(guild, interaction, {
       title,
       body,
-      i.user.displayName,
-      i.user.avatarURL()!,
-      null!,
-      image ?? null,
-      id,
-    );
-
-    try {
-      await sendChannelNews(guild, id, interaction);
-    } catch (error) {
-      await errorEmbed({ interaction, error, forward: true, fileName: "add.ts" });
-    }
-
-    await i.reply({
-      embeds: [
-        new EmbedBuilder()
-          .setTitle("News added.")
-          .setColor(await colorize({ hue: Sokolors.Green })),
-      ],
-      flags: "Ephemeral",
+      author: i.user.displayName,
+      authorPFP: i.user.avatarURL()!,
+      imageURL: i.fields.getUploadedFiles("image")?.at(0)?.url ?? null,
+      id: ((await getLatestNews(guild.id))[0]?.id ?? 0) + 1,
     });
+  } catch (error) {
+    return await errorEmbed({ interaction, error, forward: true, fileName: "post.ts" });
+  }
+
+  await i.reply({
+    embeds: [
+      new EmbedBuilder()
+        .setTitle("News post created.")
+        .setColor(await colorize({ hue: Sokolors.Green })),
+    ],
+    flags: "Ephemeral",
   });
 }

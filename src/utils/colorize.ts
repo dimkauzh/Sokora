@@ -19,7 +19,7 @@ export async function colorize(options: {
 
   function genColor(): (ColorResolvable | null) & (RGBTuple | undefined) {
     return Bun.color(
-      `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 10 * Math.random()})`,
+      `oklch(${70 + 10 * Math.random()}% ${0.09 + 0.02 * Math.random()} ${hue + 5 * Math.random()})`,
       "[rgb]",
     ) as RGBTuple;
   }
@@ -52,10 +52,8 @@ export async function colorize(options: {
     } else return genColor();
 
   const [r, g, b] = color.array();
+  if (r == g && g == b) return [r, g, b] as RGBTuple;
+
   const hsl = color.hsl();
-  return randomizeColor(
-    hsl.h,
-    hsl.s,
-    (Math.abs(r - g) < 15 && Math.abs(g - b) < 15) || (r == g && g == b) ? 70 : hsl.l,
-  );
+  return randomizeColor(hsl.h, hsl.s, hsl.l);
 }

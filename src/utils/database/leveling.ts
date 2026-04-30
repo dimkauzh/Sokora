@@ -1,38 +1,44 @@
-import { getDatabase } from ".";
+import { Satisfies } from "utils/types";
+import { db, values } from ".";
 import { dekominator } from "../kominator";
 import { getSetting, setSetting } from "./settings";
 import { LevelReward, TableDefinition, TypeOfDefinition } from "./types";
 
-const tableDefinition = {
-  name: "leveling",
-  definition: {
-    guild: "TEXT",
-    user: "TEXT",
-    xp: "INTEGER",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "leveling";
+    definition: {
+      guild: "TEXT";
+      userID: "TEXT";
+      xp: "INTEGER";
+    };
+  }
+>;
 
-const database = getDatabase(tableDefinition);
-const getQuery = database.query("SELECT * FROM leveling WHERE guild = $1 AND user = $2;");
-const deleteQuery = database.query("DELETE FROM leveling WHERE guild = $1 AND user = $2;");
-const insertQuery = database.query("INSERT INTO leveling (guild, user, xp) VALUES (?1, ?2, ?3);");
-const getGuildQuery = database.query("SELECT * FROM leveling WHERE guild = $1;");
+const getQuery = async (guild: string | number, userID: string) =>
+  values(await db`SELECT * FROM leveling WHERE "guild" = ${guild} AND "userID" = ${userID};`);
 
-export function getUserXp(guildID: string, userID: string): number {
-  const res = getQuery.all(guildID, userID) as TypeOfDefinition<typeof tableDefinition>[];
+export async function getUserXp(guildID: string, userID: string): Promise<number> {
+  const res = (await getQuery(guildID, userID)) as TypeOfDefinition<Def>[];
   if (!res.length) return 0;
   return res[0].xp;
 }
 
-export function setUserXp(guildID: string | number, userID: string, xp: number) {
-  if (getQuery.all(guildID, userID).length) deleteQuery.run(guildID, userID);
-  insertQuery.run(guildID, userID, xp);
+export async function setUserXp(guildID: string | number, userID: string, xp: number) {
+  await db.begin(async tx => {
+    await tx`DELETE FROM leveling WHERE "guild" = ${guildID} AND "userID" = ${userID};`;
+    await tx`INSERT INTO leveling ("guild", "userID", "xp") VALUES (${guildID}, ${userID}, ${xp});`;
+  });
 }
 
 export async function getGuildLeaderboard(
   guildID: string,
-): Promise<{ guild: string; user: string; xp: number; level: number }[]> {
-  const xpData = getGuildQuery.all(guildID) as TypeOfDefinition<typeof tableDefinition>[];
+): Promise<{ guild: string; userID: string; xp: number; level: number }[]> {
+  const xpData = values(
+    await db`SELECT * FROM leveling WHERE "guild" = ${guildID};`,
+  ) as TypeOfDefinition<Def>[];
+
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
   return xpData.map(x => {
     return { ...x, level: calculateLevel({ xp: x.xp, difficulty }) };
@@ -56,17 +62,14 @@ export function calculateLevel(arg: { difficulty: number; xp: number }) {
 
 export async function getXpForNextLevel(guildID: string, userID: string): Promise<number> {
   const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
-  return formula(difficulty, calculateLevel({ difficulty, xp: getUserXp(guildID, userID) }) + 1);
-}
-
-export async function getXpForCurrentLevel(guildID: string, userID: string): Promise<number> {
-  const difficulty = (await getSetting(guildID, "leveling", "difficulty")) as number;
-  return formula(difficulty, calculateLevel({ difficulty, xp: getUserXp(guildID, userID) }));
+  return formula(
+    difficulty,
+    calculateLevel({ difficulty, xp: await getUserXp(guildID, userID) }) + 1,
+  );
 }
 
 export async function getLevelRewards(guildID: string): Promise<LevelReward[] | null> {
-  // const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
-  const content = ["20#1408912300634542100", "5#1343140645132308532"];
+  const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
   if (!content) return null;
   return content.map(s => {
     const channel = s.includes("#");
@@ -80,9 +83,14 @@ export async function addLevelRewards(guildID: string, rewards: LevelReward[]): 
     rewards.map(reward => `${reward.level}${reward.channel ? "#" : "@"}${reward.id}`),
   );
   const content = (await getSetting(guildID, "leveling", "rewards")) as string[];
-  if (!content) return setSetting(guildID, "leveling", "rewards", encodedRewards);
+  if (!content) return await setSetting(guildID, "leveling", "rewards", encodedRewards);
 
-  return setSetting(guildID, "leveling", "rewards", dekominator([...encodedRewards, ...content]));
+  return await setSetting(
+    guildID,
+    "leveling",
+    "rewards",
+    dekominator([...encodedRewards, ...content]),
+  );
 }
 
 export async function removeLevelRewards(guildID: string, rewards: LevelReward[]): Promise<void> {
@@ -94,5 +102,5 @@ export async function removeLevelRewards(guildID: string, rewards: LevelReward[]
   const newRewards = [];
   for (const reward of content) if (!encodedRewards.includes(reward)) newRewards.push(reward);
 
-  return setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
+  return await setSetting(guildID, "leveling", "rewards", dekominator(newRewards));
 }

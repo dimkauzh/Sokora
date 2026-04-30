@@ -6,6 +6,7 @@ import { client } from "src/bot";
 import { pathToFileURL } from "url";
 
 const events = [];
+export const eventNames = ["messageUpdate", "messageDelete", "settings"];
 export async function loadEvents(client: Client) {
   const eventsPath = join(process.cwd(), "src", "events");
   for (const eventFile of readdirSync(eventsPath)) {

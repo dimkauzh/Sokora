@@ -1,4 +1,4 @@
-import { addModeration, editModeration, getModeration, type ModType } from "database/moderation";
+import { createCase, editCase, getCase, type ModType } from "database/moderation";
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
@@ -21,7 +21,7 @@ type Options = {
   duration?: number | null;
   dm?: boolean;
   dbAction?: ModType;
-  expiresAt?: number;
+  expiresAt?: Date;
   previousID?: number;
   customText?: {
     logTitle: string;
@@ -168,9 +168,9 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
   if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
 
   if (previousID) {
-    const previousCase = getModeration(guild.id, user!.id, `${previousID}`);
+    const previousCase = await getCase(guild.id, previousID);
     if (
-      (!previousCase.length && previousCase[0].user != user!.id) ||
+      (!previousCase.length && previousCase[0].userID != user!.id) ||
       previousCase[0].type != dbAction
     )
       return await errorEmbed({
@@ -180,7 +180,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
       });
 
     try {
-      editModeration(guild.id, `${previousID}`, reason ?? "", expiresAt ?? null);
+      await editCase(guild.id, previousID, reason ?? "", expiresAt ?? null);
     } catch (error) {
       return await errorEmbed({
         interaction,
@@ -204,7 +204,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
           reason: "Cannot find the moderator.",
         });
 
-      const id = addModeration(
+      const id = await createCase(
         guild.id,
         user!.id,
         dbAction,
@@ -236,8 +236,12 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
 
   async function replier() {
     if (silent)
-      await safeReply({ interaction, replyOptions: { embeds: [embed], flags: "Ephemeral" } });
-    else await safeReply({ interaction, replyOptions: { embeds: [embed] } });
+      return await safeReply({
+        interaction,
+        replyOptions: { embeds: [embed], flags: "Ephemeral" },
+      });
+
+    return await safeReply({ interaction, replyOptions: { embeds: [embed] } });
   }
 
   await Promise.all([

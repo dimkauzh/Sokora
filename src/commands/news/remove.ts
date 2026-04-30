@@ -1,4 +1,4 @@
-import { deleteNews, get } from "database/news";
+import { deleteNews, getNews } from "database/news";
 import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
@@ -12,11 +12,11 @@ import { safeChannel, safeMember } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("remove")
-  .setDescription("Removes news from your guild.")
-  .addStringOption(string =>
-    string
+  .setDescription("Removes a news post.")
+  .addNumberOption(number =>
+    number
       .setName("id")
-      .setDescription("The ID of the news. (found in the footer)")
+      .setDescription("The ID of the news post. (found in the footer)")
       .setRequired(true),
   );
 
@@ -29,20 +29,22 @@ export async function run(interaction: ChatInputCommandInteraction) {
       reason: "You need the **Manage Server** permission.",
     });
 
-  const id = interaction.options.getString("id")!;
-  const news = get(guild.id, id);
-  if (!news) return await errorEmbed({ interaction, title: "The specified news don't exist." });
+  const id = interaction.options.getNumber("id")!;
+  const news = await getNews(guild.id, id);
+  if (!news)
+    return await errorEmbed({ interaction, title: "The specified news post doesn't exist." });
+
   const newsChannel = (await safeChannel(
     guild,
     ((await getSetting(guild.id, "news", "channel")) as string) ?? interaction.channel?.id,
   )) as TextChannel;
 
-  if (newsChannel) await newsChannel.messages.delete(news.messageID);
-  deleteNews(guild.id, id);
+  if (newsChannel && news.messageID) await newsChannel.messages.delete(news.messageID);
+  await deleteNews(guild.id, id);
   await interaction.reply({
     embeds: [
       new EmbedBuilder()
-        .setTitle("News removed.")
+        .setTitle("News post removed.")
         .setColor(await colorize({ hue: Sokolors.Green })),
     ],
     flags: "Ephemeral",

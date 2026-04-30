@@ -72,7 +72,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
         duration: ms(duration),
         dm: true,
         dbAction: "MUTE",
-        expiresAt: ms(duration),
+        expiresAt: new Date(ms(duration)),
         silent,
       },
       reason,

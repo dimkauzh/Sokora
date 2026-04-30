@@ -1,16 +1,33 @@
 import { errorEmbed } from "embeds/errorEmbed";
 import { client } from "src/bot";
-import { getDatabase } from ".";
-import { SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { safeMember } from "utils/safeThings";
+import { Satisfies } from "utils/types";
+import { db, values } from ".";
+import {
+  SettingPrecondition,
+  SettingsDefinition,
+  SqlType,
+  TableDefinition,
+  TypeOfDefinition,
+} from "./types";
 
-const tableDefinition = {
-  name: "user_settings",
-  definition: {
-    userID: "TEXT",
-    key: "TEXT",
-    value: "TEXT",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "user_settings";
+    definition: {
+      userID: "TEXT";
+      key: "TEXT";
+      value: "TEXT";
+    };
+  }
+>;
+
+const topggPrecondition: SettingPrecondition = async (i, v: boolean) => {
+  const dmChannel = await (await safeMember(i.guild!, i.user.id)).createDM();
+  if (v && (!dmChannel || !dmChannel.isSendable()))
+    return `Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
+};
 
 export const settingsDefinition: SettingsDefinition = {
   topgg: {
@@ -20,38 +37,24 @@ export const settingsDefinition: SettingsDefinition = {
         type: "BOOL",
         desc: "Whether or not should the bot remind you when you can vote in Top.gg. **This setting will DM you.**",
         val: false,
+        precondition: topggPrecondition,
         emoji: "⏰",
       },
     },
   },
 };
+// } as const satisfies SettingsDefinition;
+// could be an entry point to fixing the 27 type errors related to autocomplete
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-const database = getDatabase(tableDefinition);
-const getQuery = database.query("SELECT * FROM user_settings WHERE userID = $1 AND key = $2;");
-const getByKeyQuery = database.query("SELECT * FROM user_settings WHERE key = $1;");
-const deleteQuery = database.query("DELETE FROM user_settings WHERE userID = $1 AND key = $2;");
-const insertQuery = database.query(
-  "INSERT INTO user_settings (userID, key, value) VALUES (?1, ?2, ?3);",
-);
+
+const deleteQuery = async (userID: string, key: string, sql_: Bun.SQL = db) =>
+  await sql_`DELETE FROM user_settings WHERE "userID" = ${userID} AND "key" = ${key};`;
 
 export async function getUserSettingsTable<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
->(
-  key: K,
-  setting: S,
-): Promise<
-  | TypeOfDefinition<{
-      name: string;
-      definition: {
-        userID: "TEXT";
-        key: "TEXT";
-        value: "TEXT";
-      };
-    }>[]
-  | null
-> {
+>(key: K, setting: S): Promise<TypeOfDefinition<Def>[] | null> {
   if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
     await errorEmbed({
       client,
@@ -63,7 +66,9 @@ export async function getUserSettingsTable<
     return null;
   }
 
-  return getByKeyQuery.all(`${key}.${setting}`) as TypeOfDefinition<typeof tableDefinition>[];
+  return values(
+    await db`SELECT * FROM user_settings WHERE "key" = ${`${key}.${setting}`};`,
+  ) as TypeOfDefinition<Def>[];
 }
 
 export async function getUserSetting<
@@ -85,11 +90,11 @@ export async function getUserSetting<
     return null;
   }
 
-  const res = getQuery.all(JSON.stringify(userID), `${key}.${setting}`) as TypeOfDefinition<
-    typeof tableDefinition
-  >[];
-  const set = settingsDefinition[key].settings[setting];
+  const res = values(
+    await db`SELECT * FROM user_settings WHERE "userID" = ${userID} AND "key" = ${`${key}.${setting}`};`,
+  ) as TypeOfDefinition<Def>[];
 
+  const set = settingsDefinition[key].settings[setting];
   if (!res.length) {
     if (!set) return null;
     return set.val;
@@ -98,7 +103,7 @@ export async function getUserSetting<
   const value = res[0].value;
   switch (set.type) {
     case "BOOL":
-      return (value == "1" ? true : false) as SqlType<typeof set.type>;
+      return (value == "true") as SqlType<typeof set.type>;
     case "INTEGER":
       return parseInt(value) as SqlType<typeof set.type>;
     default:
@@ -110,7 +115,16 @@ export async function setUserSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(userID: string, key: K, setting: S, value: any) {
-  const doInsert = (await getUserSetting(userID, key, setting)) == null;
-  if (!doInsert) deleteQuery.all(JSON.stringify(userID), `${key}.${setting}`);
-  insertQuery.run(JSON.stringify(userID), `${key}.${setting}`, value);
+  const keySetting = `${key}.${setting}`;
+  await db.begin(async tx => {
+    await deleteQuery(userID, keySetting, tx);
+    await tx`INSERT INTO user_settings ("userID", "key", "value") VALUES (${userID}, ${keySetting}, ${value});`;
+  });
+}
+
+export async function resetUserSetting<
+  K extends keyof typeof settingsDefinition,
+  S extends keyof (typeof settingsDefinition)[K]["settings"],
+>(userID: string, key: K, setting: S) {
+  await deleteQuery(userID, `${key}.${setting}`);
 }

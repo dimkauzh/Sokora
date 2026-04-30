@@ -1,18 +1,46 @@
+import { PermissionFlagsBits } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
+import { easterEggNames, eventNames } from "handlers/events";
 import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
-import { getDatabase } from ".";
-import { FieldData, SettingsDefinition, SqlType, TableDefinition, TypeOfDefinition } from "./types";
+import { safeMember } from "utils/safeThings";
+import { Satisfies } from "utils/types";
+import { db, values } from ".";
+import {
+  FieldData,
+  SettingPrecondition,
+  SettingsDefinition,
+  SqlType,
+  TableDefinition,
+  TypeOfDefinition,
+} from "./types";
 
-const tableDefinition = {
-  name: "settings",
-  definition: {
-    guildID: "TEXT",
-    key: "TEXT",
-    value: "TEXT",
-  },
-} satisfies TableDefinition;
+type Def = Satisfies<
+  TableDefinition,
+  {
+    name: "settings";
+    definition: {
+      guildID: "TEXT";
+      key: "TEXT";
+      value: "TEXT";
+    };
+  }
+>;
 
+const invitePrecondition: SettingPrecondition = async (i, v: boolean | string) => {
+  if (
+    v &&
+    !(await safeMember(i.guild!, i.client.user.id)).permissions.has(
+      PermissionFlagsBits.CreateInstantInvite | PermissionFlagsBits.ManageGuild,
+    )
+  )
+    return `The **Create Invite** and the **Manage Server** permissions are required for this setting to work.`;
+};
+
+// for the [TODO]s below, remove the SettingsDefinition type and
+// enjoy 26 type errors! :D
+//
+// idea: we could possibly remove "settings" and put all settings on the same level as description, just remove the description if you want to get only the settings
 export const settingsDefinition: SettingsDefinition = {
   leveling: {
     description: "Customize the behavior of the leveling system.",
@@ -74,9 +102,10 @@ export const settingsDefinition: SettingsDefinition = {
     description: "Change Sokora's settings related to moderation.",
     settings: {
       events: {
-        type: "LOG",
+        type: "SELECT",
         desc: "Select what events you want to see in your log channel.",
         iterable: true,
+        choices: eventNames,
         emoji: "📅",
       },
       channel: {
@@ -153,13 +182,15 @@ export const settingsDefinition: SettingsDefinition = {
       },
       server_invite: {
         type: "BOOL",
-        desc: "Whether to show server invite on the serverboard.",
+        desc: "Whether to show a server invite link on the serverboard page.",
         val: false,
+        precondition: invitePrecondition,
         emoji: "🔗",
       },
       invite_channel: {
         type: "CHANNEL",
         desc: "Channel for the invite. If not set, uses the first channel in the channel list.",
+        // precondition: invitePrecondition,
         emoji: "📨",
       },
     },
@@ -219,9 +250,10 @@ export const settingsDefinition: SettingsDefinition = {
         emoji: "✅",
       },
       enabled_eggs: {
-        type: "EGG",
+        type: "SELECT",
         desc: "Specific easter eggs to enable. If none are selected, all easter eggs are enabled.",
         iterable: true,
+        choices: easterEggNames,
         emoji: "🐣",
       },
       allowed_channels: {
@@ -235,24 +267,9 @@ export const settingsDefinition: SettingsDefinition = {
 };
 
 export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
-const database = getDatabase(tableDefinition);
-const getQuery = database.query("SELECT * FROM settings WHERE guildID = $1 AND key = $2;");
-const listPublicQuery = database.query(
-  "SELECT * FROM settings WHERE key = 'serverboard.shown' AND value = '1';",
-);
-const deletePublicQuery = database.query(
-  "DELETE FROM settings WHERE guildID = $1 AND key = 'serverboard.shown' AND value = '1'",
-);
-const listPublicWithInvitesEnabledQuery = database.query(
-  "SELECT * FROM settings WHERE key = 'serverboard.server_invite' AND value = '1';",
-);
-const deleteQuery = database.query("DELETE FROM settings WHERE guildID = $1 AND key = $2;");
-const deleteCategoryQuery = database.query(
-  "DELETE FROM settings WHERE guildID = $1 AND key LIKE $2;",
-);
-const insertQuery = database.query(
-  "INSERT INTO settings (guildID, key, value) VALUES (?1, ?2, ?3);",
-);
+
+const deleteQuery = async (guildID: string, key: string, sql_: Bun.SQL = db) =>
+  await sql_`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = ${key};`;
 
 // [TODO] autocomplete support for get/setSetting
 // [TODO] proper type validation for get/setSetting
@@ -280,11 +297,11 @@ export async function getSetting<
     return null;
   }
 
-  const res = getQuery.all(guildID, `${key}.${setting}`) as TypeOfDefinition<
-    typeof tableDefinition
-  >[];
-  const set = settingsDefinition[key].settings[setting];
+  const res = values(
+    await db`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`,
+  ) as TypeOfDefinition<Def>[];
 
+  const set = settingsDefinition[key].settings[setting];
   if (!res.length) {
     if (!set) return null;
     return set.val;
@@ -296,7 +313,7 @@ export async function getSetting<
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
       case "BOOL":
-        return (Number(value) == 1 ? true : false) as SqlType<typeof set.type>;
+        return (value == "true") as SqlType<typeof set.type>;
       case "INTEGER":
         return parseInt(value) as SqlType<typeof set.type>;
       default:
@@ -318,35 +335,39 @@ export async function getSettingCategory<K extends keyof typeof settingsDefiniti
 ) {
   const array = [];
   for (const setting of Object.keys(settingsDefinition[key].settings))
-    array.push(await getSetting(guildID, key, setting));
+    array.push(await getSetting(guildID, key, setting)); // We should be doing one query on the category instead and then check results against defaults
 
   return array;
 }
 
-export function setSetting<
+export async function setSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S, value: any) {
   const set = Array.isArray(value) ? dekominator(value) : value;
-  deleteQuery.all(guildID, `${key}.${setting}`);
-  insertQuery.run(guildID, `${key}.${setting}`, set);
+  const keySetting = `${key}.${setting}`;
+  await db.begin(async tx => {
+    // Two queries for one thing ? We could shorten it if we ever go with one DB ("on duplicate, update" kind of thing)
+    await deleteQuery(guildID, keySetting, tx);
+    await tx`INSERT INTO settings ("guildID", "key", "value") VALUES (${guildID}, ${keySetting}, ${set});`;
+  }); // Autocommits if nothing goes wrong
 }
 
-export function resetSetting<
+export async function resetSetting<
   K extends keyof typeof settingsDefinition,
   S extends keyof (typeof settingsDefinition)[K]["settings"],
 >(guildID: string, key: K, setting: S) {
-  deleteQuery.run(guildID, `${key}.${setting}`);
+  await deleteQuery(guildID, `${key}.${setting}`);
 }
 
-export function resetSettingCategory<K extends keyof typeof settingsDefinition>(
+export async function resetSettingCategory<K extends keyof typeof settingsDefinition>(
   guildID: string,
   key: K,
 ) {
-  deleteCategoryQuery.run(guildID, `%${key}%`);
+  await db`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" LIKE ${`${key}%`};`;
 }
 
-export function listPublicServers(): Promise<
+export async function listPublicServers(): Promise<
   {
     guildID: string;
     showInvite: boolean;
@@ -354,15 +375,19 @@ export function listPublicServers(): Promise<
   }[]
 > {
   const publicGuildSet = new Set(
-    (listPublicQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
-      entry => entry.guildID,
-    ),
+    (
+      values(
+        await db`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`,
+      ) as TypeOfDefinition<Def>[]
+    ).map(entry => entry.guildID),
   );
 
   const inviteGuildsSet = new Set(
-    (listPublicWithInvitesEnabledQuery.all() as TypeOfDefinition<typeof tableDefinition>[]).map(
-      entry => entry.guildID,
-    ),
+    (
+      values(
+        await db`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`,
+      ) as TypeOfDefinition<Def>[]
+    ).map(entry => entry.guildID),
   );
 
   return Promise.all(
@@ -377,9 +402,9 @@ export function listPublicServers(): Promise<
   );
 }
 
-export async function deletePublicServer(guildId: string) {
+export async function deletePublicServer(guildID: string) {
   try {
-    deletePublicQuery.all(guildId);
+    await db`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = 'serverboard.shown' AND "value" = 'true';`;
   } catch (error) {
     return await errorEmbed({
       client,

@@ -1,4 +1,4 @@
-import { get, updateNews } from "database/news";
+import { getNews, postNews, updateNews } from "database/news";
 import { getSetting } from "database/settings";
 import {
   EmbedBuilder,
@@ -16,35 +16,41 @@ import { safeChannel, safeRole } from "./safeThings";
 /**
  * Sends news to a channel.
  * @param {Guild} guild Guild where the channel is in.
- * @param {string} id ID of the news.
  * @param {ChatInputCommandInteraction} interaction Command interaction.
- * @param {?string} title Title of the news.
- * @param {?string} body Content of the news.
+ * @param {object} newsOptions Options to send the news post.
+ * @param {?boolean} edit Whether or not should the function make a new message with some reused elements.
  * @returns News message in a channel.
  */
 export async function sendChannelNews(
   guild: Guild,
-  id: string,
   interaction: ChatInputCommandInteraction,
-  title?: string,
-  body?: string,
-  imageURL?: string,
-): Promise<void> {
-  const news = get(guild.id, id)!;
+  newsOptions: {
+    title: string;
+    body: string;
+    author: string;
+    authorPFP: string;
+    id: number;
+    imageURL?: string | null;
+  },
+  edit?: boolean,
+) {
+  const { title, body, author, authorPFP, imageURL, id } = newsOptions;
   const role = (await getSetting(guild.id, "news", "role")) as string;
   let roleToSend: Role | undefined;
   if (role) roleToSend = await safeRole(guild, role);
-  const avatar = news.authorPFP;
+
+  const news = (await getNews(guild.id, id))!;
+  const avatar = authorPFP;
   const embed = new EmbedBuilder()
     .setAuthor({
-      name: `${dotCheck({ string: avatar, doubleSpace: true })}${news.author}`,
+      name: `${dotCheck({ string: avatar, doubleSpace: true })}${author}`,
       iconURL: avatar,
     })
-    .setTitle(title ?? news.title)
-    .setDescription(body ?? news.body)
-    .setImage(imageURL ?? news.imageURL ?? null)
-    .setTimestamp(news.updatedAt || news.createdAt)
-    .setFooter({ text: `Latest news from ${guild.name} • ID: ${news.id}` })
+    .setTitle(title)
+    .setDescription(body)
+    .setImage(edit ? (news.imageURL ?? null) : (imageURL ?? null))
+    .setTimestamp(edit ? news.createdAt : new Date())
+    .setFooter({ text: `Latest news from ${guild.name} • ID: ${id}` })
     .setColor(await colorize({ hue: Sokolors.Blue }));
 
   const channel = (await safeChannel(
@@ -62,10 +68,12 @@ export async function sendChannelNews(
   )
     return;
 
-  return await channel
-    .send({
-      embeds: [embed],
-      content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
-    })
-    .then(message => updateNews(guild.id, id, undefined, undefined, message.id));
+  const message = await channel.send({
+    embeds: [embed],
+    content: roleToSend ? mention(roleToSend.id, "ROLE") : undefined,
+  });
+
+  if (edit) return await updateNews(guild.id, id, title, body, message.id);
+  return await postNews(guild.id, title, body, author, authorPFP, message.id, imageURL, id);
 }
+// We should have some sort of a middleware folder where we place all functions like this (interacts with the db but looks like it comes from a command file)

@@ -48,7 +48,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     );
     memberRoles.pop();
     const rolesLength = memberRoles.length;
-    const xp = getUserXp(guild.id, target.id);
+    const xp = await getUserXp(guild.id, target.id);
     const nextLevelXp = await getXpForNextLevel(guild.id, user.id);
     const difficulty = (await getSetting(guild.id, "leveling", "difficulty")) as number;
     const level = calculateLevel({ difficulty, xp });
@@ -67,8 +67,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       });
       serverInfo.push(
         `Level **${level}** • ${xp && xp > 0 ? `**${xp.toLocaleString("en-US")}**/*${nextLevelXp.toLocaleString("en-US")} (level ${level + 1})* XP` : "**No** XP!"} ${
-          leaderboard.find(entry => entry.user == user.id)
-            ? `• #**${leaderboard.findIndex(entry => entry.user == user.id) + 1}** on the leaderboard`
+          leaderboard.find(entry => entry.userID == user.id)
+            ? `• #**${leaderboard.findIndex(entry => entry.userID == user.id) + 1}** on the leaderboard`
             : ""
         }`,
       );
@@ -97,7 +97,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const createdText = [
     `<:discord:${replace("(discord)")}> ${mention(user.createdAt.valueOf(), "DEFAULT_TIMESTAMP")}`,
-    (await safeMember(guild, user.id))
+    (await safeMembers(guild)).has(user.id)
       ? `• ${mention((await safeMember(guild, user.id)).joinedAt!.valueOf(), "DEFAULT_TIMESTAMP")}`
       : "",
   ].join(" ");
@@ -105,13 +105,13 @@ export async function run(interaction: ChatInputCommandInteraction) {
     [`## ${name}`, `@${user.username}`, "**Member since**", createdText].join("\n"),
   );
 
-  avatar
-    ? container.addSectionComponents(
-        new SectionBuilder()
-          .addTextDisplayComponents(start)
-          .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar)),
-      )
-    : container.addTextDisplayComponents(start);
+  if (avatar)
+    container.addSectionComponents(
+      new SectionBuilder()
+        .addTextDisplayComponents(start)
+        .setThumbnailAccessory(new ThumbnailBuilder().setURL(avatar)),
+    );
+  else container.addTextDisplayComponents(start);
 
   if (serverInfo)
     container
