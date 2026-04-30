@@ -12,10 +12,12 @@ const preferredHashType = "sha1";
  * @param singles If true when selecting only one column, returns an array of only the column values instead. Else, returns like normal
  * @returns An array containing the objects (or direct values if singles) of the query result
  */
-export function values(queryResult: object, singles?: boolean) {
+export function values(queryResult: Record<string, any>, singles?: boolean) {
   // [TODO] figure out how to get the type of a raw query result.
-  const actualValues: object[] = Object.values(queryResult).filter(v => v instanceof Object);
-  return singles && actualValues.length && Object.values(actualValues[0]).length == 1
+  const actualValues: Record<string, any>[] = Object.values(queryResult).filter(
+    v => v !== null && typeof v === "object" && !Array.isArray(v),
+  );
+  return singles && actualValues.length && Object.values(actualValues[0]).length === 1
     ? actualValues.map(v => Object.values(v)[0])
     : actualValues;
 }

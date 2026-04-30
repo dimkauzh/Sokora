@@ -55,20 +55,29 @@ export type SettingPrecondition = (
 ) => Promise<string | undefined>;
 
 export type SingleSettingDefinition = {
-  type: FieldData;
   desc: string;
   val?: any;
   precondition?: SettingPrecondition;
   iterable?: boolean;
-  choices?: string[]; // If type SELECT
   emoji?: string;
-  settings?: Record<
-    string,
-    SingleSettingDefinition & {
-      settings?: Record<string, Omit<SingleSettingDefinition, "settings">>;
+} & (
+  | {
+      type: Exclude<FieldData, "SELECT" | "OBJECT">;
     }
-  >;
-};
+  | {
+      type: "SELECT";
+      choices: string[];
+    }
+  | {
+      type: "OBJECT";
+      settings: Record<
+        string,
+        SingleSettingDefinition & {
+          settings?: Record<string, Omit<SingleSettingDefinition, "settings">>;
+        }
+      >;
+    }
+);
 
 export type SettingsDefinition = Record<
   string,

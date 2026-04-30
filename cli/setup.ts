@@ -73,7 +73,7 @@ const main = async () => {
     "Enter your user ID. Sokora might give it some use. (Optional.)",
   );
   if (ownerId.trim() != "") replaceInEnv("YOUR_USER_ID", ownerId);
-    console.log("You're good to go, happy coding!");
+  console.log("You're good to go, happy coding!");
 };
 
 main().catch(console.error);
