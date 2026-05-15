@@ -1,4 +1,5 @@
 import { createCase, editCase, getCase, type ModType } from "database/moderation";
+import type { ContainerBuilder, InteractionResponse, Message } from "discord.js";
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
@@ -13,7 +14,7 @@ import { dotCheck } from "../dotCheck";
 import { logChannel } from "../logChannel";
 import { errorEmbed } from "./errorEmbed";
 
-type Options = {
+interface Options {
   interaction: ChatInputCommandInteraction;
   action?: string;
   channel?: string;
@@ -27,7 +28,7 @@ type Options = {
     logTitle: string;
     dmTitle?: string;
   };
-};
+}
 
 type ErrorOptions = Options & {
   errorOptions: {
@@ -40,26 +41,36 @@ type ErrorOptions = Options & {
   };
 };
 
-export async function errorCheck(permissionAction: string, options: ErrorOptions) {
+export async function errorCheck(
+  permissionAction: string,
+  options: ErrorOptions,
+): Promise<Message | InteractionResponse | ContainerBuilder | undefined> {
   const { interaction, user, channel, action, errorOptions } = options;
   const { allErrors, botError, channelError, ownerError, outsideError, banCheckError } =
     errorOptions;
 
-  const guild = interaction.guild!;
+  const guild = interaction.guild;
+  if (!guild) throw new Error("TODO");
   const member = await safeMember(guild, interaction.user.id);
   const client = await safeMember(guild, interaction.client.user.id);
-  const permission = permissionAction.replace(/\s/g, "") as PermissionResolvable;
+  const permission = permissionAction.replaceAll(/\s/g, "") as PermissionResolvable;
 
-  if (botError)
-    if (!client.permissions.has(permission))
+  if (botError && !client.permissions.has(permission))
+    return await errorEmbed({
+      interaction,
+      title: "The bot can't execute this command.",
+      reason: `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`,
+    });
+
+  if (channelError) {
+    if (!channel)
       return await errorEmbed({
         interaction,
         title: "The bot can't execute this command.",
-        reason: `The bot is missing the **${permissionAction}** permission. If you want to run this command, you might want to give the bot this permission.`,
+        reason: "The provided channel does not exist!",
       });
-
-  if (channelError) {
-    const fetchedChannel = await safeChannel(guild, channel!);
+    const fetchedChannel = await safeChannel(guild, channel);
+    if (!fetchedChannel) return;
     if (fetchedChannel.isDMBased()) return;
     if (!fetchedChannel.permissionsFor(client).has("ViewChannel"))
       return await errorEmbed({
@@ -78,7 +89,13 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
     });
 
   if (banCheckError) {
-    const isBanned = (await guild.bans.fetch()).has(user!.id);
+    if (!user)
+      return await errorEmbed({
+        interaction,
+        title: "You can't ban this user.",
+        reason: "This user doesn't exist.",
+      });
+    const isBanned = (await guild.bans.fetch()).has(user.id);
     if (action == "Ban" && isBanned)
       return await errorEmbed({
         interaction,
@@ -98,13 +115,12 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
   const name = user.displayName;
   const highestModPos = member.roles.highest.position;
 
-  if (outsideError)
-    if (!target)
-      return await errorEmbed({
-        interaction,
-        title: `You can't ${action.toLowerCase()} ${name}.`,
-        reason: "This user isn't in this server.",
-      });
+  if (outsideError && !target)
+    return await errorEmbed({
+      interaction,
+      title: `You can't ${action.toLowerCase()} ${name}.`,
+      reason: "This user isn't in this server.",
+    });
 
   if (!target) return;
   const highestTargetPos = target.roles.highest.position;
@@ -131,17 +147,18 @@ export async function errorCheck(permissionAction: string, options: ErrorOptions
     });
   }
 
-  if (ownerError) {
-    if (target.id == guild.ownerId)
-      return await errorEmbed({
-        interaction,
-        title: `You can't ${action.toLowerCase()} ${name}.`,
-        reason: "The member owns the server.",
-      });
-  }
+  if (ownerError && target.id == guild.ownerId)
+    return await errorEmbed({
+      interaction,
+      title: `You can't ${action.toLowerCase()} ${name}.`,
+      reason: "The member owns the server.",
+    });
 }
 
-export async function modEmbed(options: Options & { silent?: boolean }, reason?: string | null) {
+export async function modEmbed(
+  options: Options & { silent?: boolean },
+  reason?: string | null,
+): Promise<undefined | Message | InteractionResponse | ContainerBuilder> {
   const {
     interaction,
     user,
@@ -155,22 +172,23 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     customText,
     silent,
   } = options;
-  const guild = interaction.guild!;
+  const guild = interaction.guild;
+  if (!guild) throw new Error("Cannot create modEmbed without a guild!");
   const name = user?.displayName;
   const generalValues = [`**Moderator**: ${interaction.user.displayName}`];
-  const serverAvatar = guild.icon ? guild.iconURL()! : undefined;
+  const serverAvatar = (guild.icon ? guild.iconURL() : undefined) ?? undefined;
   const avatar = user ? user.displayAvatarURL() : serverAvatar;
   let author = `${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
   if (reason) generalValues.push(`**Reason**: ${reason}`);
   else generalValues.push("*No reason provided*");
 
-  if (duration) generalValues.push(`**Duration**: ${ms(Number(duration), "fullPrecision")}`);
+  if (duration) generalValues.push(`**Duration**: ${ms(duration, "fullPrecision")}`);
   if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
 
   if (previousID) {
     const previousCase = await getCase(guild.id, previousID);
     if (
-      (!previousCase.length && previousCase[0].userID != user!.id) ||
+      (previousCase.length === 0 && previousCase[0].userID != user?.id) ||
       previousCase[0].type != dbAction
     )
       return await errorEmbed({
@@ -190,11 +208,11 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
         fileName: "modEmbed.ts",
       });
     }
-    author = author.concat(`  •  #${previousID}`);
+    author = `${author}  •  #${previousID}`;
   }
 
   if (dbAction) {
-    if (!action) return;
+    if (!action || !user) return;
     try {
       const moderator = await safeMember(guild, interaction.user.id);
       if (!moderator)
@@ -206,13 +224,13 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
 
       const id = await createCase(
         guild.id,
-        user!.id,
+        user.id,
         dbAction,
         moderator.id,
         reason ?? undefined,
         expiresAt ?? undefined,
       );
-      author = author.concat(`  •  #${id}`);
+      author += `  •  #${id}`;
     } catch (error) {
       return await errorEmbed({
         interaction,
@@ -234,7 +252,7 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     .setTimestamp(new Date())
     .setColor(await colorize({ hue: Sokolors.Green }));
 
-  async function replier() {
+  async function replier(): Promise<Awaited<ReturnType<typeof safeReply>>> {
     if (silent)
       return await safeReply({
         interaction,
@@ -244,10 +262,12 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
     return await safeReply({ interaction, replyOptions: { embeds: [embed] } });
   }
 
+  if (!user) throw new Error("(TODO)");
+
   await Promise.all([
     logChannel(guild, { embeds: [embed] }, dm, {
-      silent: silent!,
-      user: user!,
+      silent: silent ?? false,
+      user,
       options: {
         embeds: [
           new EmbedBuilder()

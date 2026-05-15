@@ -1,9 +1,12 @@
 import { deletePublicServer, listPublicServers } from "database/settings";
 import {
+  type InteractionResponse,
   SlashCommandBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
   type Guild,
+  type Message,
+  type ContainerBuilder,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
@@ -15,7 +18,9 @@ export const data = new SlashCommandBuilder()
   .addNumberOption(number => number.setName("page").setDescription("The page you want to see."))
   .setContexts(0);
 
-export async function run(interaction: ChatInputCommandInteraction) {
+export async function run(
+  interaction: ChatInputCommandInteraction,
+): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
   const guildList: { guild: Guild; showInvite: boolean; inviteChannelId: string | null }[] = (
     await Promise.all(
       (await listPublicServers()).map(async entry => {
@@ -44,7 +49,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
     )
   )
     .filter(entry => entry != null)
-    .sort((a, b) => b.guild.memberCount - a.guild.memberCount);
+    .toSorted((a, b) => b.guild.memberCount - a.guild.memberCount);
 
   const pages = guildList.length;
   if (!pages)
@@ -55,10 +60,18 @@ export async function run(interaction: ChatInputCommandInteraction) {
         "By some magical miracle, all the servers using Sokora turned off their visibility. Use /settings serverboard `shown: True` to make your server publicly visible.",
     });
 
-  const argPage = interaction.options.getNumber("page") as number;
-  let page = (argPage - 1 <= 0 ? 0 : argPage - 1 > pages ? pages - 1 : argPage - 1) || 0;
+  const argumentPage = interaction.options.getNumber("page");
+  if (!argumentPage)
+    return await errorEmbed({
+      interaction,
+      title: "No page provided.",
+      reason:
+        "You somehow ran the command without a page being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
+    });
+  let page =
+    (argumentPage - 1 <= 0 ? 0 : (argumentPage - 1 > pages ? pages - 1 : argumentPage - 1)) || 0;
 
-  async function getContainer(disableButtons?: boolean) {
+  async function getContainer(disableButtons?: boolean): Promise<ContainerBuilder> {
     return await serverEmbed({
       guild: guildList[page].guild,
       invite: {
@@ -77,22 +90,25 @@ export async function run(interaction: ChatInputCommandInteraction) {
     flags: "IsComponentsV2",
   });
   if (pages == 1) return;
-  const collector = reply.createMessageComponentCollector({ time: 60000 });
-  collector.on("collect", async (i: ButtonInteraction) => {
-    if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 60000 });
-    switch (i.customId) {
-      case "left":
+  const collector = reply.createMessageComponentCollector({ time: 60_000 });
+
+  collector.on("collect", async (interaction2: ButtonInteraction) => {
+    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+    collector.resetTimer({ time: 60_000 });
+    switch (interaction2.customId) {
+      case "left": {
         page--;
         if (page < 0) page = pages - 1;
         break;
-      case "right":
+      }
+      case "right": {
         page++;
         if (page >= pages) page = 0;
         break;
+      }
     }
 
-    await i.update({ components: [await getContainer(false)] });
+    await interaction2.update({ components: [await getContainer(false)] });
   });
 
   collector.on("end", async () => {

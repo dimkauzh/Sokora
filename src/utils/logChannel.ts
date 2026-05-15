@@ -1,8 +1,6 @@
 import { getSetting } from "database/settings";
+import type { DMChannel, InteractionResponse, Message } from "discord.js";
 import {
-  DMChannel,
-  InteractionResponse,
-  Message,
   type Channel,
   type Guild,
   type MessageCreateOptions,
@@ -35,20 +33,21 @@ export async function logChannel(
     user: User;
     options: string | MessagePayload | MessageCreateOptions;
   },
-): Promise<void | Message | InteractionResponse> {
-  let channel: TextChannel | DMChannel;
+): Promise<undefined | Message | InteractionResponse> {
+  let channel: TextChannel | DMChannel | null;
   const logChannel = await getSetting(guild.id, "moderation", "channel");
 
   if (logChannel) {
-    channel = (await safeChannel(guild, `${logChannel}`)
-      .then((channel: Channel) => {
-        if (!channel.isTextBased()) return null;
+    channel = await safeChannel(guild, `${logChannel}`)
+      .then((channel: Channel | null) => {
+        if (!channel?.isTextBased()) return null;
         return channel as TextChannel;
       })
-      .catch(() => null)) as TextChannel;
+      .catch(() => null);
 
     if (
-      await channelCheck({
+      channel &&
+      (await channelCheck({
         channel,
         guild,
         permType: "Send",
@@ -56,7 +55,7 @@ export async function logChannel(
           category: "moderation",
           setting: "channel",
         },
-      })
+      }))
     )
       await channel.send(options);
   }
@@ -66,7 +65,7 @@ export async function logChannel(
       if (!dmOptions) return;
       if (dmOptions.silent) return;
 
-      channel = (await dmOptions.user.createDM().catch(() => null)) as DMChannel;
+      channel = await dmOptions.user.createDM().catch(() => null);
       if (!channel || !(await safeMember(guild, dmOptions.user.id)) || dmOptions.user.bot) return;
       return await channel.send(dmOptions.options);
     } catch (error) {

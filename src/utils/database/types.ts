@@ -1,4 +1,4 @@
-import { Interaction } from "discord.js";
+import type { Interaction } from "discord.js";
 
 export type FieldData =
   | "TEXT"
@@ -18,10 +18,10 @@ export type FieldData =
   | "OBJECT"
   | "REWARD";
 
-export type TableDefinition = {
+export interface TableDefinition {
   name: string;
   definition: Record<string, FieldData>;
-};
+}
 
 type Maybe<T> = T | null;
 
@@ -51,12 +51,12 @@ export type TypeOfDefinition<T extends TableDefinition> = {
 // If it returns a string (error), then the precondition failed
 export type SettingPrecondition = (
   interaction: Interaction,
-  newVal: any,
+  newValue: boolean,
 ) => Promise<string | undefined>;
 
 export type SingleSettingDefinition = {
   desc: string;
-  val?: any;
+  val?: unknown;
   precondition?: SettingPrecondition;
   iterable?: boolean;
   emoji?: string;
@@ -87,4 +87,8 @@ export type SettingsDefinition = Record<
   }
 >;
 
-export type LevelReward = { id: string; level: number; channel: boolean };
+export interface LevelReward {
+  id: string;
+  level: number;
+  channel: boolean;
+}

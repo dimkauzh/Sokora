@@ -1,16 +1,21 @@
-import { type Client, type Message } from "discord.js";
+import {
+  type ContainerBuilder,
+  type InteractionResponse,
+  type Client,
+  type Message,
+} from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
-import { readdirSync } from "fs";
-import { join } from "path";
+import { readdirSync } from "node:fs";
+import { join } from "node:path";
 import { client } from "src/bot";
-import { pathToFileURL } from "url";
+import { pathToFileURL } from "node:url";
 
-const events = [];
+const events: { name: string; event: ReturnType<Client["on"]> }[] = [];
 export const eventNames = ["messageUpdate", "messageDelete", "settings"];
-export async function loadEvents(client: Client) {
+export async function loadEvents(client: Client): Promise<void> {
   const eventsPath = join(process.cwd(), "src", "events");
   for (const eventFile of readdirSync(eventsPath)) {
-    if (!eventFile.endsWith("ts")) continue;
+    if (!eventFile.endsWith(".ts")) continue;
     const eventName = eventFile.split(".ts")[0];
     const event = (await import(pathToFileURL(join(eventsPath, eventFile)).toString())).default;
     events.push({ name: eventName, event: client.on(eventName, event) });
@@ -24,7 +29,9 @@ interface EasterEgg {
 
 export const easterEggs: EasterEgg[] = [];
 export const easterEggNames: string[] = [];
-export async function loadEasterEggs() {
+export async function loadEasterEggs(): Promise<
+  Message | InteractionResponse | ContainerBuilder | undefined
+> {
   const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
   for (const easterEggFile of readdirSync(eventsPath)) {
     if (!easterEggFile.endsWith(".ts")) continue;

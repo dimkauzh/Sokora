@@ -1,5 +1,11 @@
 import { getSetting } from "database/settings";
-import { SlashCommandSubcommandBuilder, type ChatInputCommandInteraction } from "discord.js";
+import {
+  type ContainerBuilder,
+  type InteractionResponse,
+  type Message,
+  SlashCommandSubcommandBuilder,
+  type ChatInputCommandInteraction,
+} from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
 import { safeMember } from "utils/safeThings";
@@ -21,10 +27,12 @@ export const data = new SlashCommandSubcommandBuilder()
       ),
   );
 
-export async function run(interaction: ChatInputCommandInteraction) {
-  const user = interaction.options.getUser("user")!;
+export async function run(
+  interaction: ChatInputCommandInteraction,
+): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+  const user = interaction.options.getUser("user");
   const reason = interaction.options.getString("reason");
-  const guild = interaction.guild!;
+  const guild = interaction.guild;
   const target = await safeMember(guild, user.id);
 
   if (

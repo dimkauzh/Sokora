@@ -14,8 +14,7 @@
     "altdev": "bun --watch ./dist/src/bot.js",
     "dev": "bun --watch ./src/bot.ts",
     "start": "bun ./src/index.ts",
-    "prettier": "prettier --w .",
-    "lint": "eslint . --fix"
+    "ql": "prettier --w .; eslint . --fix"
   },
   "dependencies": {
     "@hokkiai/djs-level-importer": "^1.2.0",

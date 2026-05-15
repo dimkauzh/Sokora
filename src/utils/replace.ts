@@ -1,3 +1,4 @@
+import type { Mentionable } from "./types";
 import type { Guild, User } from "discord.js";
 import { mention } from "./mention";
 import { randomize } from "./randomize";
@@ -12,7 +13,7 @@ const emojis =
 export function replace(
   text: string,
   replaceText?: { text: string; replacement: string | number }[],
-) {
+): string {
   for (const mention of replaceText ?? [
     { text: "(madeWith)", replacement: `Made with ${randomize(emojis)} by the Sokora team` },
     { text: "(leftArrow)", replacement: "1298708251256291379" },
@@ -51,10 +52,10 @@ export async function replaceVariables(text: string, guild: Guild, user: User): 
     },
   ];
 
-  text = text.replace(
+  text = text.replaceAll(
     /\((\d+), (user|role|default_timestamp|simple_timestamp|detailed_timestamp|channel)\)/g,
     (_, id: string, indicator: string) => {
-      return mention(id, indicator.toUpperCase() as any);
+      return mention(id, indicator.toUpperCase() as Mentionable);
     },
   );
 

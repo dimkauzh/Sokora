@@ -1,12 +1,17 @@
-import { PermissionFlagsBits } from "discord.js";
+import {
+  type ContainerBuilder,
+  type InteractionResponse,
+  type Message,
+  PermissionFlagsBits,
+} from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggNames, eventNames } from "handlers/events";
 import { client } from "src/bot";
 import { dekominator } from "utils/kominator";
 import { safeMember } from "utils/safeThings";
-import { Satisfies } from "utils/types";
+import type { Satisfies } from "utils/types";
 import { db, values } from ".";
-import {
+import type {
   FieldData,
   SettingPrecondition,
   SettingsDefinition,
@@ -27,10 +32,13 @@ type Def = Satisfies<
   }
 >;
 
-const invitePrecondition: SettingPrecondition = async (i, v: boolean | string) => {
+export type SettingSettableValue = string | string[] | boolean | number | null;
+
+const invitePrecondition: SettingPrecondition = async (interaction, v: boolean | string) => {
   if (
     v &&
-    !(await safeMember(i.guild!, i.client.user.id)).permissions.has(
+    interaction.guild &&
+    !(await safeMember(interaction.guild, interaction.client.user.id)).permissions.has(
       PermissionFlagsBits.CreateInstantInvite | PermissionFlagsBits.ManageGuild,
     )
   )
@@ -266,9 +274,9 @@ export const settingsDefinition: SettingsDefinition = {
   },
 };
 
-export const settingsKeys = Object.keys(settingsDefinition) as (keyof typeof settingsDefinition)[];
+export const settingsKeys = Object.keys(settingsDefinition);
 
-const deleteQuery = async (guildID: string, key: string, sql_: Bun.SQL = db) =>
+const deleteQuery = async (guildID: string, key: string, sql_: Bun.SQL = db): Promise<Bun.SQL> =>
   await sql_`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = ${key};`;
 
 // [TODO] autocomplete support for get/setSetting
@@ -286,7 +294,7 @@ export async function getSetting<
   | null
   | undefined
 > {
-  if (!settingsDefinition[key] || !settingsDefinition[key].settings[setting]) {
+  if (!settingsDefinition[key]?.settings[setting]) {
     await errorEmbed({
       client,
       title: `Setting ${key}.${setting} does not exist in the database. Guild: ${guildID}.`,
@@ -297,12 +305,12 @@ export async function getSetting<
     return null;
   }
 
-  const res = values(
+  const res = values<TypeOfDefinition<Def>>(
     await db`SELECT * FROM settings WHERE "guildID" = ${guildID} AND "key" = ${`${key}.${setting}`};`,
-  ) as TypeOfDefinition<Def>[];
+  );
 
   const set = settingsDefinition[key].settings[setting];
-  if (!res.length) {
+  if (res.length === 0) {
     if (!set) return null;
     return set.val;
   }
@@ -312,12 +320,15 @@ export async function getSetting<
 
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
-      case "BOOL":
-        return (value == "true") as SqlType<typeof set.type>;
-      case "INTEGER":
-        return parseInt(value) as SqlType<typeof set.type>;
-      default:
-        return value as SqlType<typeof set.type>;
+      case "BOOL": {
+        return value == "true";
+      }
+      case "INTEGER": {
+        return Number.parseInt(value);
+      }
+      default: {
+        return value;
+      }
     }
   }
 
@@ -329,21 +340,23 @@ export async function getSetting<
   return switchTypes(value);
 }
 
-export async function getSettingCategory<K extends keyof typeof settingsDefinition>(
+export async function getSettingCategory(
   guildID: string,
-  key: K,
-) {
-  const array = [];
+  key: keyof typeof settingsDefinition,
+): Promise<Awaited<ReturnType<typeof getSetting>>[]> {
+  const array: Awaited<ReturnType<typeof getSetting>>[] = [];
   for (const setting of Object.keys(settingsDefinition[key].settings))
     array.push(await getSetting(guildID, key, setting)); // We should be doing one query on the category instead and then check results against defaults
 
   return array;
 }
 
-export async function setSetting<
-  K extends keyof typeof settingsDefinition,
-  S extends keyof (typeof settingsDefinition)[K]["settings"],
->(guildID: string, key: K, setting: S, value: any) {
+export async function setSetting<K extends keyof typeof settingsDefinition>(
+  guildID: string,
+  key: K,
+  setting: keyof (typeof settingsDefinition)[K]["settings"],
+  value: SettingSettableValue,
+): Promise<void> {
   const set = Array.isArray(value) ? dekominator(value) : value;
   const keySetting = `${key}.${setting}`;
   await db.begin(async tx => {
@@ -353,17 +366,18 @@ export async function setSetting<
   }); // Autocommits if nothing goes wrong
 }
 
-export async function resetSetting<
-  K extends keyof typeof settingsDefinition,
-  S extends keyof (typeof settingsDefinition)[K]["settings"],
->(guildID: string, key: K, setting: S) {
+export async function resetSetting<K extends keyof typeof settingsDefinition>(
+  guildID: string,
+  key: K,
+  setting: keyof (typeof settingsDefinition)[K]["settings"],
+): Promise<void> {
   await deleteQuery(guildID, `${key}.${setting}`);
 }
 
-export async function resetSettingCategory<K extends keyof typeof settingsDefinition>(
+export async function resetSettingCategory(
   guildID: string,
-  key: K,
-) {
+  key: keyof typeof settingsDefinition,
+): Promise<void> {
   await db`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" LIKE ${`${key}%`};`;
 }
 
@@ -375,23 +389,21 @@ export async function listPublicServers(): Promise<
   }[]
 > {
   const publicGuildSet = new Set(
-    (
-      values(
-        await db`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`,
-      ) as TypeOfDefinition<Def>[]
+    values<TypeOfDefinition<Def>>(
+      await db`SELECT * FROM settings WHERE "key" = 'serverboard.shown' AND "value" = 'true';`,
     ).map(entry => entry.guildID),
   );
 
   const inviteGuildsSet = new Set(
-    (
-      values(
-        await db`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`,
-      ) as TypeOfDefinition<Def>[]
+    values<TypeOfDefinition<Def>>(
+      await db`SELECT * FROM settings WHERE "key" = 'serverboard.server_invite' AND "value" = 'true';`,
     ).map(entry => entry.guildID),
   );
 
   return Promise.all(
-    Array.from(publicGuildSet).map(async entry => {
+    [...publicGuildSet].map(async (entry: unknown) => {
+      if (typeof entry != "string")
+        throw new Error(`Somehow '${entry}' was not of type string in listPublicServers.`);
       const inviteChannel = await getSetting(entry, "serverboard", "invite_channel");
       return {
         guildID: entry,
@@ -402,7 +414,9 @@ export async function listPublicServers(): Promise<
   );
 }
 
-export async function deletePublicServer(guildID: string) {
+export async function deletePublicServer(
+  guildID: string,
+): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
   try {
     await db`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = 'serverboard.shown' AND "value" = 'true';`;
   } catch (error) {

@@ -1,11 +1,11 @@
 import type { Message } from "discord.js";
 import { randomize } from "utils/randomize";
 
-export async function run(message: Message) {
-  const msg = message.content.trim().toLowerCase();
-  if (!/what(?:'s| does)? .*sokora.*mean/.test(msg)) return;
+export async function run(message: Message): Promise<void> {
+  const message_ = message.content.trim().toLowerCase();
+  if (!/what(?:'s| does)? .*sokora.*mean/.test(message_)) return;
 
-  const chances = parseFloat((Math.random() * 10).toFixed(3));
+  const chances = Number.parseFloat((Math.random() * 10).toFixed(3));
   const normalReplies = [
     "Sokora means 'everywhere' in japanese.",
     "'_Everywhere_', it means 'everywhere'. It's because we're everywhere you need us; whether it is moderating channels or keeping the server fun.",
@@ -23,9 +23,9 @@ export async function run(message: Message) {
   const reply =
     message.author.id == "823939421686071386" || chances < 0.3
       ? ultraRareReply
-      : chances >= 0.3 && chances < 3
+      : (chances >= 0.3 && chances < 3
         ? randomize(rareReplies)
-        : randomize(normalReplies);
+        : randomize(normalReplies));
 
   await message.reply(reply);
 }

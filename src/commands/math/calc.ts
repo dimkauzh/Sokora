@@ -1,5 +1,8 @@
 import {
+  type ContainerBuilder,
   EmbedBuilder,
+  type InteractionResponse,
+  type Message,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
 } from "discord.js";
@@ -17,9 +20,11 @@ export const data = new SlashCommandSubcommandBuilder()
       .setRequired(true),
   );
 
-export async function run(interaction: ChatInputCommandInteraction) {
+export async function run(
+  interaction: ChatInputCommandInteraction,
+): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
   const expr = interaction.options.getString("expression", true);
-  let result: number;
+  let result: unknown;
 
   try {
     result = math.evaluate(expr);

@@ -3,7 +3,10 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
+  type ContainerBuilder,
   EmbedBuilder,
+  type InteractionResponse,
+  type Message,
   SlashCommandSubcommandBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
@@ -20,7 +23,9 @@ export const data = new SlashCommandSubcommandBuilder()
     number.setName("page").setDescription("The news post that you want to see."),
   );
 
-export async function run(interaction: ChatInputCommandInteraction) {
+export async function run(
+  interaction: ChatInputCommandInteraction,
+): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
   let page = interaction.options.getNumber("page") ?? 1;
   if (!interaction.guild)
     return await errorEmbed({
@@ -31,7 +36,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
 
   const news = await listAllNews(interaction.guild.id);
 
-  if (!news || !news.length)
+  if (!news?.length)
     return await errorEmbed({
       interaction,
       title: "No news found.",
@@ -41,7 +46,7 @@ export async function run(interaction: ChatInputCommandInteraction) {
   if (page > news.length) page = news.length;
   if (page < 1) page = 1;
 
-  async function getEmbed() {
+  async function getEmbed(): Promise<EmbedBuilder> {
     const currentNews = news[page - 1];
     const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
@@ -51,8 +56,8 @@ export async function run(interaction: ChatInputCommandInteraction) {
       })
       .setTitle(currentNews.title)
       .setDescription(currentNews.body)
-      .setImage(currentNews.imageURL || null)
-      .setTimestamp(currentNews.updatedAt || currentNews.createdAt)
+      .setImage(currentNews.imageURL ?? null)
+      .setTimestamp(currentNews.updatedAt ?? currentNews.createdAt)
       .setFooter({
         text: `${news.length > 1 ? `Page ${page} of ${news.length} • ` : ""}ID: ${currentNews.id}`,
       })
@@ -76,21 +81,24 @@ export async function run(interaction: ChatInputCommandInteraction) {
   });
 
   if (page < 1) return;
-  const collector = reply.createMessageComponentCollector({ time: 60000 });
-  collector.on("collect", async (i: ButtonInteraction) => {
-    if (await buttonCheck({ i, interaction, reply })) return;
-    collector.resetTimer({ time: 60000 });
-    switch (i.customId) {
-      case "left":
+  const collector = reply.createMessageComponentCollector({ time: 60_000 });
+
+  collector.on("collect", async (interaction2: ButtonInteraction) => {
+    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+    collector.resetTimer({ time: 60_000 });
+    switch (interaction2.customId) {
+      case "left": {
         page--;
         if (page < 1) page = news.length;
-        await i.update({ embeds: [await getEmbed()], components: [row] });
+        await interaction2.update({ embeds: [await getEmbed()], components: [row] });
         break;
-      case "right":
+      }
+      case "right": {
         page++;
         if (page > news.length) page = 1;
-        await i.update({ embeds: [await getEmbed()], components: [row] });
+        await interaction2.update({ embeds: [await getEmbed()], components: [row] });
         break;
+      }
     }
   });
 
