@@ -329,7 +329,7 @@ export async function settingsEmbed(
     const typedSetting = (settingsObj as Record<string, SingleSettingDefinition>)[name];
     let settingObject:
       | SingleSettingDefinition
-      | Extract<SingleSettingDefinition, { type: "OBJECT" }>["settings"] = typedSetting;
+      | (SingleSettingDefinition & { type: "OBJECT" })["settings"] = typedSetting;
 
     if (typedSetting.type === "OBJECT")
       switch (name) {
