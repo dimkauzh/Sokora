@@ -1,12 +1,14 @@
 import { resetSetting } from "database/settings";
-import type {
-  Channel,
-  Guild,
-  GuildBasedChannel,
-  NewsChannel,
-  PermissionResolvable,
+import {
+  type Channel,
+  type Guild,
+  type GuildBasedChannel,
+  type NewsChannel,
+  type PermissionResolvable,
+  ChannelType,
+  EmbedBuilder,
+  type TextChannel,
 } from "discord.js";
-import { ChannelType, EmbedBuilder, type TextChannel } from "discord.js";
 import { colorize, Sokolors } from "./colorize";
 import { dotCheck } from "./dotCheck";
 import { mention } from "./mention";

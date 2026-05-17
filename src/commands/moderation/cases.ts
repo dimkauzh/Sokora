@@ -6,13 +6,14 @@ import {
   type ModType,
 } from "database/moderation";
 import type { TypeOfDefinition } from "database/types";
-import type { ContainerBuilder, InteractionResponse, Message } from "discord.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
+  type InteractionResponse,
+  type Message,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
   type User,
@@ -144,7 +145,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<undefined | ContainerBuilder | InteractionResponse | Message> {
+): Promise<undefined | InteractionResponse | Message> {
   const guild = interaction.guild;
   if (!guild) return;
   if (!(await safeMember(guild, interaction.user.id)).permissions.has("ModerateMembers"))
@@ -188,13 +189,13 @@ export async function run(
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
 
-  collector.on("collect", async (interaction2: ButtonInteraction) => {
-    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+  collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
+    if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
 
-    if (interaction2.customId == "left") page = page > 1 ? page - 1 : totalPages;
+    if (buttonInteraction.customId == "left") page = page > 1 ? page - 1 : totalPages;
     else page = page < totalPages ? page + 1 : 1;
-    await interaction2.update({
+    await buttonInteraction.update({
       embeds: [
         await generateEmbed({
           cases,

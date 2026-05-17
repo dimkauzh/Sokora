@@ -1,10 +1,12 @@
 import { createCase, editCase, getCase, type ModType } from "database/moderation";
-import type { ContainerBuilder, InteractionResponse, Message } from "discord.js";
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
   type PermissionResolvable,
   type User,
+  type ContainerBuilder,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import ms from "enhanced-ms";
 import { mention } from "utils/mention";
@@ -44,13 +46,13 @@ type ErrorOptions = Options & {
 export async function errorCheck(
   permissionAction: string,
   options: ErrorOptions,
-): Promise<Message | InteractionResponse | ContainerBuilder | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   const { interaction, user, channel, action, errorOptions } = options;
   const { allErrors, botError, channelError, ownerError, outsideError, banCheckError } =
     errorOptions;
 
   const guild = interaction.guild;
-  if (!guild) throw new Error("TODO");
+  if (!guild) return;
   const member = await safeMember(guild, interaction.user.id);
   const client = await safeMember(guild, interaction.client.user.id);
   const permission = permissionAction.replaceAll(/\s/g, "") as PermissionResolvable;
@@ -208,7 +210,7 @@ export async function modEmbed(
         fileName: "modEmbed.ts",
       });
     }
-    author = `${author}  •  #${previousID}`;
+    author += `  •  #${previousID}`;
   }
 
   if (dbAction) {
@@ -262,7 +264,10 @@ export async function modEmbed(
     return await safeReply({ interaction, replyOptions: { embeds: [embed] } });
   }
 
-  if (!user) throw new Error("(TODO)");
+  if (!user)
+    throw new Error(
+      "modEmbed got to a place where user must be defined (for logChannel) but is somehow not.",
+    );
 
   await Promise.all([
     logChannel(guild, { embeds: [embed] }, dm, {

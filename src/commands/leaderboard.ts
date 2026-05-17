@@ -3,7 +3,6 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  type ContainerBuilder,
   EmbedBuilder,
   type InteractionResponse,
   type Message,
@@ -24,7 +23,7 @@ export const data = new SlashCommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   const guild = interaction.guild;
   const guildID = guild?.id;
   if (!guildID)
@@ -81,13 +80,13 @@ export async function run(
   if (totalPages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
 
-  collector.on("collect", async (interaction2: ButtonInteraction) => {
-    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+  collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
+    if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
 
-    if (interaction2.customId == "left") page = page > 1 ? page - 1 : totalPages;
+    if (buttonInteraction.customId == "left") page = page > 1 ? page - 1 : totalPages;
     else page = page < totalPages ? page + 1 : 1;
-    await interaction2.update({ embeds: [await generateEmbed()], components: [row] });
+    await buttonInteraction.update({ embeds: [await generateEmbed()], components: [row] });
   });
 
   collector.on("end", async () => {

@@ -1,5 +1,4 @@
 import { resetSetting } from "database/settings";
-import type { NewsChannel, StageChannel, TextChannel, VoiceChannel } from "discord.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -15,6 +14,10 @@ import {
   TextDisplayBuilder,
   ThumbnailBuilder,
   type Guild,
+  type NewsChannel,
+  type StageChannel,
+  type TextChannel,
+  type VoiceChannel,
 } from "discord.js";
 import { logChannel } from "utils/logChannel";
 import { replace } from "utils/replace";
@@ -47,7 +50,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
   const boosters = guild.members.cache.filter(member => member.premiumSince);
   const client = guild.client.user.id;
   const owner = await guild.fetchOwner();
-  const icon = guild.iconURL();
+  const icon = guild.iconURL() ?? undefined;
 
   const roles = guild.roles.cache;
   const sortedRoles = [...roles].toSorted((role1, role2) => role2[1].position - role1[1].position);
@@ -102,7 +105,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
 
   if (boostTier)
     statValues.push(
-      `${boostTier ? `Level **${boostTier}**` : "**No** level"} • **${boostCount}** ${pluralOrNot("boost", boostCount)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
+      `${boostTier ? `Level **${boostTier}**` : "**No** level"} • **${boostCount}** ${pluralOrNot("boost", boostCount ?? 0)} • **${boosters.size}** ${pluralOrNot("booster", boosters.size)}`,
     );
 
   if (options.roles)

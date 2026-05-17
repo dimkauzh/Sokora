@@ -157,10 +157,10 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
     },
   });
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
-  collector.on("collect", async (interaction2: ButtonInteraction) => {
-    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+  collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
+    if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
-    const cID = interaction2.customId as keyof typeof SupportedBots;
+    const cID = buttonInteraction.customId as keyof typeof SupportedBots;
     const bots = {
       name: cID === "MEE6" ? cID.toUpperCase() : cID,
       data: [
@@ -197,7 +197,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
           ),
         );
 
-        const replyInteraction = modalInteraction ?? interaction2;
+        const replyInteraction = modalInteraction ?? buttonInteraction;
         const reply1 = await safeReply({
           interaction: replyInteraction,
           editOptions: { components: [await containerHelper(container1, { buttons: true })] },
@@ -206,13 +206,19 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
         if (modalInteraction) await reply.delete();
         collector.stop("bot_chosen");
         const collector1 = reply1.createMessageComponentCollector({ time: 60_000 });
-        collector1.on("collect", async (interaction3: ButtonInteraction) => {
-          if (await buttonCheck({ i: interaction3, interaction: replyInteraction, reply: reply1 }))
+        collector1.on("collect", async (buttonInteraction1: ButtonInteraction) => {
+          if (
+            await buttonCheck({
+              i: buttonInteraction1,
+              interaction: replyInteraction,
+              reply: reply1,
+            })
+          )
             return;
 
           collector1.resetTimer({ time: 60_000 });
           let content;
-          switch (interaction3.customId) {
+          switch (buttonInteraction1.customId) {
             case "check": {
               const levelData = safeStringify(levels);
               const checkContainer = new ContainerBuilder().addTextDisplayComponents(
@@ -236,7 +242,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
               }
 
               await safeReply({
-                interaction: interaction3,
+                interaction: buttonInteraction1,
                 replyOptions: {
                   components: [
                     await containerHelper(checkContainer, { buttons: true, json: true }),
@@ -248,17 +254,17 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
             }
             case "return": {
               await safeReply({
-                interaction: interaction3,
+                interaction: buttonInteraction1,
                 replyOptions: { components: [container1] },
               });
               break;
             }
             case "merge":
             case "overwrite": {
-              content = `# ${interaction3.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`;
+              content = `# ${buttonInteraction1.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`;
               const res = [];
               await safeReply({
-                interaction: interaction3,
+                interaction: buttonInteraction1,
                 replyOptions: {
                   components: [await containerHelper(new ContainerBuilder(), { content })],
                 },
@@ -281,7 +287,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
                 }
                 const previousXp = await getUserXp(interaction.guildId, user[1].id);
                 const newXp =
-                  (interaction3.customId == "merge" ? previousXp : 0) + imported.current_xp;
+                  (buttonInteraction1.customId == "merge" ? previousXp : 0) + imported.current_xp;
                 await setUserXp(interaction.guildId, user[1].id, newXp);
                 res.push(
                   `${user[1].user.username} updated from ${previousXp} XP (level ${calculateLevel({ xp: previousXp, difficulty })}) to **XP ${newXp} (level ${calculateLevel({ xp: newXp, difficulty })})**.`,
@@ -290,7 +296,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
 
               content = `# Done!\n${res.join("\n")}`;
               await safeReply({
-                interaction: interaction3,
+                interaction: buttonInteraction1,
                 replyOptions: {
                   components: [await containerHelper(new ContainerBuilder(), { content })],
                 },
@@ -327,8 +333,8 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
               ),
           );
 
-        await interaction2.showModal(modal);
-        const modalInteraction = await modalSubmit(interaction2);
+        await buttonInteraction.showModal(modal);
+        const modalInteraction = await modalSubmit(buttonInteraction);
         collector.resetTimer({ time: 60_000 });
         if (!modalInteraction) return;
 

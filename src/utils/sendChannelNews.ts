@@ -28,7 +28,7 @@ export async function sendChannelNews(
     title: string;
     body: string;
     author: string;
-    authorPFP: string;
+    authorPFP?: string;
     id: number;
     imageURL?: string | null;
   },

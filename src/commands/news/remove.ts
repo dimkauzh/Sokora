@@ -1,10 +1,12 @@
 import { deleteNews, getNews } from "database/news";
 import { getSetting } from "database/settings";
-import type { InteractionResponse, Message, TextChannel } from "discord.js";
 import {
   EmbedBuilder,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
+  type TextChannel,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";

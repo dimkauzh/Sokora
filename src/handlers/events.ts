@@ -1,9 +1,4 @@
-import {
-  type ContainerBuilder,
-  type InteractionResponse,
-  type Client,
-  type Message,
-} from "discord.js";
+import { type InteractionResponse, type Client, type Message } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
@@ -29,9 +24,7 @@ interface EasterEgg {
 
 export const easterEggs: EasterEgg[] = [];
 export const easterEggNames: string[] = [];
-export async function loadEasterEggs(): Promise<
-  Message | InteractionResponse | ContainerBuilder | undefined
-> {
+export async function loadEasterEggs(): Promise<Message | InteractionResponse | undefined> {
   const eventsPath = join(process.cwd(), "src", "events", "easterEggs");
   for (const easterEggFile of readdirSync(eventsPath)) {
     if (!easterEggFile.endsWith(".ts")) continue;

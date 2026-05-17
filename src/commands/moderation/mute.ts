@@ -1,6 +1,5 @@
 import { getSetting } from "database/settings";
 import {
-  type ContainerBuilder,
   type InteractionResponse,
   type Message,
   SlashCommandSubcommandBuilder,
@@ -34,7 +33,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | undefined | Message | InteractionResponse> {
+): Promise<undefined | Message | InteractionResponse> {
   const guild = interaction.guild;
   if (!guild) return;
   const user = interaction.options.getUser("user");

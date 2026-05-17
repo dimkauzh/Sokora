@@ -1,6 +1,5 @@
 import {
   ChannelType,
-  type ContainerBuilder,
   type InteractionResponse,
   type Message,
   SlashCommandSubcommandBuilder,
@@ -41,7 +40,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   const guild = interaction.guild;
   if (!guild || !interaction.channel) return;
   const channelOption = interaction.options.getChannel("channel");

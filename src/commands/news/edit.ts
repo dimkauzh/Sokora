@@ -1,6 +1,5 @@
 import { getNews, updateNews } from "database/news";
 import { getSetting } from "database/settings";
-import type { ContainerBuilder, InteractionResponse, Message } from "discord.js";
 import {
   EmbedBuilder,
   LabelBuilder,
@@ -11,6 +10,8 @@ import {
   type ChatInputCommandInteraction,
   type Role,
   type TextChannel,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
@@ -32,7 +33,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   const guild = interaction.guild;
   const userID = interaction.user.id;
   if (!guild || !(await safeMember(guild, userID)).permissions.has("ManageGuild"))
@@ -86,14 +87,14 @@ export async function run(
     await errorEmbed({ interaction, error, forward: true, fileName: "edit.ts" });
   }
 
-  const interaction2 = await modalSubmit(interaction);
-  if (!interaction2) return;
+  const modalInteraction = await modalSubmit(interaction);
+  if (!modalInteraction) return;
 
   const role = (await getSetting(guild.id, "news", "role")) as string;
   const roleToSend: Role | null = role ? await safeRole(guild, role) : null;
 
-  const title = interaction2.fields.getTextInputValue("title");
-  const body = interaction2.fields.getTextInputValue("body");
+  const title = modalInteraction.fields.getTextInputValue("title");
+  const body = modalInteraction.fields.getTextInputValue("body");
   const avatar = news.authorPFP;
   const editedEmbed = new EmbedBuilder()
     .setTitle("News post edited.")
@@ -112,7 +113,7 @@ export async function run(
       },
       true,
     );
-    return await interaction2.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
+    return await modalInteraction.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
   }
 
   const embed = new EmbedBuilder()
@@ -137,5 +138,5 @@ export async function run(
   });
 
   await updateNews(guild.id, id, title, body);
-  await interaction2.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
+  await modalInteraction.reply({ embeds: [editedEmbed], flags: "Ephemeral" });
 }

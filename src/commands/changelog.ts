@@ -1,4 +1,3 @@
-import type { ButtonInteraction, ClientUser } from "discord.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -8,6 +7,8 @@ import {
   SlashCommandBuilder,
   TextDisplayBuilder,
   type ChatInputCommandInteraction,
+  type ButtonInteraction,
+  type ClientUser,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
@@ -97,13 +98,13 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
     flags: ["Ephemeral", "IsComponentsV2"],
   });
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
-  collector.on("collect", async (interaction2: ButtonInteraction) => {
-    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+  collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
+    if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
 
-    const split = interaction2.customId.replace("-", "").split("+");
+    const split = buttonInteraction.customId.replace("-", "").split("+");
     const newVersion = ["Added", "Changed", "Fixed", "Removed"].some(s =>
-      interaction2.customId.startsWith(s + "+"),
+      buttonInteraction.customId.startsWith(s + "+"),
     )
       ? split[1]
       : split[0];
@@ -111,7 +112,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
     const foundIndex = logList.findIndex(v => v.ver === newVersion);
     const indexToSliceOn = Math.max(0, Math.min(foundIndex - 2, logList.length - 3));
     const log = getChangelog(newVersion);
-    return await interaction2.update({
+    return await buttonInteraction.update({
       components: [
         await genChangelog(
           user,

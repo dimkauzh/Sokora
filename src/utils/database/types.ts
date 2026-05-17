@@ -23,7 +23,7 @@ export interface TableDefinition {
   definition: Record<string, FieldData>;
 }
 
-type Maybe<T> = T | null;
+type Maybe<T> = T | undefined;
 
 export type SqlType<T extends FieldData> = {
   BOOL: boolean;

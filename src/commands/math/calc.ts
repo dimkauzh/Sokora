@@ -1,5 +1,4 @@
 import {
-  type ContainerBuilder,
   EmbedBuilder,
   type InteractionResponse,
   type Message,
@@ -22,7 +21,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   const expr = interaction.options.getString("expression", true);
   let result: unknown;
 

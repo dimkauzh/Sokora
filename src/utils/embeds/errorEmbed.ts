@@ -35,7 +35,7 @@ export async function errorEmbed(options: {
   forward?: boolean;
   fileName?: string;
   dmOwner?: boolean;
-}): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+}): Promise<Message | InteractionResponse | undefined> {
   const { interaction, title, reason, log, forward, fileName, dmOwner } = options;
   const client = options.client ?? interaction?.client;
   if (!client) {

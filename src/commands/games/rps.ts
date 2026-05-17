@@ -2,7 +2,6 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  type ContainerBuilder,
   EmbedBuilder,
   type InteractionResponse,
   type Message,
@@ -41,7 +40,7 @@ function getWinner(choice1: RPSChoice, choice2: RPSChoice): 0 | 1 | 2 {
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   let opponent = interaction.options.getUser("opponent");
   opponent ??= interaction.client.user;
   const user = interaction.user;
@@ -78,17 +77,24 @@ export async function run(
   const playerChoices = new Map<string, RPSChoice>();
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
 
-  collector.on("collect", async (interaction2: ButtonInteraction) => {
+  collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
     if (!reply) return;
-    if (await buttonCheck({ i: interaction2, interaction, reply, noExecuteError: true })) return;
-    if (interaction2.user.id != opponent.id && interaction2.user.id != user.id)
-      return await errorEmbed({ interaction: interaction2, title: "You aren't participating." });
+    if (await buttonCheck({ i: buttonInteraction, interaction, reply, noExecuteError: true }))
+      return;
+    if (buttonInteraction.user.id != opponent.id && buttonInteraction.user.id != user.id)
+      return await errorEmbed({
+        interaction: buttonInteraction,
+        title: "You aren't participating.",
+      });
 
-    playerChoices.set(interaction2.user.id, interaction2.customId.split("_")[1] as RPSChoice);
+    playerChoices.set(
+      buttonInteraction.user.id,
+      buttonInteraction.customId.split("_")[1] as RPSChoice,
+    );
     if (opponent.bot) {
       collector.stop("game-complete");
     } else {
-      await interaction2.reply({
+      await buttonInteraction.reply({
         embeds: [
           new EmbedBuilder()
             .setTitle("Choice recorded!")

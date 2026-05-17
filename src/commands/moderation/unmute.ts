@@ -1,6 +1,5 @@
 import { getSetting } from "database/settings";
 import {
-  type ContainerBuilder,
   type InteractionResponse,
   type Message,
   SlashCommandSubcommandBuilder,
@@ -29,10 +28,18 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
-  const user = interaction.options.getUser("user");
-  const reason = interaction.options.getString("reason");
+): Promise<Message | InteractionResponse | undefined> {
   const guild = interaction.guild;
+  if (!guild) return;
+  const user = interaction.options.getUser("user");
+  if (!user)
+    return await errorEmbed({
+      interaction,
+      title: "No user provided.",
+      reason:
+        "You somehow ran the command without a user being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
+    });
+  const reason = interaction.options.getString("reason");
   const target = await safeMember(guild, user.id);
 
   if (

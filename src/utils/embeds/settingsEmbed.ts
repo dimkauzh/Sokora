@@ -15,12 +15,6 @@ import {
   setUserSetting,
   settingsDefinition as userSettingsDefinition,
 } from "database/userSettings";
-import type {
-  InteractionResponse,
-  MentionableSelectMenuBuilder,
-  Message,
-  MessageActionRowComponentBuilder,
-} from "discord.js";
 import {
   ActionRowBuilder,
   ButtonBuilder,
@@ -43,6 +37,10 @@ import {
   UserSelectMenuBuilder,
   type AnySelectMenuInteraction,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type MentionableSelectMenuBuilder,
+  type Message,
+  type MessageActionRowComponentBuilder,
 } from "discord.js";
 import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
@@ -554,10 +552,10 @@ export async function settingsEmbed(
   if (preconditionReply != null) await preconditionReply();
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
 
-  collector.on("collect", async (interaction2: AnySelectMenuInteraction) => {
-    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+  collector.on("collect", async (selectInteraction: AnySelectMenuInteraction) => {
+    if (await buttonCheck({ i: selectInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
-    const cID = interaction2.customId;
+    const cID = selectInteraction.customId;
 
     // Special buttons (navigation)
     switch (cID.replace("obj", "")) {
@@ -655,8 +653,8 @@ export async function settingsEmbed(
             ),
           );
 
-        await interaction2.showModal(modal);
-        const modalInteraction = await modalSubmit(interaction2);
+        await selectInteraction.showModal(modal);
+        const modalInteraction = await modalSubmit(selectInteraction);
 
         // After modal interaction
         collector.resetTimer({ time: 60_000 });
@@ -687,7 +685,7 @@ export async function settingsEmbed(
       }
       default: {
         if (!(exemptButtons.includes(cID) ?? exemptButtons.map(id => `obj${id}`).includes(cID)))
-          await setSettingPlease(id, key, cID, interaction2.values, table, interaction);
+          await setSettingPlease(id, key, cID, selectInteraction.values, table, interaction);
       }
     }
 
@@ -707,7 +705,7 @@ export async function settingsEmbed(
     );
 
     return await safeReply({
-      interaction: interaction2,
+      interaction: selectInteraction,
       editOptions: { components: [newContainer] },
     });
   });

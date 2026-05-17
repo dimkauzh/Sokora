@@ -20,7 +20,7 @@ export const data = new SlashCommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   const guildList: { guild: Guild; showInvite: boolean; inviteChannelId: string | null }[] = (
     await Promise.all(
       (await listPublicServers()).map(async entry => {
@@ -92,10 +92,10 @@ export async function run(
   if (pages == 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
 
-  collector.on("collect", async (interaction2: ButtonInteraction) => {
-    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+  collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
+    if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
-    switch (interaction2.customId) {
+    switch (buttonInteraction.customId) {
       case "left": {
         page--;
         if (page < 0) page = pages - 1;
@@ -108,7 +108,7 @@ export async function run(
       }
     }
 
-    await interaction2.update({ components: [await getContainer(false)] });
+    await buttonInteraction.update({ components: [await getContainer(false)] });
   });
 
   collector.on("end", async () => {

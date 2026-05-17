@@ -1,9 +1,4 @@
-import {
-  type ContainerBuilder,
-  type InteractionResponse,
-  type Message,
-  PermissionFlagsBits,
-} from "discord.js";
+import { type InteractionResponse, type Message, PermissionFlagsBits } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { easterEggNames, eventNames } from "handlers/events";
 import { client } from "src/bot";
@@ -416,7 +411,7 @@ export async function listPublicServers(): Promise<
 
 export async function deletePublicServer(
   guildID: string,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   try {
     await db`DELETE FROM settings WHERE "guildID" = ${guildID} AND "key" = 'serverboard.shown' AND "value" = 'true';`;
   } catch (error) {

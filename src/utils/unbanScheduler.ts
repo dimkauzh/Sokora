@@ -1,6 +1,5 @@
 import { getPendingBans, removeCase } from "database/moderation";
-import type { Client } from "discord.js";
-import { EmbedBuilder } from "discord.js";
+import { type Client, EmbedBuilder } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "./colorize";
 import { dotCheck } from "./dotCheck";

@@ -2,7 +2,6 @@ import type { ChartConfiguration } from "chart.js";
 import { ChartJSNodeCanvas } from "chartjs-node-canvas";
 import {
   AttachmentBuilder,
-  type ContainerBuilder,
   EmbedBuilder,
   type InteractionResponse,
   type Message,
@@ -29,7 +28,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   const function_ = interaction.options.getString("function", true);
   const xmin = interaction.options.getNumber("xmin") ?? -10;
   const xmax = interaction.options.getNumber("xmax") ?? 10;

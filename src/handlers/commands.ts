@@ -1,13 +1,11 @@
-import type {
-  AutocompleteInteraction,
-  ApplicationCommandData,
-  ChatInputCommandInteraction,
-} from "discord.js";
 import {
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
   type Client,
+  type AutocompleteInteraction,
+  type ApplicationCommandData,
+  type ChatInputCommandInteraction,
 } from "discord.js";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";

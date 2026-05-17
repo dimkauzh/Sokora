@@ -3,7 +3,6 @@ import {
   ActionRowBuilder,
   ButtonBuilder,
   ButtonStyle,
-  type ContainerBuilder,
   EmbedBuilder,
   type InteractionResponse,
   type Message,
@@ -25,7 +24,7 @@ export const data = new SlashCommandSubcommandBuilder()
 
 export async function run(
   interaction: ChatInputCommandInteraction,
-): Promise<ContainerBuilder | Message | InteractionResponse | undefined> {
+): Promise<Message | InteractionResponse | undefined> {
   let page = interaction.options.getNumber("page") ?? 1;
   if (!interaction.guild)
     return await errorEmbed({
@@ -83,20 +82,20 @@ export async function run(
   if (page < 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
 
-  collector.on("collect", async (interaction2: ButtonInteraction) => {
-    if (await buttonCheck({ i: interaction2, interaction, reply })) return;
+  collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
+    if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
-    switch (interaction2.customId) {
+    switch (buttonInteraction.customId) {
       case "left": {
         page--;
         if (page < 1) page = news.length;
-        await interaction2.update({ embeds: [await getEmbed()], components: [row] });
+        await buttonInteraction.update({ embeds: [await getEmbed()], components: [row] });
         break;
       }
       case "right": {
         page++;
         if (page > news.length) page = 1;
-        await interaction2.update({ embeds: [await getEmbed()], components: [row] });
+        await buttonInteraction.update({ embeds: [await getEmbed()], components: [row] });
         break;
       }
     }

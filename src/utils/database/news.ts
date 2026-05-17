@@ -11,7 +11,7 @@ type Def = Satisfies<
       title: "TEXT";
       body: "TEXT";
       author: "TEXT";
-      authorPFP: "TEXT";
+      authorPFP: "mTEXT";
       createdAt: "TIMESTAMP";
       updatedAt: "mTIMESTAMP";
       messageID: "TEXT";
@@ -26,7 +26,7 @@ const sendQuery = async (
   title: string,
   body: string,
   author: string,
-  authorPFP: string,
+  authorPFP: string | undefined,
   createdAt: Date,
   updatedAt: Date | null,
   messageID: string,
@@ -67,7 +67,7 @@ export async function postNews(
   title: string,
   body: string,
   author: string,
-  authorPFP: string,
+  authorPFP: string | undefined,
   messageID: string,
   imageURL: string | null | undefined,
   id: number,
