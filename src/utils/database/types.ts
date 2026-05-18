@@ -91,4 +91,4 @@ export interface LevelReward {
   id: string;
   level: number;
   channel: boolean;
-}
+};

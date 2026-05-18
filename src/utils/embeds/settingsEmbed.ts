@@ -172,7 +172,7 @@ export async function settingsEmbed(
   let disableCategory = false;
   let itrObjectView = false;
   let objectView = false;
-  let preconditionReply: (() => unknown) | null;
+  let preconditionReply: (() => Promise<Message | InteractionResponse>) | null;
 
   // Create a container
   async function construct(
@@ -329,7 +329,7 @@ export async function settingsEmbed(
     const typedSetting = (settingsObj as Record<string, SingleSettingDefinition>)[name];
     let settingObject:
       | SingleSettingDefinition
-      | (SingleSettingDefinition & { type: "OBJECT" })["settings"] = typedSetting;
+      | (Extract<SingleSettingDefinition, { type: "OBJECT" }>)["settings"] = typedSetting;
 
     if (typedSetting.type === "OBJECT")
       switch (name) {
@@ -433,8 +433,7 @@ export async function settingsEmbed(
     if (settingsDef.settings[name]) {
       // Doesn't happen when adding/editing a value in an OBJECT type btw
       const precondError = settingsDef.settings[name].precondition
-        ? await settingsDef.settings[name].precondition(interaction, setting)
-        : null;
+        && await settingsDef.settings[name].precondition(interaction, setting);
 
       if (precondError) {
         if (table == "server") await resetSetting(id, key, name);
@@ -689,7 +688,7 @@ export async function settingsEmbed(
       }
     }
 
-    if (objView) settingsObj = (settingsObj["rewards"] as Extract<SingleSettingDefinition, { type: "OBJECT" }>).settings;
+    if (objectView) settingsObject = (settingsObject["rewards"] as Extract<SingleSettingDefinition, { type: "OBJECT" }>).settings;
     const newContainer = new ContainerBuilder().setAccentColor(color);
     const rewards = await getLevelRewards(id);
     await construct(
