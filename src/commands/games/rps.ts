@@ -91,9 +91,8 @@ export async function run(
       buttonInteraction.user.id,
       buttonInteraction.customId.split("_")[1] as RPSChoice,
     );
-    if (opponent.bot) {
-      collector.stop("game-complete");
-    } else {
+    if (opponent.bot) collector.stop("game-complete");
+    else {
       await buttonInteraction.reply({
         embeds: [
           new EmbedBuilder()

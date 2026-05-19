@@ -16,6 +16,7 @@ export default defineConfig(
       },
     },
     rules: {
+      curly: ["warn", "multi"],
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/await-thenable": "error",
       "@typescript-eslint/no-misused-promises": "off",

@@ -48,11 +48,11 @@ const main = async (): Promise<void> => {
   const useDocker = confirm(
     "Are you going to use Docker (Y) or setup manually (N, or any other key)?",
   );
-  if (useDocker) {
+  if (useDocker)
     console.log(
       "Then just run Docker Compose on this directory, it should all work out of the box.",
     );
-  } else {
+  else {
     const pgUser = await readHiddenInput("Enter your PostgreSQL user below");
     const pgPass = await readHiddenInput("Enter your PostgreSQL pass below");
     const pgName = await readHiddenInput("Enter your PostgreSQL database name below");

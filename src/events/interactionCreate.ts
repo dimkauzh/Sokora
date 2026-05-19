@@ -20,7 +20,5 @@ export default (async function run(interaction) {
   if (interaction.isChatInputCommand()) {
     await noErrorsPlease(interaction, command.data.name);
     await command.run(interaction);
-  } else {
-    if (command.autocomplete) await command.autocomplete(interaction);
-  }
+  } else if (command.autocomplete) await command.autocomplete(interaction);
 } as Event<"interactionCreate">);

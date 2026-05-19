@@ -24,7 +24,7 @@ export default (async function run(reaction, user) {
       });
     }
 
-  if (user.partial) {
+  if (user.partial)
     try {
       await user.fetch();
     } catch (error) {
@@ -37,7 +37,6 @@ export default (async function run(reaction, user) {
         fileName: "messageReactionAdd.ts",
       });
     }
-  }
 
   const message = await reaction.message.fetch();
   const guild = message.guild;

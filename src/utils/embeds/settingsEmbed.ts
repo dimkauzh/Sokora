@@ -227,7 +227,7 @@ export async function settingsEmbed(
     }
 
     // [TODO] rework this to not spam 130loc settingComponent all the time
-    if (itrObjectView_) {
+    if (itrObjectView_)
       for (const object of settingsObject_ as Record<string, unknown>[])
         constructLoop(
           await settingComponent({
@@ -237,11 +237,10 @@ export async function settingsEmbed(
             itrObjView: itrObjectView_,
           }),
         );
-    } else // Temporary (only fixed to level rewards for now)
-    {
+    else
+      // Temporary (only fixed to level rewards for now)
       for (const name of Object.keys(settingsObject_))
         constructLoop(await settingComponent({ settingsObj: settingsObject_, name, reset }));
-    }
 
     // empty separator.
     container.addSeparatorComponents(new SeparatorBuilder().setDivider(false));
@@ -666,9 +665,9 @@ export async function settingsEmbed(
         let valueText = `The ${value.length < 50 ? "value" : "**value**"} has been set ${length >= 500 ? "successfully." : (length >= 50 ? `to ${value}` : `to **${value}**`)}`;
         let hue = Sokolors.Blue;
 
-        if (isValueValid(value, settingsObject[cID].type)) {
+        if (isValueValid(value, settingsObject[cID].type))
           await setSettingPlease(id, key, cID, value, table, interaction);
-        } else {
+        else {
           settingText = `**${dotCheck({ string: settingsObject[cID].emoji, twoSides: true, includeString: true })}${humanizeSettings(cID)}** couldn't be changed!`;
           valueText = `Given data is invalid. Ensure it's of the valid type (${humanizeType(settingsObject[cID].type)}) and try again.${length >= 500 ? "" : `\nData entered was:\n${codeBlock(value)}`}`;
           hue = Sokolors.Red;

@@ -28,7 +28,7 @@ export async function scheduleUnban(
         if (!guild) return;
 
         const user = (await guild.bans.fetch(userID)).user;
-        if (!user) {
+        if (!user)
           return await errorEmbed({
             client,
             title: `Failed to unban user ${userID} in guild ${guildID}.`,
@@ -37,10 +37,9 @@ export async function scheduleUnban(
             forward: true,
             fileName: "unbanScheduler.ts",
           });
-        }
 
         const moderator = await safeMember(guild, modID);
-        if (!moderator) {
+        if (!moderator)
           return await errorEmbed({
             client,
             title: `Failed to unban user ${userID} in guild ${guildID}.`,
@@ -49,7 +48,6 @@ export async function scheduleUnban(
             forward: true,
             fileName: "unbanScheduler.ts",
           });
-        }
 
         const avatar = user.displayAvatarURL();
         const embed = new EmbedBuilder()

@@ -41,10 +41,9 @@ export async function fetchMedia(
         /<meta\s+property=["']twitter:image["']\s+content=["']([^"']+)["']/i.exec(content);
 
       const metaContent = metaContentMatch ? metaContentMatch[1] : undefined;
-      if (metaContent) {
+      if (metaContent)
         if (isTenor) video = metaContent;
         else if (isWebsite) thumbnail = metaContent;
-      }
     }
   }
 

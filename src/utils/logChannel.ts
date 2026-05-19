@@ -62,7 +62,7 @@ export async function logChannel(
       await channel.send(options);
   }
 
-  if (dm) {
+  if (dm)
     try {
       if (!dmOptions) return;
       if (dmOptions.silent) return;
@@ -73,5 +73,4 @@ export async function logChannel(
     } catch (error) {
       return await errorEmbed({ client: guild.client, error, log: true });
     }
-  }
 }

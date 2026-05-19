@@ -51,12 +51,11 @@ export async function run(
       .setFooter({ text: `Page ${page} of ${totalPages}` })
       .setColor(await colorize({ hue: Sokolors.Blue }));
 
-    for (const [index, userData] of pageData.entries()) {
+    for (const [index, userData] of pageData.entries())
       embed.addFields({
         name: `#${start + index + 1} • ${(await safeUser(interaction.client, userData.userID)).tag}`,
         value: `Level **${Math.floor(userData.level)}** • **${Math.floor(userData.xp)}** XP`,
       });
-    }
 
     return embed;
   };

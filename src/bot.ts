@@ -44,7 +44,7 @@ client.once("clientReady", async () => {
         (await getUserSettingsTable("topgg", "remind"))
           ?.filter(index => index.value == "1")
           .map(index => index.userID.replaceAll('"', "")),
-      )) {
+      ))
         try {
           if (await topgg.hasVoted(user)) continue;
           const dmChannel = await (await safeUser(client, user)).createDM();
@@ -64,7 +64,6 @@ client.once("clientReady", async () => {
           });
           await setUserSetting(user, "topgg", "remind", false);
         }
-      }
     }, ms("6h"));
 
   await Promise.all([
