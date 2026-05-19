@@ -4,7 +4,6 @@ import {
   SlashCommandSubcommandGroupBuilder,
   type Client,
   type AutocompleteInteraction,
-  type ApplicationCommandData,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { readdirSync } from "node:fs";
@@ -14,20 +13,15 @@ import { pathToFileURL } from "node:url";
 type AutocompleteFunction = (interaction: AutocompleteInteraction) => Promise<void>;
 type RunFunction = (interaction: ChatInputCommandInteraction) => Promise<unknown>;
 interface Command {
-  data: ApplicationCommandData | SlashCommandBuilder;
-  run: RunFunction;
-  autocomplete?: AutocompleteFunction;
-}
-interface SubCommand {
-  data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;
+  data: SlashCommandBuilder | SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;
   run: RunFunction;
   autocomplete?: AutocompleteFunction;
 }
 
-export const commands: Command[] = [];
-export const subCommands: SubCommand[] = [];
+export const commands: (Command & { data: SlashCommandBuilder })[] = [];
+export const subCommands: (Command & { data: SlashCommandSubcommandBuilder })[] = [];
 
-function pushCommand(array: (Command | SubCommand)[], command: Command): number {
+function pushCommand(array: Command[], command: Command): number {
   return array.push({ data: command.data, run: command.run, autocomplete: command.autocomplete });
 }
 
@@ -58,7 +52,9 @@ async function createSubCommand(name: string, client: Client): Promise<Command> 
   })) {
     const subName = subCommandFile.name;
     if (subCommandFile.isFile()) {
-      const subCommand = await import(pathToFileURL(join(commandsPath, name, subName)).toString());
+      const subCommand = (await import(
+        pathToFileURL(join(commandsPath, name, subName)).toString()
+      )) as Command & { data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder };
       if (subCommand.data instanceof SlashCommandSubcommandBuilder)
         command.addSubcommand(subCommand.data);
       else command.addSubcommandGroup(subCommand.data);
@@ -75,9 +71,9 @@ async function createSubCommand(name: string, client: Client): Promise<Command> 
       withFileTypes: true,
     })) {
       if (!subCommandGroupFile.isFile()) continue;
-      const subCommand = await import(
+      const subCommand = (await import(
         pathToFileURL(join(commandsPath, name, subName, subCommandGroupFile.name)).toString()
-      );
+      )) as Command & { data: SlashCommandSubcommandBuilder };
       subCommandGroup.addSubcommand(subCommand.data);
       pushSubCommand(client, run, autocomplete, subCommand);
     }
@@ -93,7 +89,10 @@ async function loadCommands(client: Client): Promise<Command[]> {
   for (const commandFile of readdirSync(commandsPath, { withFileTypes: true })) {
     const name = commandFile.name;
     if (commandFile.isFile()) {
-      pushCommand(commands, await import(pathToFileURL(join(commandsPath, name)).toString()));
+      pushCommand(
+        commands,
+        (await import(pathToFileURL(join(commandsPath, name)).toString())) as Command,
+      );
       continue;
     }
     pushCommand(commands, await createSubCommand(name, client));

@@ -311,7 +311,7 @@ export async function getSetting<
   }
 
   const value: string | string[] = res[0].value;
-  if (value == "null" || !value) return set.val;
+  if (!value || (typeof value == "string" && value == "null")) return set.val;
 
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {
@@ -327,8 +327,9 @@ export async function getSetting<
     }
   }
 
+  // TODO: here value should be "string[]" but somehow is "string & any[]" if you remove the type cast
   if (Array.isArray(value))
-    return value.map(valuelet => switchTypes(valuelet)) as
+    return (value as string[]).map(valuelet => switchTypes(valuelet)) as
       | SqlType<FieldData>
       | SqlType<FieldData>[];
 

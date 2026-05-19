@@ -12,7 +12,12 @@ export async function loadEvents(client: Client): Promise<void> {
   for (const eventFile of readdirSync(eventsPath)) {
     if (!eventFile.endsWith(".ts")) continue;
     const eventName = eventFile.split(".ts")[0];
-    const event = (await import(pathToFileURL(join(eventsPath, eventFile)).toString())).default;
+    const event = (
+      (await import(pathToFileURL(join(eventsPath, eventFile)).toString())) as {
+        // typing hack
+        default: (_: unknown) => void;
+      }
+    ).default;
     events.push({ name: eventName, event: client.on(eventName, event) });
   }
 }
@@ -30,12 +35,14 @@ export async function loadEasterEggs(): Promise<Message | InteractionResponse | 
     if (!easterEggFile.endsWith(".ts")) continue;
     try {
       const easterEggName = easterEggFile.split(".")[0];
-      const eggModule = await import(pathToFileURL(join(eventsPath, easterEggFile)).toString());
+      const eggModule = (await import(
+        pathToFileURL(join(eventsPath, easterEggFile)).toString()
+      )) as { run: (message: Message) => Promise<void> };
       if (typeof eggModule.run == "function") {
         const easterEgg: EasterEgg = {
           name: easterEggName,
           run: async (message: Message) => {
-            return await eggModule.run(message);
+            await eggModule.run(message);
           },
         };
 

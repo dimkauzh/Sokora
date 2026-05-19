@@ -60,8 +60,7 @@ async function applyMigrations(after?: string): Promise<void> {
     try {
       await db.file(file);
     } catch (error) {
-      console.error(`Failed to apply '${file}':\n${error}`);
-      process.exit(1);
+      throw new Error(`Failed to apply '${file}'.`, { cause: error });
     }
 
   await db`UPDATE _info SET value = ${hashList.at(-1)} WHERE "key" = 'version';`;

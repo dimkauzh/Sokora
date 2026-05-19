@@ -40,6 +40,16 @@ export default defineConfig(
           },
         },
       ],
+      "unicorn/import-style": [
+        "error",
+        {
+          styles: {
+            "node:path": {
+              named: true,
+            },
+          },
+        },
+      ],
     },
   },
 );

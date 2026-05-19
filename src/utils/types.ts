@@ -29,6 +29,7 @@ export type Satisfies<K, T extends K> = T;
  * @param v The variable you want to force the type of
  * @returns true (the variable is now of the type specified in `<T>`)
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-unnecessary-type-parameters, @typescript-eslint/no-explicit-any
 export function forceType<T>(v: any): v is T {
   return true;
 }

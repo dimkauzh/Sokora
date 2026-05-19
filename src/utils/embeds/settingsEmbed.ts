@@ -329,7 +329,7 @@ export async function settingsEmbed(
     const typedSetting = (settingsObj as Record<string, SingleSettingDefinition>)[name];
     let settingObject:
       | SingleSettingDefinition
-      | (Extract<SingleSettingDefinition, { type: "OBJECT" }>)["settings"] = typedSetting;
+      | (SingleSettingDefinition & { type: "OBJECT" })["settings"] = typedSetting;
 
     if (typedSetting.type === "OBJECT")
       switch (name) {
@@ -352,7 +352,7 @@ export async function settingsEmbed(
     const setting = await getSettingPlease(id, key, name, table);
     // 25 is the maximum amount of things a single select menu can store.
     const maxValues = settingObject.iterable ? 25 : 1;
-    text = `${dotCheck({ string: settingObject.emoji as string, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${settingObject.desc}`;
+    text = `${dotCheck({ string: settingObject.emoji as string, doubleSpace: true, twoSides: true, includeString: true })}${humanizeSettings(name)}\n-# ${typeof settingObject.desc == "string" ? settingObject.desc : JSON.stringify(settingObject.desc)}`;
 
     if (reset) return resetObject(text, false);
 
@@ -361,7 +361,7 @@ export async function settingsEmbed(
       .setCustomId(data.id)
       .setLabel("Edit")
       .setStyle(ButtonStyle.Secondary);
-    
+
     // Commented for now cuz idk if it can cause problems with the soon-to-exist implementation of OBJECT
     // if (!forceType<SingleSettingDefinition>(settingObject)) return;
     switch (settingObject.type) {
@@ -405,7 +405,7 @@ export async function settingsEmbed(
         break;
       }
       case "SELECT": {
-        const options = (settingObject as Extract<SingleSettingDefinition, { type: "SELECT" }>).choices;
+        const options = settingObject.choices;
         component = new StringSelectMenuBuilder()
           .setCustomId(data.id)
           .setMaxValues(options.length)
@@ -432,8 +432,9 @@ export async function settingsEmbed(
 
     if (settingsDef.settings[name]) {
       // Doesn't happen when adding/editing a value in an OBJECT type btw
-      const precondError = settingsDef.settings[name].precondition
-        && await settingsDef.settings[name].precondition(interaction, setting);
+      const precondError =
+        settingsDef.settings[name].precondition &&
+        (await settingsDef.settings[name].precondition(interaction, setting));
 
       if (precondError) {
         if (table == "server") await resetSetting(id, key, name);
@@ -688,7 +689,10 @@ export async function settingsEmbed(
       }
     }
 
-    if (objectView) settingsObject = (settingsObject["rewards"] as Extract<SingleSettingDefinition, { type: "OBJECT" }>).settings;
+    if (objectView)
+      settingsObject = (
+        settingsObject.rewards as Extract<SingleSettingDefinition, { type: "OBJECT" }>
+      ).settings;
     const newContainer = new ContainerBuilder().setAccentColor(color);
     const rewards = await getLevelRewards(id);
     await construct(
