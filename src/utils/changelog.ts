@@ -1,4 +1,5 @@
-type TVersion = `${number}/${number}/${number}` | "Work in progress";
+type TDate = `${number}/${number}/${number}`;
+type TVersion = TDate | "Work in progress";
 interface TParsedVersion {
   minor: boolean;
   ver: string;
@@ -45,8 +46,8 @@ export function getChangelog(version: string): TParsedChangelog {
 function parseVersion(string_: string): TParsedVersion {
   const [version, codename, date] = string_.replace("## ", "").split(" - ");
   const minor = version.endsWith(".0");
-  if (!date) return { ver: version, date: codename, minor, codename: null };
-  return { ver: version, date, codename, minor };
+  if (!date) return { ver: version, date: codename as TDate, minor, codename: null };
+  return { ver: version, date: date as TDate, codename, minor };
 }
 
 /**

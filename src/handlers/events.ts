@@ -41,9 +41,7 @@ export async function loadEasterEggs(): Promise<Message | InteractionResponse | 
       if (typeof eggModule.run == "function") {
         const easterEgg: EasterEgg = {
           name: easterEggName,
-          run: async (message: Message) => {
-            await eggModule.run(message);
-          },
+          run: eggModule.run,
         };
 
         easterEggs.push(easterEgg);

@@ -1,3 +1,4 @@
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import {
   SlashCommandBuilder,
   SlashCommandSubcommandBuilder,
@@ -21,6 +22,8 @@ interface Command {
 export const commands: (Command & { data: SlashCommandBuilder })[] = [];
 export const subCommands: (Command & { data: SlashCommandSubcommandBuilder })[] = [];
 
+const commandsPath = join(process.cwd(), "src", "commands");
+
 function pushCommand(array: Command[], command: Command): number {
   return array.push({ data: command.data, run: command.run, autocomplete: command.autocomplete });
 }
@@ -39,7 +42,6 @@ function pushSubCommand(
 }
 
 async function createSubCommand(name: string, client: Client): Promise<Command> {
-  const commandsPath = join(process.cwd(), "src", "commands");
   const run: RunFunction[] = [];
   const autocomplete: AutocompleteFunction[] = [];
   const command = new SlashCommandBuilder()
@@ -47,30 +49,42 @@ async function createSubCommand(name: string, client: Client): Promise<Command> 
     .setDescription("This command has no description.")
     .setContexts(0);
 
-  for (const subCommandFile of readdirSync(join(commandsPath, name), {
-    withFileTypes: true,
-  })) {
+  const subNames: string[] = [];
+  // Base executable subcommands first, then subcommands groups
+  const sortedSubFiles = readdirSync(join(commandsPath, name), { withFileTypes: true }).toSorted(
+    (a, b) =>
+      a.isDirectory() == b.isDirectory()
+        ? a.name.localeCompare(b.name)
+        : +a.isDirectory() - +b.isDirectory(),
+  );
+
+  for (const subCommandFile of sortedSubFiles) {
     const subName = subCommandFile.name;
     if (subCommandFile.isFile()) {
       const subCommand = (await import(
         pathToFileURL(join(commandsPath, name, subName)).toString()
-      )) as Command & { data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder };
-      if (subCommand.data instanceof SlashCommandSubcommandBuilder)
-        command.addSubcommand(subCommand.data);
-      else command.addSubcommandGroup(subCommand.data);
-
+      )) as Command & { data: SlashCommandSubcommandBuilder };
+      command.addSubcommand(subCommand.data);
       pushSubCommand(client, run, autocomplete, subCommand);
+      subNames.push(subCommand.data.name);
       continue;
     }
 
+    // Subcommand groups
+    if (subNames.includes(subName)) {
+      console.error(
+        `Cannot create subcommand group "${subName.toLowerCase()}" in command group "${name.toLowerCase()}": a base subcommand already exists with that name in that command group`,
+      );
+      continue;
+    }
     const subCommandGroup = new SlashCommandSubcommandGroupBuilder()
-      .setName(subName.replaceAll(".ts", "").toLowerCase())
+      .setName(subName.toLowerCase()) // No need to remove .ts since it isn't a .ts file
       .setDescription("This subcommand group has no description.");
 
     for (const subCommandGroupFile of readdirSync(join(commandsPath, name, subName), {
       withFileTypes: true,
     })) {
-      if (!subCommandGroupFile.isFile()) continue;
+      if (!subCommandGroupFile.isFile()) continue; // There cannot be subcommand groups of subcommand groups
       const subCommand = (await import(
         pathToFileURL(join(commandsPath, name, subName, subCommandGroupFile.name)).toString()
       )) as Command & { data: SlashCommandSubcommandBuilder };
@@ -84,9 +98,13 @@ async function createSubCommand(name: string, client: Client): Promise<Command> 
 }
 
 async function loadCommands(client: Client): Promise<Command[]> {
-  const commandsPath = join(process.cwd(), "src", "commands");
-
-  for (const commandFile of readdirSync(commandsPath, { withFileTypes: true })) {
+  // Base executable commands first, then commands groups
+  const sortedFiles = readdirSync(commandsPath, { withFileTypes: true }).toSorted((a, b) =>
+    a.isDirectory() == b.isDirectory()
+      ? a.name.localeCompare(b.name)
+      : +a.isDirectory() - +b.isDirectory(),
+  );
+  for (const commandFile of sortedFiles) {
     const name = commandFile.name;
     if (commandFile.isFile()) {
       pushCommand(
@@ -95,7 +113,11 @@ async function loadCommands(client: Client): Promise<Command[]> {
       );
       continue;
     }
-    pushCommand(commands, await createSubCommand(name, client));
+    if (commands.map(command => command.data.name).includes(name))
+      console.error(
+        `Cannot create command group "${name.toLowerCase()}": a base command already exists with that name`,
+      );
+    else pushCommand(commands, await createSubCommand(name, client));
   }
 
   return commands;

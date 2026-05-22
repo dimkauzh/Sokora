@@ -172,7 +172,7 @@ export async function settingsEmbed(
   let disableCategory = false;
   let itrObjectView = false;
   let objectView = false;
-  let preconditionReply: (() => Promise<Message | InteractionResponse>) | null;
+  let preconditionReply: (() => Promise<Message | InteractionResponse>) | null = null;
 
   // Create a container
   async function construct(
@@ -332,13 +332,13 @@ export async function settingsEmbed(
 
     if (typedSetting.type === "OBJECT")
       switch (name) {
-        case "rewards": {
+        /*case "rewards": {
           const levelRewards = await getLevelRewards(id);
           settingObject = levelRewards?.toSorted(
             (reward1, reward2) => reward1.level - reward2.level,
           );
           break;
-        }
+        }*/
         default: {
           settingObject = typedSetting.settings;
           break;

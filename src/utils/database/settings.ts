@@ -29,9 +29,12 @@ type Def = Satisfies<
 
 export type SettingSettableValue = string | string[] | boolean | number | null;
 
-const invitePrecondition: SettingPrecondition = async (interaction, v: boolean | string) => {
+const invitePrecondition: SettingPrecondition<"BOOL" | "CHANNEL"> = async (
+  interaction,
+  newValue,
+) => {
   if (
-    v &&
+    newValue &&
     interaction.guild &&
     !(await safeMember(interaction.guild, interaction.client.user.id)).permissions.has(
       PermissionFlagsBits.CreateInstantInvite | PermissionFlagsBits.ManageGuild,
@@ -307,11 +310,12 @@ export async function getSetting<
   const set = settingsDefinition[key].settings[setting];
   if (res.length === 0) {
     if (!set) return null;
-    return set.val;
+    return set.val as SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>;
   }
 
   const value: string | string[] = res[0].value;
-  if (!value || (typeof value == "string" && value == "null")) return set.val;
+  if (!value || (typeof value == "string" && value == "null"))
+    return set.val as SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>;
 
   function switchTypes(value: string): SqlType<typeof set.type>[] | SqlType<typeof set.type> {
     switch (set.type) {

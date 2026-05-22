@@ -18,7 +18,7 @@ export const data = new SlashCommandSubcommandBuilder()
   );
 
 export async function run(interaction: ChatInputCommandInteraction): Promise<void> {
-  const user = interaction.options.getUser("user");
+  const user = interaction.options.getUser("user", true);
   const reason = interaction.options.getString("reason");
   const guild = interaction.guild;
 

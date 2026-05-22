@@ -132,17 +132,15 @@ export default (async function run(reaction, user) {
       return;
     }
 
-    // eslint-disable-next-line unicorn/no-unreadable-array-destructuring
-    const [channelId, , starMessageId, , ,] = existingStarred;
     await (
-      await starboardChannel.messages.fetch(starMessageId)
+      await starboardChannel.messages.fetch(existingStarred.message)
     ).edit({ embeds, components: [row] });
     await setStarred(
       guild.id,
       message.id,
-      channelId,
+      existingStarred.channel,
       author.id,
-      starMessageId,
+      existingStarred.message,
       starCount,
       message.content || "",
       new Date(message.createdTimestamp),

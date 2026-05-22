@@ -23,12 +23,12 @@ type Def = Satisfies<
   }
 >;
 
-const topggPrecondition: SettingPrecondition = async (
+const topggPrecondition: SettingPrecondition<"BOOL"> = async (
   interaction,
-  v: boolean,
+  newValue,
 ): Promise<string | undefined> => {
   const dmChannel = await (await safeUser(interaction.client, interaction.user.id)).createDM();
-  if (v && !dmChannel?.isSendable())
+  if (newValue && !dmChannel?.isSendable())
     return `Sokora cannot DM you. Enable DMs for Sokora or send it a message to get top.gg notifications.`;
 };
 
@@ -99,7 +99,7 @@ export async function getUserSetting<
   const set = settingsDefinition[key].settings[setting];
   if (result.length === 0) {
     if (!set) return null;
-    return set.val;
+    return set.val as SqlType<(typeof settingsDefinition)[K]["settings"][S]["type"]>;
   }
 
   const value = result[0].value;

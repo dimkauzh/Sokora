@@ -19,16 +19,13 @@ type Def = Satisfies<
   }
 >;
 
-const getQuery = async (guild: string, message: string): Promise<TypeOfDefinition<Def>[]> =>
-  values<TypeOfDefinition<Def>>(
-    await db`SELECT * FROM starboard WHERE "guild" = ${guild} AND "message" = ${message};`,
-  );
-
 export async function getStarred(
   guildID: string,
   messageID: string,
-): Promise<[string, string, string, number, string, Date] | null> {
-  const res = values<TypeOfDefinition<Def>>(await getQuery(guildID, messageID));
+): Promise<TypeOfDefinition<Def> | null> {
+  const res = values<TypeOfDefinition<Def>>(
+    await db`SELECT * FROM starboard WHERE "guild" = ${guildID} AND "message" = ${messageID};`,
+  );
   if (res.length === 0) return null;
   return res[0];
 }

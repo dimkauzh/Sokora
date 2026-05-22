@@ -14,7 +14,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .addStringOption(string => string.setName("reason").setDescription("The reason for the unban."));
 
 export async function run(interaction: ChatInputCommandInteraction): Promise<void> {
-  const user = interaction.options.getUser("id");
+  const user = interaction.options.getUser("id", true);
   const reason = interaction.options.getString("reason");
 
   if (
