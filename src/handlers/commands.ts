@@ -1,22 +1,18 @@
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
 import {
   SlashCommandBuilder,
-  SlashCommandSubcommandBuilder,
+  type SlashCommandSubcommandBuilder,
   SlashCommandSubcommandGroupBuilder,
   type Client,
-  type AutocompleteInteraction,
   type ChatInputCommandInteraction,
 } from "discord.js";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
 import { pathToFileURL } from "node:url";
 
-type AutocompleteFunction = (interaction: AutocompleteInteraction) => Promise<void>;
 type RunFunction = (interaction: ChatInputCommandInteraction) => Promise<unknown>;
 interface Command {
   data: SlashCommandBuilder | SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder;
   run: RunFunction;
-  autocomplete?: AutocompleteFunction;
 }
 
 export const commands: (Command & { data: SlashCommandBuilder })[] = [];
@@ -25,25 +21,16 @@ export const subCommands: (Command & { data: SlashCommandSubcommandBuilder })[] 
 const commandsPath = join(process.cwd(), "src", "commands");
 
 function pushCommand(array: Command[], command: Command): number {
-  return array.push({ data: command.data, run: command.run, autocomplete: command.autocomplete });
+  return array.push({ data: command.data, run: command.run });
 }
 
-function pushSubCommand(
-  client: Client,
-  run: RunFunction[],
-  autocomplete: AutocompleteFunction[],
-  command: Command & { autocompleteHandler?: (client: Client) => void },
-): void {
+function pushSubCommand(run: RunFunction[], command: Command): void {
   run.push(command.run);
   pushCommand(subCommands, command);
-  if (typeof command.autocompleteHandler !== "function") return;
-  command.autocompleteHandler(client);
-  if (command.autocomplete) autocomplete.push(command.autocomplete);
 }
 
-async function createSubCommand(name: string, client: Client): Promise<Command> {
+async function createSubCommand(name: string): Promise<Command> {
   const run: RunFunction[] = [];
-  const autocomplete: AutocompleteFunction[] = [];
   const command = new SlashCommandBuilder()
     .setName(name.toLowerCase())
     .setDescription("This command has no description.")
@@ -51,21 +38,16 @@ async function createSubCommand(name: string, client: Client): Promise<Command> 
 
   const subNames: string[] = [];
   // Base executable subcommands first, then subcommands groups
-  const sortedSubFiles = readdirSync(join(commandsPath, name), { withFileTypes: true }).toSorted(
-    (a, b) =>
-      a.isDirectory() == b.isDirectory()
-        ? a.name.localeCompare(b.name)
-        : +a.isDirectory() - +b.isDirectory(),
-  );
+  const subCommandFiles = readdirSync(join(commandsPath, name), { withFileTypes: true });
 
-  for (const subCommandFile of sortedSubFiles) {
+  for (const subCommandFile of subCommandFiles) {
     const subName = subCommandFile.name;
     if (subCommandFile.isFile()) {
       const subCommand = (await import(
         pathToFileURL(join(commandsPath, name, subName)).toString()
       )) as Command & { data: SlashCommandSubcommandBuilder };
       command.addSubcommand(subCommand.data);
-      pushSubCommand(client, run, autocomplete, subCommand);
+      pushSubCommand(run, subCommand);
       subNames.push(subCommand.data.name);
       continue;
     }
@@ -89,22 +71,18 @@ async function createSubCommand(name: string, client: Client): Promise<Command> 
         pathToFileURL(join(commandsPath, name, subName, subCommandGroupFile.name)).toString()
       )) as Command & { data: SlashCommandSubcommandBuilder };
       subCommandGroup.addSubcommand(subCommand.data);
-      pushSubCommand(client, run, autocomplete, subCommand);
+      pushSubCommand(run, subCommand);
     }
     command.addSubcommandGroup(subCommandGroup);
   }
 
-  return { data: command, run: run[0], autocomplete: autocomplete[0] };
+  return { data: command, run: run[0] };
 }
 
-async function loadCommands(client: Client): Promise<Command[]> {
+async function loadCommands(): Promise<Command[]> {
   // Base executable commands first, then commands groups
-  const sortedFiles = readdirSync(commandsPath, { withFileTypes: true }).toSorted((a, b) =>
-    a.isDirectory() == b.isDirectory()
-      ? a.name.localeCompare(b.name)
-      : +a.isDirectory() - +b.isDirectory(),
-  );
-  for (const commandFile of sortedFiles) {
+  const commandFiles = readdirSync(commandsPath, { withFileTypes: true });
+  for (const commandFile of commandFiles) {
     const name = commandFile.name;
     if (commandFile.isFile()) {
       pushCommand(
@@ -117,7 +95,7 @@ async function loadCommands(client: Client): Promise<Command[]> {
       console.error(
         `Cannot create command group "${name.toLowerCase()}": a base command already exists with that name`,
       );
-    else pushCommand(commands, await createSubCommand(name, client));
+    else pushCommand(commands, await createSubCommand(name));
   }
 
   return commands;
@@ -133,7 +111,7 @@ export async function removeGlobalCommands(client: Client): Promise<void> {
 }
 
 export async function registerGuildCommands(client: Client): Promise<void> {
-  await loadCommands(client);
+  await loadCommands();
   const guilds = client.guilds.cache;
 
   for (const guildID of guilds.keys())
@@ -141,6 +119,6 @@ export async function registerGuildCommands(client: Client): Promise<void> {
 }
 
 export async function registerGlobalCommands(client: Client): Promise<void> {
-  await loadCommands(client);
+  await loadCommands();
   await client.application?.commands.set(commands.map(command => command.data));
 }
