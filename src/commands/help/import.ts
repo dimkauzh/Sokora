@@ -10,7 +10,7 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("import")
   .setDescription("Show help with how to import leveling data from other bots.");
 
-export async function run(interaction: ChatInputCommandInteraction) {
+export async function run(interaction: ChatInputCommandInteraction): Promise<void> {
   const avatar = interaction.client.user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({

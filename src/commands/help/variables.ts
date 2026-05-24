@@ -11,7 +11,9 @@ export const data = new SlashCommandSubcommandBuilder()
   .setName("variables")
   .setDescription("Show a list of (variables) used to dynamically show data on certain messages.");
 
-export async function run(interaction: ChatInputCommandInteraction) {
+export async function run(interaction: ChatInputCommandInteraction): Promise<void> {
+  if (!interaction.guild) return;
+
   const example = "Welcome to (servername), **(name)**!";
   const exampleTwo =
     "Hi **(username)**! Thanks for joining *(servername)* at (currentdate, simple), **(serverowner)** and the ***(count)*** members are happy to meet you!";
@@ -33,21 +35,21 @@ export async function run(interaction: ChatInputCommandInteraction) {
         name: "👀 • Simple example",
         value: [
           `A simple example: \`${example}\` will result in:`,
-          `> ${await replaceVariables(example, interaction.guild!, interaction.user)}`,
+          `> ${await replaceVariables(example, interaction.guild, interaction.user)}`,
         ].join("\n"),
       },
       {
         name: "🎛 • Another example",
         value: [
           `Adding more stuff:\n\`${exampleTwo}\`\nwill result in:`,
-          `> ${await replaceVariables(exampleTwo, interaction.guild!, interaction.user)}`,
+          `> ${await replaceVariables(exampleTwo, interaction.guild, interaction.user)}`,
         ].join("\n"),
       },
       {
         name: "🛜 • Dynamic mentioning",
         value: [
           `You can use a similar syntax to mention specific users, roles, channels, or timestamps, since Discord disallows this natively:\n\`${exampleThree}\`\nwill result in:`,
-          `> ${await replaceVariables(exampleThree, interaction.guild!, interaction.user)}`,
+          `> ${await replaceVariables(exampleThree, interaction.guild, interaction.user)}`,
         ].join("\n"),
       },
       {

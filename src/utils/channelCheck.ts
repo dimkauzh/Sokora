@@ -1,12 +1,12 @@
 import { resetSetting } from "database/settings";
 import {
-  Channel,
+  type Channel,
+  type Guild,
+  type GuildBasedChannel,
+  type NewsChannel,
+  type PermissionResolvable,
   ChannelType,
   EmbedBuilder,
-  Guild,
-  GuildBasedChannel,
-  NewsChannel,
-  PermissionResolvable,
   type TextChannel,
 } from "discord.js";
 import { colorize, Sokolors } from "./colorize";
@@ -37,7 +37,7 @@ export async function channelCheck(options: {
 }): Promise<boolean> {
   const { channel, permType, guild, setting } = options;
 
-  async function reset() {
+  async function reset(): Promise<boolean> {
     await dm?.send({ embeds: [embed] });
     await resetSetting(guild.id, setting.category, setting.setting);
     return false;
@@ -47,7 +47,7 @@ export async function channelCheck(options: {
     return channel.type == ChannelType.GuildText || channel.type == ChannelType.GuildAnnouncement;
   }
 
-  const user = guild.client.user!;
+  const user = guild.client.user;
   const avatar = user.displayAvatarURL();
   const embed = new EmbedBuilder()
     .setAuthor({
@@ -57,9 +57,9 @@ export async function channelCheck(options: {
     .setFields({
       name: "⁉️ • What happened",
       value: channel
-        ? isValid(channel)
+        ? (isValid(channel)
           ? `Sokora needs ${permType == "View" ? "**View Channel**" : "both **View Channel** and **Send Messages**"} permission in ${mention(channel.id, "CHANNEL")}, requested by setting \`${setting.category}.${setting.setting}\`, but it doesn't have it anymore. **This setting has been reset to default.**`
-          : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that is neither a text nor an announcements channel! We cannot send messages to ${mention(channel.id, "CHANNEL")}. **This setting has been reset to default.**`
+          : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that is neither a text nor an announcements channel! We cannot send messages to ${mention(channel.id, "CHANNEL")}. **This setting has been reset to default.**`)
         : `Sokora's \`${setting.category}.${setting.setting}\` setting was configured to send messages to a channel that no longer exists! **This setting has been reset to default.**`,
     })
     .setFooter({ text: `This is coming from ${guild.name} • ID: ${guild.id}` })
