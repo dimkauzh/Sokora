@@ -2,6 +2,7 @@ import eslint from "@eslint/js";
 import unicorn from "eslint-plugin-unicorn";
 import { defineConfig } from "eslint/config";
 import tseslint from "typescript-eslint";
+import bracketlessNewline from "./ql/bracketless-newline.ts";
 
 export default defineConfig(
   eslint.configs.recommended,
@@ -9,6 +10,13 @@ export default defineConfig(
   tseslint.configs.stylisticTypeChecked,
   unicorn.configs.recommended,
   {
+    plugins: {
+      local: {
+        rules: {
+          "no-bracketless-if-without-blank-line": bracketlessNewline,
+        },
+      },
+    },
     languageOptions: {
       parserOptions: {
         project: "./tsconfig.json",
@@ -17,6 +25,7 @@ export default defineConfig(
     },
     rules: {
       curly: ["warn", "multi"],
+      "local/no-bracketless-if-without-blank-line": "warn",
       "@typescript-eslint/no-floating-promises": "error",
       "@typescript-eslint/await-thenable": "error",
       "@typescript-eslint/no-misused-promises": "off",
