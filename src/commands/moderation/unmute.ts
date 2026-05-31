@@ -39,6 +39,7 @@ export async function run(
       reason:
         "You somehow ran the command without a user being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
     });
+
   const reason = interaction.options.getString("reason");
   const target = await safeMember(guild, user.id);
 

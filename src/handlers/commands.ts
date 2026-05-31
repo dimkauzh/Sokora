@@ -50,7 +50,7 @@ async function createSubCommand(name: string): Promise<Command> {
     if (subCommandFile.isFile()) {
       const subCommand = (await import(
         pathToFileURL(join(commandsPath, name, subName)).toString()
-      )) as Command & { data: SlashCommandSubcommandBuilder };
+      )) as Command & { data: SlashCommandSubcommandBuilder | SlashCommandSubcommandGroupBuilder };
       if (subCommand.data instanceof SlashCommandSubcommandBuilder)
         command.addSubcommand(subCommand.data);
 

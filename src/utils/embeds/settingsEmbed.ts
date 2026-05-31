@@ -94,6 +94,7 @@ async function setSettingPlease(
   if (table == "server") {
     if (!interaction.guild)
       throw new Error("Why is guild null if you are setting a server-table setting?");
+
     if ((await getSetting(id, "moderation", "events"))?.toString().includes("settings")) {
       const member = await safeMember(interaction.guild, interaction.user.id);
       const avatar = member.displayAvatarURL();
@@ -310,8 +311,9 @@ export async function settingsEmbed(
         .setLabel(itrObject ? "Delete" : "Reset")
         .setStyle(ButtonStyle.Danger);
 
+      // Temporary (will be able to reset an object type when it works later)
       if (!itrObject && (settingObject?.val == setting || settingObject?.type == "OBJECT"))
-        component.setDisabled(true); // Temporary (will be able to reset an object type when it works later)
+        component.setDisabled(true);
 
       return { text, data, component };
     };
@@ -709,6 +711,7 @@ export async function settingsEmbed(
       settingsObject = (
         settingsObject.rewards as Extract<SingleSettingDefinition, { type: "OBJECT" }>
       ).settings;
+
     const newContainer = new ContainerBuilder().setAccentColor(color);
     const rewards = await getLevelRewards(id);
     // [TODO]: fix whatever tf this is

@@ -64,6 +64,7 @@ export async function run(
       reason:
         "You somehow ran the command without a time value being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
     });
+
   const timeMs = ms(time);
   const reason = interaction.options.getString("reason");
   let title = `Set the slowdown to ${ms(ms(time), "fullPrecision")}`;

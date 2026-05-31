@@ -105,6 +105,7 @@ export async function updateNews(
     throw new Error(
       `Trying to update news with ID ${id} on GUILD ${guildID} failed because getNews(guildID, id) somehow returned null`,
     );
+
   await db.begin(async tx => {
     await deleteQuery(guildID, id, tx);
     await sendQuery(

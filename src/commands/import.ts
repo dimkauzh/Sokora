@@ -311,6 +311,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
           } catch (error) {
             if (Error.isError(error) && error.message.toLowerCase().includes("unknown message"))
               return;
+
             throw error;
           }
         });
