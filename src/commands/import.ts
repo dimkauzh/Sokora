@@ -9,9 +9,7 @@ import {
   codeBlock,
   ContainerBuilder,
   FileBuilder,
-  type InteractionResponse,
   LabelBuilder,
-  type Message,
   ModalBuilder,
   PermissionsBitField,
   SectionBuilder,
@@ -21,6 +19,8 @@ import {
   TextInputStyle,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
   type ModalSubmitInteraction,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
@@ -71,7 +71,7 @@ async function collapse(
             : "We don't really know what went wrong. Maybe you should try again?"),
         "You might as well check the error message shown below, it *might* explain better what's wrong.",
         "If after doing all of that Sokora keeps failing to import your data, please send the error message to Sokora's team so we can try to fix this.",
-        `\`\`\`yaml\n${error instanceof Error ? (error.stack ?? error.message) : String(error)}\`\`\``,
+        codeBlock("yaml", error instanceof Error ? (error.stack ?? error.message) : String(error)),
       ].join("\n\n"),
     ),
   );

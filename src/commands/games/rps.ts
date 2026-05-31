@@ -3,11 +3,11 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  type InteractionResponse,
-  type Message,
   SlashCommandSubcommandBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
@@ -35,6 +35,7 @@ function getWinner(choice1: RPSChoice, choice2: RPSChoice): 0 | 1 | 2 {
     (choice1 == "scissors" && choice2 == "paper")
   )
     return 1;
+
   return 2;
 }
 
@@ -81,6 +82,7 @@ export async function run(
     if (!reply) return;
     if (await buttonCheck({ i: buttonInteraction, interaction, reply, noExecuteError: true }))
       return;
+
     if (buttonInteraction.user.id != opponent.id && buttonInteraction.user.id != user.id)
       return await errorEmbed({
         interaction: buttonInteraction,
@@ -91,6 +93,7 @@ export async function run(
       buttonInteraction.user.id,
       buttonInteraction.customId.split("_")[1] as RPSChoice,
     );
+
     if (opponent.bot) collector.stop("game-complete");
     else {
       await buttonInteraction.reply({
@@ -121,6 +124,7 @@ export async function run(
       const p1Choice = playerChoices.get(user.id);
       const p2Choice = opponent.bot ? randomize(rpsChoices) : playerChoices.get(opponent.id);
       if (!p1Choice || !p2Choice) return;
+
       const winner = getWinner(p1Choice, p2Choice);
       const avatar = winner == 1 ? userAvatar : opponent.displayAvatarURL();
       const resultEmbed = new EmbedBuilder()

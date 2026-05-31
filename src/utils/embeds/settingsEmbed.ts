@@ -1,3 +1,5 @@
+// [TODO] fix all errors
+
 import { getLevelRewards } from "database/leveling";
 import type { SettingSettableValue } from "database/settings";
 import {
@@ -172,6 +174,7 @@ export async function settingsEmbed(
   let disableCategory = false;
   let itrObjectView = false;
   let objectView = false;
+  let disabled = false;
   let preconditionReply: (() => Promise<Message | InteractionResponse>) | null = null;
 
   // Create a container
@@ -186,6 +189,7 @@ export async function settingsEmbed(
     objectView_?: boolean,
     itrObjectView_?: boolean,
     cID?: string,
+    disabled?: boolean,
   ): Promise<ContainerBuilder | undefined> {
     if (objectView_ || itrObjectView_)
       container
@@ -216,13 +220,15 @@ export async function settingsEmbed(
         container.addSectionComponents(
           new SectionBuilder()
             .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
-            .setButtonAccessory(component),
+            .setButtonAccessory(component.setDisabled(disabled ?? false)),
         );
       else
         container
           .addTextDisplayComponents(new TextDisplayBuilder().setContent(object.text))
           .addActionRowComponents(
-            new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(component),
+            new ActionRowBuilder<MessageActionRowComponentBuilder>().addComponents(
+              component.setDisabled(disabled ?? false),
+            ),
           );
     }
 
@@ -234,7 +240,7 @@ export async function settingsEmbed(
             settingsObj: settingsObject_,
             name: `lvl${object.level}`,
             reset,
-            itrObjView: itrObjectView_,
+            itrObjectView: itrObjectView_,
           }),
         );
     else
@@ -260,8 +266,8 @@ export async function settingsEmbed(
       | Record<string, SingleSettingDefinition>[];
     name: string;
     reset: boolean;
-    objView?: boolean;
-    itrObjView?: boolean;
+    objectView?: boolean;
+    itrObjectView?: boolean;
   }): Promise<
     | {
         text: string;
@@ -278,7 +284,7 @@ export async function settingsEmbed(
       }
     | undefined
   > => {
-    const { settingsObj, name, reset, itrObjView } = options;
+    const { settingsObj, name, reset, itrObjectView } = options;
     if (exemptButtons.includes(name) || exemptButtons.map(name => `obj${name}`).includes(name))
       return;
 
@@ -310,7 +316,7 @@ export async function settingsEmbed(
       return { text, data, component };
     };
 
-    if (itrObjView) {
+    if (itrObjectView) {
       // Only for leveling for now
       const reward = (await getLevelRewards(id))?.find(r => name.includes(r.level.toString()));
       if (!reward) return;
@@ -347,7 +353,7 @@ export async function settingsEmbed(
 
     settingObject ??= typedSetting;
 
-    // [TODO] make this support objView (currently outputs an error)
+    // [TODO] make this support objectView (currently outputs an error)
     const setting = await getSettingPlease(id, key, name, table);
     // 25 is the maximum amount of things a single select menu can store.
     const maxValues = settingObject.iterable ? 25 : 1;
@@ -380,7 +386,8 @@ export async function settingsEmbed(
             ChannelType.GuildStageVoice,
             ChannelType.GuildText,
             ChannelType.GuildVoice,
-          ]);
+          ])
+          .setDefaultChannels(kominator(setting as string));
 
         if (setting) component.setDefaultChannels(kominator(setting as string));
         break;
@@ -400,7 +407,6 @@ export async function settingsEmbed(
           .setMaxValues(maxValues)
           .setDefaultRoles(kominator(setting as string));
 
-        if (setting) component.setDefaultRoles(kominator(setting as string));
         break;
       }
       case "SELECT": {
@@ -467,6 +473,7 @@ export async function settingsEmbed(
     cID?: string,
     disableCategory?: boolean,
     itrObjectView_?: boolean,
+    disabled?: boolean,
   ): Promise<[ActionRowBuilder<MessageActionRowComponentBuilder>]> => {
     const actionRow = new ActionRowBuilder<MessageActionRowComponentBuilder>();
     const category = new ButtonBuilder()
@@ -482,12 +489,17 @@ export async function settingsEmbed(
             .setCustomId("reset_confirm")
             .setLabel(`Reset ${cID == "reset_category" ? "the category" : cID}?`)
             .setStyle(ButtonStyle.Danger)
-            .setDisabled(true),
+            .setDisabled(disabled ?? false),
           new ButtonBuilder()
             .setCustomId("reset_yes")
             .setLabel("Yes")
-            .setStyle(ButtonStyle.Secondary),
-          new ButtonBuilder().setCustomId("reset_no").setLabel("No").setStyle(ButtonStyle.Primary),
+            .setStyle(ButtonStyle.Secondary)
+            .setDisabled(disabled ?? false),
+          new ButtonBuilder()
+            .setCustomId("reset_no")
+            .setLabel("No")
+            .setStyle(ButtonStyle.Primary)
+            .setDisabled(disabled ?? false),
         ),
       ];
     }
@@ -500,7 +512,7 @@ export async function settingsEmbed(
             .setCustomId("cancel")
             .setLabel("Cancel")
             .setStyle(ButtonStyle.Secondary)
-            .setDisabled(false),
+            .setDisabled(disabled ?? false),
         ),
       ];
     }
@@ -526,13 +538,18 @@ export async function settingsEmbed(
         new ButtonBuilder()
           .setCustomId("reset_start")
           .setLabel(itrObjectView_ ? "Delete" : "Reset")
-          .setStyle(ButtonStyle.Danger),
+          .setStyle(ButtonStyle.Danger)
+          .setDisabled(disabled ?? false),
       );
 
     // [TODO] make buttons for when you're adding a new object
     if (itrObjectView_)
       buttonArray.unshift(
-        new ButtonBuilder().setCustomId("objadd").setLabel("Add").setStyle(ButtonStyle.Success),
+        new ButtonBuilder()
+          .setCustomId("objadd")
+          .setLabel("Add")
+          .setStyle(ButtonStyle.Success)
+          .setDisabled(disabled ?? false),
       );
 
     return [actionRow.addComponents(buttonArray)];
@@ -694,6 +711,7 @@ export async function settingsEmbed(
       ).settings;
     const newContainer = new ContainerBuilder().setAccentColor(color);
     const rewards = await getLevelRewards(id);
+    // [TODO]: fix whatever tf this is
     await construct(
       itrObjectView
         ? (rewards?.toSorted((reward1, reward2) => reward1.level - reward2.level) ?? null)
@@ -704,6 +722,7 @@ export async function settingsEmbed(
       objectView ?? false,
       itrObjectView ?? false,
       cID,
+      disabled,
     );
 
     return await safeReply({
@@ -714,7 +733,26 @@ export async function settingsEmbed(
 
   collector.on("end", async () => {
     try {
-      await interaction.deleteReply();
+      disabled = true;
+      const newContainer = new ContainerBuilder().setAccentColor(color);
+      await construct(
+        itrObjectView
+          ? (((await getLevelRewards(id))
+              ? (await getLevelRewards(id))?.toSorted(
+                  (reward1, reward2) => reward1.level - reward2.level,
+                )
+              : null) ?? null)
+          : settingsObject,
+        newContainer,
+        false,
+        await buttons(false, confirm, undefined, disableCategory, itrObjectView),
+        objectView ?? false,
+        itrObjectView ?? false,
+        undefined,
+        disabled,
+      );
+
+      return await safeReply({ interaction, editOptions: { components: [newContainer] } });
     } catch (error) {
       if (Error.isError(error) && error.message.toLowerCase().includes("unknown message")) return;
       throw error;

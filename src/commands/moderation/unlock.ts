@@ -1,9 +1,9 @@
 import {
   ChannelType,
-  type InteractionResponse,
-  type Message,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";

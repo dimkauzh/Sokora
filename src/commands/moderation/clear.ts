@@ -1,9 +1,9 @@
 import {
   ChannelType,
-  type InteractionResponse,
-  type Message,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
   type User,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
@@ -42,6 +42,7 @@ export async function run(
 ): Promise<Message | InteractionResponse | undefined> {
   const guild = interaction.guild;
   if (!guild || !interaction.channel) return;
+
   const channelOption = interaction.options.getChannel("channel");
   let channel = await safeChannel(guild, interaction.channel.id);
   if (channelOption) channel = await safeChannel(guild, channelOption.id);
@@ -63,6 +64,7 @@ export async function run(
       reason:
         "You somehow ran the command without an amount being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
     });
+
   if (amount > 100)
     return await errorEmbed({
       interaction,

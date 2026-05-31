@@ -8,10 +8,10 @@ import {
   TextInputBuilder,
   TextInputStyle,
   type ChatInputCommandInteraction,
-  type Role,
-  type TextChannel,
   type InteractionResponse,
   type Message,
+  type Role,
+  type TextChannel,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";

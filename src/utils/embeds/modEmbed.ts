@@ -2,11 +2,11 @@ import { createCase, editCase, getCase, type ModType } from "database/moderation
 import {
   EmbedBuilder,
   type ChatInputCommandInteraction,
-  type PermissionResolvable,
-  type User,
   type ContainerBuilder,
   type InteractionResponse,
   type Message,
+  type PermissionResolvable,
+  type User,
 } from "discord.js";
 import ms from "enhanced-ms";
 import { mention } from "utils/mention";

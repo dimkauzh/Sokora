@@ -1,8 +1,5 @@
 import { resetSetting } from "database/settings";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   ChannelType,
   ContainerBuilder,
   EmbedBuilder,
@@ -20,24 +17,22 @@ import {
   type VoiceChannel,
 } from "discord.js";
 import { logChannel } from "utils/logChannel";
-import { replace } from "utils/replace";
+import { pagedButtons } from "utils/pagination";
 import { safeChannel, safeMember } from "utils/safeThings";
 import { colorize, Sokolors } from "../colorize";
 import { dotCheck } from "../dotCheck";
 import { mention } from "../mention";
 import { pluralOrNot } from "../pluralOrNot";
 
-interface Options {
+type Options = {
   guild: Guild;
   invite?: {
     show: boolean;
     channel: string | null;
   };
   roles?: boolean;
-  page?: number;
-  pages?: number;
   disableButtons?: boolean;
-}
+} & ({ page: number; pages: number } | { page: undefined; pages: undefined });
 
 /**
  * Gives you a CONTAINER containing information about the guild.
@@ -123,7 +118,11 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
   const dot = dotCheck({ string: icon, doubleSpace: true });
   const container = new ContainerBuilder();
   const start = new TextDisplayBuilder().setContent(
-    [`## ${guild.name}`, generalValues, safetyValues.join(" • ")].join("\n"),
+    [
+      `## ${pages && pages > 1 ? `#${page + 1}  •  ` : dot}${guild.name}`,
+      generalValues,
+      safetyValues.join(" • "),
+    ].join("\n"),
   );
 
   if (icon)
@@ -142,6 +141,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
     );
 
   container.addTextDisplayComponents(new TextDisplayBuilder().setContent(statValues.join("\n")));
+
   if (invite?.show) {
     async function noPerms(
       channel?: NewsChannel | TextChannel | StageChannel | VoiceChannel,
@@ -189,6 +189,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
       guild.channels.cache
         ?.filter(channel => channel.isTextBased() && !channel.isThread())
         ?.find(channel => channel.position == 0)?.id;
+
     if (!id) return container;
     const possibleInviteChannel = await safeChannel(guild, id);
 
@@ -214,25 +215,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
   }
 
   if (pages && pages > 1)
-    container.addActionRowComponents(
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId("left")
-          .setEmoji(replace("(leftArrow)"))
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(disableButtons),
-        new ButtonBuilder()
-          .setCustomId("pagecount")
-          .setLabel(`${page} of ${pages}`)
-          .setStyle(ButtonStyle.Secondary)
-          .setDisabled(true),
-        new ButtonBuilder()
-          .setCustomId("right")
-          .setEmoji(replace("(rightArrow)"))
-          .setStyle(ButtonStyle.Primary)
-          .setDisabled(disableButtons),
-      ),
-    );
+    container.addActionRowComponents(pagedButtons(pages, page, disableButtons));
 
   container
     .addTextDisplayComponents(new TextDisplayBuilder().setContent(`-# Server ID: ${guild.id}`))

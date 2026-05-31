@@ -1,16 +1,17 @@
 import { deletePublicServer, listPublicServers } from "database/settings";
 import {
-  type InteractionResponse,
   SlashCommandBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
-  type Guild,
-  type Message,
   type ContainerBuilder,
+  type Guild,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { serverEmbed } from "embeds/serverEmbed";
-import { safeGuild } from "utils/safeThings";
+import { handlePages } from "utils/pagination";
+import { safeGuild, safeReply } from "utils/safeThings";
 
 export const data = new SlashCommandBuilder()
   .setName("serverboard")
@@ -60,17 +61,7 @@ export async function run(
         "By some magical miracle, all the servers using Sokora turned off their visibility. Use /settings serverboard `shown: True` to make your server publicly visible.",
     });
 
-  const argumentPage = interaction.options.getNumber("page");
-  if (!argumentPage)
-    return await errorEmbed({
-      interaction,
-      title: "No page provided.",
-      reason:
-        "You somehow ran the command without a page being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
-    });
-  let page =
-    (argumentPage - 1 <= 0 ? 0 : (argumentPage - 1 > pages ? pages - 1 : argumentPage - 1)) || 0;
-
+  let page = Math.max(0, Math.min(interaction.options.getNumber("page") ?? 0, pages) - 1);
   async function getContainer(disableButtons?: boolean): Promise<ContainerBuilder> {
     return await serverEmbed({
       guild: guildList[page].guild,
@@ -78,7 +69,7 @@ export async function run(
         show: guildList[page].showInvite,
         channel: guildList[page].inviteChannelId,
       },
-      page: page + 1,
+      page,
       pages,
       roles: false,
       disableButtons,
@@ -89,26 +80,18 @@ export async function run(
     components: [await getContainer(false)],
     flags: "IsComponentsV2",
   });
+
   if (pages == 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
-
   collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
     if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
-    switch (buttonInteraction.customId) {
-      case "left": {
-        page--;
-        if (page < 0) page = pages - 1;
-        break;
-      }
-      case "right": {
-        page++;
-        if (page >= pages) page = 0;
-        break;
-      }
-    }
+    page = await handlePages({ i: buttonInteraction, page, pages, collector });
 
-    await buttonInteraction.update({ components: [await getContainer(false)] });
+    await safeReply({
+      interaction: buttonInteraction,
+      editOptions: { components: [await getContainer(false)] },
+    });
   });
 
   collector.on("end", async () => {
@@ -119,4 +102,15 @@ export async function run(
       throw error;
     }
   });
+
+  /* todo when fixed
+  page = pageContainer({
+    interaction,
+    reply,
+    collector,
+    page,
+    pages,
+    normalResponse: async () => await getContainer(false),
+    endResponse: async () => await getContainer(true),
+  }); */
 }

@@ -1,9 +1,9 @@
-import { type InteractionResponse, type Client, type Message } from "discord.js";
+import { type Client, type InteractionResponse, type Message } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { readdirSync } from "node:fs";
 import { join } from "node:path";
-import { client } from "src/bot";
 import { pathToFileURL } from "node:url";
+import { client } from "src/bot";
 
 const events: { name: string; event: ReturnType<Client["on"]> }[] = [];
 export const eventNames = ["messageUpdate", "messageDelete", "settings"];

@@ -1,9 +1,8 @@
-import type { Mentionable } from "./types";
 import type { Guild, User } from "discord.js";
 import { mention } from "./mention";
 import { randomize } from "./randomize";
 import { safeMember } from "./safeThings";
-import type { Replacements } from "./types";
+import type { Mentionable, Replacements } from "./types";
 
 const emojis =
   Math.round(Math.random() * 100) <= 5

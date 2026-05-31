@@ -1,19 +1,17 @@
 import { listAllNews } from "database/news";
 import {
-  ActionRowBuilder,
-  ButtonBuilder,
-  ButtonStyle,
   EmbedBuilder,
-  type InteractionResponse,
-  type Message,
   SlashCommandSubcommandBuilder,
   type ButtonInteraction,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import { buttonCheck, errorEmbed } from "embeds/errorEmbed";
 import { colorize, Sokolors } from "utils/colorize";
 import { dotCheck } from "utils/dotCheck";
-import { replace } from "utils/replace";
+import { handlePages, pagedButtons } from "utils/pagination";
+import { safeReply } from "utils/safeThings";
 
 export const data = new SlashCommandSubcommandBuilder()
   .setName("view")
@@ -25,7 +23,6 @@ export const data = new SlashCommandSubcommandBuilder()
 export async function run(
   interaction: ChatInputCommandInteraction,
 ): Promise<Message | InteractionResponse | undefined> {
-  let page = interaction.options.getNumber("page") ?? 1;
   if (!interaction.guild)
     return await errorEmbed({
       interaction,
@@ -34,6 +31,8 @@ export async function run(
     });
 
   const news = await listAllNews(interaction.guild.id);
+  const pages = news.length;
+  let page = Math.max(0, Math.min(interaction.options.getNumber("page") ?? 0, pages) - 1);
 
   if (!news?.length)
     return await errorEmbed({
@@ -42,11 +41,8 @@ export async function run(
       reason: "Admins can post news with the **/news post** command.",
     });
 
-  if (page > news.length) page = news.length;
-  if (page < 1) page = 1;
-
   async function getEmbed(): Promise<EmbedBuilder> {
-    const currentNews = news[page - 1];
+    const currentNews = news[page];
     const avatar = currentNews.authorPFP;
     return new EmbedBuilder()
       .setAuthor({
@@ -57,48 +53,26 @@ export async function run(
       .setDescription(currentNews.body)
       .setImage(currentNews.imageURL ?? null)
       .setTimestamp(currentNews.updatedAt ?? currentNews.createdAt)
-      .setFooter({
-        text: `${news.length > 1 ? `Page ${page} of ${news.length} • ` : ""}ID: ${currentNews.id}`,
-      })
+      .setFooter({ text: `ID: ${currentNews.id}` })
       .setColor(await colorize({ hue: Sokolors.Blue }));
   }
 
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId("left")
-      .setEmoji(replace("(leftArrow)"))
-      .setStyle(ButtonStyle.Primary),
-    new ButtonBuilder()
-      .setCustomId("right")
-      .setEmoji(replace("(rightArrow)"))
-      .setStyle(ButtonStyle.Primary),
-  );
-
   const reply = await interaction.reply({
     embeds: [await getEmbed()],
-    components: news.length > 1 ? [row] : [],
+    components: pages > 1 ? [pagedButtons(pages, page)] : [],
   });
 
-  if (page < 1) return;
+  if (pages <= 1) return;
   const collector = reply.createMessageComponentCollector({ time: 60_000 });
-
   collector.on("collect", async (buttonInteraction: ButtonInteraction) => {
     if (await buttonCheck({ i: buttonInteraction, interaction, reply })) return;
     collector.resetTimer({ time: 60_000 });
-    switch (buttonInteraction.customId) {
-      case "left": {
-        page--;
-        if (page < 1) page = news.length;
-        await buttonInteraction.update({ embeds: [await getEmbed()], components: [row] });
-        break;
-      }
-      case "right": {
-        page++;
-        if (page > news.length) page = 1;
-        await buttonInteraction.update({ embeds: [await getEmbed()], components: [row] });
-        break;
-      }
-    }
+    page = await handlePages({ i: buttonInteraction, page, pages, collector });
+
+    await safeReply({
+      interaction: buttonInteraction,
+      editOptions: { embeds: [await getEmbed()], components: [pagedButtons(pages, page)] },
+    });
   });
 
   collector.on("end", async () => {

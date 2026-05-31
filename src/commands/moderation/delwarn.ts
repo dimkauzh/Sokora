@@ -1,10 +1,10 @@
 import { listUserCases, removeCase } from "database/moderation";
 import { getSetting } from "database/settings";
 import {
-  type InteractionResponse,
-  type Message,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -34,6 +34,7 @@ export async function run(
 ): Promise<Message | InteractionResponse | undefined> {
   const guild = interaction.guild;
   if (!guild) return;
+
   const user = interaction.options.getUser("user");
   if (!user)
     return await errorEmbed({
@@ -42,6 +43,7 @@ export async function run(
       reason:
         "You somehow ran the command without a user being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
     });
+
   const name = user.username;
   const id = interaction.options.getNumber("id");
   if (!id)
@@ -51,6 +53,7 @@ export async function run(
       reason:
         "You somehow ran the command without an ID being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
     });
+
   const warns = await listUserCases(guild.id, user.id, "WARN");
   const newWarns = warns.filter(warn => warn.id != id);
 

@@ -1,9 +1,9 @@
 import { getSetting } from "database/settings";
 import {
-  type InteractionResponse,
-  type Message,
   SlashCommandSubcommandBuilder,
   type ChatInputCommandInteraction,
+  type InteractionResponse,
+  type Message,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -29,6 +29,7 @@ export async function run(
 ): Promise<Message | InteractionResponse | undefined> {
   const guild = interaction.guild;
   if (!guild) return;
+
   const user = interaction.options.getUser("user");
   if (!user)
     return await errorEmbed({
@@ -37,6 +38,7 @@ export async function run(
       reason:
         "You somehow ran the command without a page being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
     });
+
   const reason = interaction.options.getString("reason");
 
   if (

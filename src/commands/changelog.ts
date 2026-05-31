@@ -6,8 +6,8 @@ import {
   SeparatorBuilder,
   SlashCommandBuilder,
   TextDisplayBuilder,
-  type ChatInputCommandInteraction,
   type ButtonInteraction,
+  type ChatInputCommandInteraction,
   type ClientUser,
 } from "discord.js";
 import { buttonCheck } from "embeds/errorEmbed";
