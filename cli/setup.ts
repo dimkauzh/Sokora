@@ -63,7 +63,7 @@ const main = async (): Promise<void> => {
       'IF using a host different than "5432", enter it here, otherwise hit Return in your keyboard',
     );
     replaceInEnvironment(
-      "postgres://user:pass@localhost:port/dbname",
+      "postgres://sokora:1234@db:5432/sokora-db",
       `postgres://${pgUser}:${pgPass}@${pgHost.trim() == "" ? "localhost" : pgHost}:${pgPort.trim() == "" ? "5432" : pgPort}/${pgName}`,
     );
   }
