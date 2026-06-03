@@ -100,7 +100,7 @@ export async function safeReply(options: {
   editOptions?: string | MessagePayload | InteractionEditReplyOptions;
 }): Promise<Message | InteractionResponse> {
   const { interaction, replyOptions, editOptions } = options;
-  const reply = (replyOptions ?? editOptions) as string | MessagePayload | InteractionReplyOptions;
+  const reply = replyOptions ?? editOptions;
 
   if (interaction.replied || interaction.deferred) {
     if (editOptions) return await interaction.editReply(editOptions);

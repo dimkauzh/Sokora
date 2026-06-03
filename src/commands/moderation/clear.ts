@@ -4,7 +4,6 @@ import {
   type ChatInputCommandInteraction,
   type InteractionResponse,
   type Message,
-  type User,
 } from "discord.js";
 import { errorEmbed } from "embeds/errorEmbed";
 import { errorCheck, modEmbed } from "embeds/modEmbed";
@@ -74,7 +73,7 @@ export async function run(
   if (amount < 1)
     return await errorEmbed({ interaction, title: "You must clear at least 1 message." });
 
-  const targetUser = interaction.options.getUser("user");
+  const targetUser = interaction.options.getUser("user") ?? undefined;
   let deletedAmount = 0;
   if (!channel.isTextBased() || channel.isDMBased())
     return await errorEmbed({
@@ -118,7 +117,7 @@ export async function run(
 
   await modEmbed({
     interaction,
-    user: targetUser as User | undefined,
+    user: targetUser,
     channel: channel.id,
     customText: {
       logTitle: `Cleared ${deletedAmount} ${pluralOrNot("message", deletedAmount)}${targetUser ? ` from ${targetUser.username}` : ""}`,

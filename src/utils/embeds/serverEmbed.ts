@@ -194,8 +194,7 @@ export async function serverEmbed(options: Options): Promise<ContainerBuilder> {
     const possibleInviteChannel = await safeChannel(guild, id);
 
     const inviteChannel =
-      possibleInviteChannel &&
-      possibleInviteChannel.isTextBased() &&
+      possibleInviteChannel?.isTextBased() &&
       !possibleInviteChannel.isThread() &&
       !possibleInviteChannel.isDMBased()
         ? possibleInviteChannel
