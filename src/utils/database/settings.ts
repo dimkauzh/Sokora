@@ -404,6 +404,7 @@ export async function listPublicServers(): Promise<
     [...publicGuildSet].map(async (entry: unknown) => {
       if (typeof entry != "string")
         throw new Error(`Somehow '${entry}' was not of type string in listPublicServers.`);
+
       const inviteChannel = await getSetting(entry, "serverboard", "invite_channel");
       return {
         guildID: entry,

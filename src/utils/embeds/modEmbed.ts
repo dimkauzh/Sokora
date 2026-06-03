@@ -71,6 +71,7 @@ export async function errorCheck(
         title: "The bot can't execute this command.",
         reason: "The provided channel does not exist!",
       });
+
     const fetchedChannel = await safeChannel(guild, channel);
     if (!fetchedChannel) return;
     if (fetchedChannel.isDMBased()) return;
@@ -97,6 +98,7 @@ export async function errorCheck(
         title: "You can't ban this user.",
         reason: "This user doesn't exist.",
       });
+
     const isBanned = (await guild.bans.fetch()).has(user.id);
     if (action == "Ban" && isBanned)
       return await errorEmbed({

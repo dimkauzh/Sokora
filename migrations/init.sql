@@ -1,7 +1,3 @@
--- If we ever go postgres only
--- CREATE SCHEMA IF NOT EXISTS Discord;
--- SET SCHEMA "Discord";
-
 CREATE TABLE IF NOT EXISTS settings (
   "guildID" TEXT,
   "key" TEXT,
@@ -54,3 +50,10 @@ CREATE TABLE IF NOT EXISTS starboard (
   "content" TEXT,
   "timestamp" TIMESTAMP
 );
+
+ALTER TABLE settings ADD CONSTRAINT settings_pk PRIMARY KEY ("guildID", "key");
+ALTER TABLE user_settings ADD CONSTRAINT user_settings_pk PRIMARY KEY ("userID", "key");
+ALTER TABLE leveling ADD CONSTRAINT leveling_pk PRIMARY KEY ("guild", "userID");
+ALTER TABLE moderation ADD CONSTRAINT moderation_pk PRIMARY KEY ("guild", "id");
+ALTER TABLE news ADD CONSTRAINT news_pk PRIMARY KEY ("guildID", "id");
+ALTER TABLE starboard ADD CONSTRAINT starboard_pk PRIMARY KEY ("guild", "message");

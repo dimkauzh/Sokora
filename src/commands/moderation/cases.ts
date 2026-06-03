@@ -46,7 +46,7 @@ async function generateEmbed(options: {
   };
 
   const nothingMessage = [
-    "Nothing to see here...",
+    "Nothing to see here…",
     "Ayay, no cases on this horizon cap'n!",
     "Clean as a whistle!",
     "0 + 0 = ?",

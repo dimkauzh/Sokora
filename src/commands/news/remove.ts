@@ -41,6 +41,7 @@ export async function run(
       reason:
         "You somehow ran the command without an ID being provided. That is an error. You might want to report this, as it is not supposed to ever happen.",
     });
+
   const news = await getNews(guild.id, id);
   if (!news)
     return await errorEmbed({ interaction, title: "The specified news post doesn't exist." });

@@ -38,7 +38,7 @@ function safeStringify(object: unknown): string {
     const string_ = JSON.stringify(object, null, 2);
     if (string_.length < 3800) return string_;
     return (
-      string_.slice(0, 3800) + "\n// etc... (had to trim it because of discord character limits)"
+      string_.slice(0, 3800) + "\n// etc… (had to trim it because of discord character limits)"
     );
   } catch {
     return "[Unserializable data, please report this as an issue]";
@@ -61,7 +61,7 @@ async function collapse(
 ): Promise<Message | InteractionResponse> {
   await interaction.deleteReply();
   const errorContainer = new ContainerBuilder().addTextDisplayComponents(
-    new TextDisplayBuilder().setContent("# Something went wrong..."),
+    new TextDisplayBuilder().setContent("# Something went wrong…"),
     new TextDisplayBuilder().setContent(
       [
         cID === "MEE6"
@@ -261,7 +261,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
             }
             case "merge":
             case "overwrite": {
-              content = `# ${buttonInteraction1.customId == "merge" ? "Updating" : "Overwriting"} data for all users...`;
+              content = `# ${buttonInteraction1.customId == "merge" ? "Updating" : "Overwriting"} data for all users…`;
               const res = [];
               await safeReply({
                 interaction: buttonInteraction1,
@@ -311,6 +311,7 @@ export async function run(interaction: ChatInputCommandInteraction): Promise<voi
           } catch (error) {
             if (Error.isError(error) && error.message.toLowerCase().includes("unknown message"))
               return;
+
             throw error;
           }
         });

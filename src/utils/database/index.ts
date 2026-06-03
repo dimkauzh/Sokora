@@ -55,7 +55,7 @@ const hashList = Object.keys(migrations);
 
 async function applyMigrations(after?: string): Promise<void> {
   const fileList = hashList.slice(after ? hashList.indexOf(after) + 1 : 0).map(h => migrations[h]);
-  console.log(`Applying ${fileList.length} migrations...`);
+  console.log(`Applying ${fileList.length} migrations…`);
   for (const file of fileList)
     try {
       await db.file(file);
@@ -78,10 +78,10 @@ export async function updateDatabase(): Promise<void> {
       console.log("Database up-to-date");
       return;
     }
-    console.log("Updating database...");
+    console.log("Updating database…");
     await applyMigrations(DBversion);
   } catch {
-    console.log("Initializing database...");
+    console.log("Initializing database…");
     await db`
       CREATE TABLE IF NOT EXISTS _info ("key" TEXT, "value" TEXT);
       INSERT INTO _info VALUES ('version', '');

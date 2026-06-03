@@ -52,8 +52,7 @@ export default (async function run(reaction, user) {
 
   const starboardChannel = await safeChannel(guild, starboardChannelId);
   if (
-    !starboardChannel ||
-    !starboardChannel.isTextBased() ||
+    !starboardChannel?.isTextBased() ||
     !(await channelCheck({
       channel: starboardChannel,
       guild,
