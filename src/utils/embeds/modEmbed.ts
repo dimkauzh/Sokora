@@ -156,12 +156,10 @@ export async function modEmbed(options: Options & { silent?: boolean }, reason?:
   const serverAvatar = guild.icon ? guild.iconURL()! : undefined;
   const avatar = user ? user.displayAvatarURL() : serverAvatar;
   let author = `${previousID ? "Edited a " : ""}${previousID ? dbAction?.toLowerCase() : action}${previousID ? " on" : ""} ${name}`;
-  if (reason) generalValues.push(`**Reason**: ${reason}`);
-  else generalValues.push("*No reason provided*");
 
+  if (reason) generalValues.push(`**Reason**: ${reason}`);
   if (duration) generalValues.push(`**Duration**: ${ms(Number(duration), "fullPrecision")}`);
   if (channel) generalValues.push(`**Channel**: ${mention(channel, "CHANNEL")}`);
-
   if (previousID) {
     const previousCase = getModeration(guild.id, user!.id, `${previousID}`);
     if (
