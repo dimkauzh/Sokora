@@ -3,6 +3,14 @@
 
 # Sokora Changelog
 
+## 0.3.3
+
+## Fixed
+
+- _No reason provided_ in some embeds that don't have any way to provide a reason (thanks fishy)
+- Flipped 2FA value in /server and /serverboard (i.e when the server has 2FA, it shows as "No 2FA") (thanks fishy)
+- /ping fix + CV2
+
 ## 0.3.2
 
 ## Changed

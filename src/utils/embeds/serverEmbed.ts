@@ -61,7 +61,7 @@ export async function serverEmbed(options: Options) {
   const nsfw = guild.nsfwLevel;
   const safetyValues: (string | null)[] = [
     `**${vl == 0 ? "Unrestricted" : vl == 1 ? "Low" : vl == 2 ? "Mid" : vl == 3 ? "High" : "Very high"}** level`,
-    `**${guild.mfaLevel == 1 ? "No" : "Has"}** 2FA`,
+    `**${guild.mfaLevel == 0 ? "No" : "Has"}** 2FA`,
   ];
 
   if (nsfw != 0)
